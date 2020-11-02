@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-def elastic_to_search_results(res: Dict):
+def elastic_to_search_results(res: Dict, score_modifier: float):
     from ..search import Document, SearchResult, SearchResults
 
     hits = res.get("hits")
@@ -11,9 +11,10 @@ def elastic_to_search_results(res: Dict):
 
     search_results = []
     for hit in hits.get("hits"):
-        # TODO: Separate to a function for json -> Document
         source = hit["_source"]
-        score = hit["_score"]
+
+        # score_modifier was added when searching on elasticsearch
+        score = hit["_score"] - score_modifier
         document = Document(source.get("content"), hit.get("_id"),
                             attributes=source.get("attributes"),
                             vector=source.get("vector"))

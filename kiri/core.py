@@ -33,9 +33,10 @@ class Kiri:
         return self._store.upload(documents, self._vectorize_func,
                                   self._vectorize_model)
 
-    def search(self, query: str, max_results=10, ids=None, body=None) -> SearchResults:
+    def search(self, query: str, max_results=10, min_score=0.0, ids=None, body=None) -> SearchResults:
         """
         Search documents from document store
         """
         return self._store.search(query, self._vectorize_model,
-                                  max_results=max_results, ids=ids, body=body)
+                                  max_results=max_results, min_score=min_score,
+                                  ids=ids, body=body)

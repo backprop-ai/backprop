@@ -9,7 +9,7 @@ my_document = Document("Where am I?", attributes={
 kiri.upload([my_document])
 
 
-results = kiri.search("Hello there", max_results=15)
+results = kiri.search("Hello there", max_results=15, min_score=0.1)
 
 print("Total results:", results.total_results)
 for result in results.results:

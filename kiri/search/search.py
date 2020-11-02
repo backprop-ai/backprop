@@ -74,7 +74,7 @@ class ElasticDocStore(DocStore):
                 document.vector = vectorize_func(document, vectorize_model)
 
             # JSON representation of document
-            doc_json = document.__dict__
+            doc_json = vars(document)
 
             # Add correct index
             doc_json["_index"] = index
@@ -90,14 +90,18 @@ class ElasticDocStore(DocStore):
         # Update index
         self._client.indices.refresh(index=self._index)
 
-    def search(self, query, vectorize_model, max_results=10, ids=None, body=None):
+    def search(self, query, vectorize_model, max_results=10, min_score=0.0, ids=None, body=None):
         """
         Search documents from elasticsearch
         """
         query_vec = vectorize_model.encode(query)
 
+        # elasticsearch does not support negative scores
+        score_modifier = 1.0
+
         if body is None:
             body = {
+                "min_score": min_score + score_modifier,
                 "size": max_results,
                 "query": {
                     "script_score": {
@@ -106,19 +110,16 @@ class ElasticDocStore(DocStore):
                         },
 
                         "script": {
-                            "source": "cosineSimilarity(params.query_vector, 'vector') + 1.0",
+                            "source": f"cosineSimilarity(params.query_vector, 'vector') + {score_modifier}",
                             "params": {
                                 "query_vector": query_vec.tolist()}
                         }
 
                     },
                 }
-                # "aggs": {
-                #     "types_count": {"value_count": {"field": "url"}}
-                # }
             }
 
         res = self._client.search(index=self._index, body=body)
-        search_results = elastic_to_search_results(res)
+        search_results = elastic_to_search_results(res, score_modifier)
 
         return search_results
