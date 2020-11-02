@@ -1,10 +1,11 @@
 from elasticsearch import Elasticsearch, helpers
-from typing import Dict
+from typing import Dict, List
 import shortuuid
 
 
 class Document:
-    def __init__(self, content: str, id: str = shortuuid.uuid(), attributes: Dict = None):
+    def __init__(self, content: str, id: str = shortuuid.uuid(),
+                 attributes: Dict = None, vector: List[float] = None):
         """
         Initialise document with content, id and attributes
         """
@@ -20,10 +21,10 @@ class Document:
         if id == "":
             raise ValueError("id may not be the empty string ''")
 
-        self._id = id
-        self._content = content
-        self._attributes = attributes
-        self._vectors = None
+        self.id = id
+        self.content = content
+        self.attributes = attributes
+        self.vector = vector
 
 
 class ElasticDocument(Document):
@@ -38,20 +39,34 @@ class ElasticDocument(Document):
         dims = 512  # TODO: determine automatically
         mappings = {
             "properties": {
-                "_vectors": {
+                "vector": {
                     "type": "dense_vector",
                     "dims": dims
                 },
-                "_content": {
+                "content": {
                     "type": "text"
                 },
-                "_attributes": {
+                "attributes": {
                     "type": "object"
                 }
             }
         }
 
         return mappings
+
+
+class SearchResult:
+    def __init__(self, document: Document, score: float, preview: str = None):
+        self.document = document
+        self.score = score
+        self.preview = preview
+
+
+class SearchResults:
+    def __init__(self, max_score: float, num_results: int, results: List[SearchResult]):
+        self.max_score = max_score
+        self.num_results = num_results
+        self.results = results
 
 
 class DocStore:
@@ -91,12 +106,7 @@ class ElasticDocStore(DocStore):
             self._client.indices.create(
                 self._index, body={"mappings": correct_mapping})
 
-    def process(self, document: Document):
-        """
-        Process and update missing document fields (vectors)
-        """
-
-    def upload(self, documents: [Document], vectorize_func, vectorize_model, index: str = None) -> None:
+    def upload(self, documents: List[Document], vectorize_func, vectorize_model, index: str = None) -> None:
         """
         Upload documents to elasticsearch
         """
@@ -110,8 +120,8 @@ class ElasticDocStore(DocStore):
         payload = []
         for document in documents:
             # Calculate missing vectors
-            if document._vectors is None:
-                document._vectors = vectorize_func(document, vectorize_model)
+            if document.vector is None:
+                document.vector = vectorize_func(document, vectorize_model)
 
             # JSON representation of document
             doc_json = document.__dict__
@@ -119,10 +129,16 @@ class ElasticDocStore(DocStore):
             # Add correct index
             doc_json["_index"] = index
 
+            # Rename id key
+            doc_json["_id"] = doc_json["id"]
+            del doc_json["id"]
+
             payload.append(doc_json)
 
         # Bulk upload to elasticsearch
         helpers.bulk(self._client, payload)
+        # Update index
+        self._client.indices.refresh(index=self._index)
 
     def search(self, query, vectorize_model, ids=None, body=None):
         """
@@ -140,7 +156,7 @@ class ElasticDocStore(DocStore):
                         },
 
                         "script": {
-                            "source": "cosineSimilarity(params.query_vector, '_vectors') + 1.0",
+                            "source": "cosineSimilarity(params.query_vector, 'vector') + 1.0",
                             "params": {
                                 "query_vector": query_vec.tolist()}
                         }
@@ -152,4 +168,21 @@ class ElasticDocStore(DocStore):
                 # }
             }
 
-        return self._client.search(index=self._index, body=body)
+        res = self._client.search(index=self._index, body=body)
+        hits = res.get("hits")
+
+        max_score = hits.get("max_score")
+        num_results = hits.get("total").get("value")
+
+        search_results = []
+        for hit in hits.get("hits"):
+            # TODO: Separate to a function for json -> Document
+            source = hit["_source"]
+            score = hit["_score"]
+            document = Document(source.get("content"), hit.get("_id"),
+                                attributes=source.get("attributes"),
+                                vector=source.get("vector"))
+            search_result = SearchResult(document, score)
+            search_results.append(search_result)
+
+        return SearchResults(max_score, num_results, search_results)
