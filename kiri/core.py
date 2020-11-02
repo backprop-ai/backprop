@@ -1,7 +1,7 @@
 from typing import Callable, Dict, List
 from sentence_transformers import SentenceTransformer
 
-from .documents import DocStore, Document, ElasticDocStore, SearchResults
+from .search import DocStore, SearchResults, Document
 from .utils import vectorize_document
 
 
@@ -33,8 +33,9 @@ class Kiri:
         return self._store.upload(documents, self._vectorize_func,
                                   self._vectorize_model)
 
-    def search(self, query: str, ids=None, body=None) -> SearchResults:
+    def search(self, query: str, max_results=10, ids=None, body=None) -> SearchResults:
         """
         Search documents from document store
         """
-        return self._store.search(query, self._vectorize_model, ids=ids, body=body)
+        return self._store.search(query, self._vectorize_model,
+                                  max_results=max_results, ids=ids, body=body)

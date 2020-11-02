@@ -1,58 +1,8 @@
 from elasticsearch import Elasticsearch, helpers
 from typing import Dict, List
 import shortuuid
-
-
-class Document:
-    def __init__(self, content: str, id: str = shortuuid.uuid(),
-                 attributes: Dict = None, vector: List[float] = None):
-        """
-        Initialise document with content, id and attributes
-        """
-        if type(content) is not str:
-            raise TypeError("content must be a string")
-
-        if content == "":
-            raise ValueError("content may not be the empty string ''")
-
-        if type(id) is not str:
-            raise TypeError("id must be a string")
-
-        if id == "":
-            raise ValueError("id may not be the empty string ''")
-
-        self.id = id
-        self.content = content
-        self.attributes = attributes
-        self.vector = vector
-
-
-class ElasticDocument(Document):
-    # def __init__(self, *args, **kwargs):
-    #     super(ElasticDocument, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def elastic_mappings():
-        """
-        Get mappings for elastic index
-        """
-        dims = 512  # TODO: determine automatically
-        mappings = {
-            "properties": {
-                "vector": {
-                    "type": "dense_vector",
-                    "dims": dims
-                },
-                "content": {
-                    "type": "text"
-                },
-                "attributes": {
-                    "type": "object"
-                }
-            }
-        }
-
-        return mappings
+from ..utils import elastic_to_search_results
+from .documents import Document, ElasticDocument
 
 
 class SearchResult:
@@ -63,9 +13,9 @@ class SearchResult:
 
 
 class SearchResults:
-    def __init__(self, max_score: float, num_results: int, results: List[SearchResult]):
+    def __init__(self, max_score: float, total_results: int, results: List[SearchResult]):
         self.max_score = max_score
-        self.num_results = num_results
+        self.total_results = total_results
         self.results = results
 
 
@@ -140,7 +90,7 @@ class ElasticDocStore(DocStore):
         # Update index
         self._client.indices.refresh(index=self._index)
 
-    def search(self, query, vectorize_model, ids=None, body=None):
+    def search(self, query, vectorize_model, max_results=10, ids=None, body=None):
         """
         Search documents from elasticsearch
         """
@@ -148,7 +98,7 @@ class ElasticDocStore(DocStore):
 
         if body is None:
             body = {
-                # "size": n,
+                "size": max_results,
                 "query": {
                     "script_score": {
                         "query": {
@@ -169,20 +119,6 @@ class ElasticDocStore(DocStore):
             }
 
         res = self._client.search(index=self._index, body=body)
-        hits = res.get("hits")
+        search_results = elastic_to_search_results(res)
 
-        max_score = hits.get("max_score")
-        num_results = hits.get("total").get("value")
-
-        search_results = []
-        for hit in hits.get("hits"):
-            # TODO: Separate to a function for json -> Document
-            source = hit["_source"]
-            score = hit["_score"]
-            document = Document(source.get("content"), hit.get("_id"),
-                                attributes=source.get("attributes"),
-                                vector=source.get("vector"))
-            search_result = SearchResult(document, score)
-            search_results.append(search_result)
-
-        return SearchResults(max_score, num_results, search_results)
+        return search_results

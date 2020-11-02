@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer
 
-from ..documents import Document
+from ..search import Document
 
 
 def vectorize_document(document: Document, model: SentenceTransformer):
