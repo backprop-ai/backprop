@@ -44,3 +44,14 @@ def process_document(document: Document, model: SentenceTransformer):
     else:
         raise ValueError(
             f"vectorisation of document of type {type(document)} is not implemented")
+
+
+def process_results(search_results, model: SentenceTransformer, doc_class, preview_length: int):
+    """
+    Process search results based on document type
+    """
+    # Only do processing for known document classes
+    if doc_class == ChunkedDocument:
+        pass
+    elif doc_class == Document:
+        pass

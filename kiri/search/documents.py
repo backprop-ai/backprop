@@ -87,14 +87,15 @@ class ElasticDocument(Document):
     @classmethod
     def from_elastic(cls, *args, **kwargs):
         obj = cls.__new__(cls)
-        # content = kwargs.get("content")
-        # del kwargs["content"]
 
         super(ElasticDocument, obj).__init__(*args, **kwargs)
         return obj
 
 
 class ElasticChunkedDocument(ChunkedDocument, ElasticDocument):
+    def __init__(self, *args, **kwargs):
+        super(ElasticChunkedDocument, self).__init__(*args, **kwargs)
+
     @staticmethod
     def elastic_mappings(dims=512):
         """

@@ -2,14 +2,16 @@ from typing import Callable, Dict, List
 from sentence_transformers import SentenceTransformer
 
 from .search import DocStore, SearchResults, Document
-from .utils import process_document
+from .utils import process_document, process_results
 
 
 class Kiri:
     """Core class of natural language engine"""
 
     def __init__(self, store: DocStore, vectorize_model: str = None,
-                 vectorize_func: Callable[[Document, SentenceTransformer], List[float]] = None):
+                 process_doc_func: Callable[[
+                     Document, SentenceTransformer], List[float]] = None,
+                 process_results_func: Callable[[SearchResults, SentenceTransformer], None] = None):
         """Initializes internal state"""
 
         if store is None:
@@ -19,24 +21,33 @@ class Kiri:
             # Use default vectorization model
             vectorize_model = "distiluse-base-multilingual-cased-v2"
 
-        if vectorize_func is None:
+        if process_doc_func is None:
             # Use default vectorizer
-            vectorize_func = process_document
+            process_doc_func = process_document
+
+        if process_results_func is None:
+            process_results_func = process_results
 
         self._store = store
-        self._vectorize_func = vectorize_func
+        self._process_doc_func = process_doc_func
+        self._process_results_func = process_results
         self._vectorize_model = SentenceTransformer(vectorize_model)
 
     def upload(self, documents: List[Document]) -> None:
         """Upload documents to store"""
 
-        return self._store.upload(documents, self._vectorize_func,
+        return self._store.upload(documents, self._process_doc_func,
                                   self._vectorize_model)
 
-    def search(self, query: str, max_results=10, min_score=0.0, ids=None, body=None) -> SearchResults:
+    def search(self, query: str, max_results=10, min_score=0.0,
+               preview_length=100, ids=None, body=None) -> SearchResults:
         """
         Search documents from document store
         """
-        return self._store.search(query, self._vectorize_model,
-                                  max_results=max_results, min_score=min_score,
-                                  ids=ids, body=body)
+        search_results = self._store.search(query, self._vectorize_model,
+                                            max_results=max_results, min_score=min_score,
+                                            ids=ids, body=body)
+        self._process_results_func(
+            search_results, self._vectorize_model, self._store._doc_class,
+            preview_length)
+        return search_results

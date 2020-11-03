@@ -12,7 +12,9 @@ kiri.upload([my_document])
 
 results = kiri.search("Hello there", max_results=15, min_score=0.1)
 
-print("Total results:", results.total_results)
-for result in results.results:
-    print(result.document.content, "Score: " + str(result.score))
-    print(result.document.chunk_vectors)
+# print("Total results:", results.total_results)
+# for result in results.results:
+#     print(result.document.content, "Score: " + str(result.score))
+#     print(result.document.chunk_vectors)
+
+print(results.to_json())

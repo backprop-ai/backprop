@@ -11,6 +11,12 @@ class SearchResult:
         self.score = score
         self.preview = preview
 
+    def to_json(self, exclude_vectors=True):
+        # TODO: implement excluding vectors
+        json_repr = vars(self)
+        json_repr["document"] = vars(json_repr["document"])
+        return json_repr
+
 
 class SearchResults:
     def __init__(self, max_score: float, total_results: int, results: List[SearchResult]):
@@ -18,16 +24,23 @@ class SearchResults:
         self.total_results = total_results
         self.results = results
 
+    def to_json(self, exclude_vectors=True):
+        # TODO: implement excluding vectors
+        json_repr = vars(self)
+        json_repr["results"] = [
+            r.to_json(exclude_vectors=exclude_vectors) for r in json_repr["results"]]
+        return json_repr
+
 
 class DocStore:
-    def __init__(self, params):
-        raise NotImplementedError("The constructor is not implemented!")
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError("__init__ is not implemented!")
 
-    def upload(self, params):
-        raise NotImplementedError
+    def upload(self, *args, **kwargs):
+        raise NotImplementedError("upload is not implemented!")
 
-    def search(self, params):
-        raise NotImplementedError
+    def search(self, *args, **kwargs):
+        raise NotImplementedError("search is not implemented!")
 
 
 class ElasticDocStore(DocStore):
@@ -45,11 +58,8 @@ class ElasticDocStore(DocStore):
             mapping = self._client.indices.get_mapping(
                 self._index).get(self._index).get("mappings")
 
-            print(mapping)
-            print(correct_mapping)
-
+            # Try updating mapping
             if mapping != correct_mapping:
-                # Update mapping
                 self._client.indices.close(self._index)
                 self._client.indices.put_mapping(
                     correct_mapping, index=self._index)
