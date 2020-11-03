@@ -2,3 +2,4 @@ sentence_transformers
 nltk
 scipy
 shortuuid
+elasticsearch
