@@ -3,7 +3,7 @@ from typing import Dict, List
 
 
 class Document:
-    def __init__(self, content: str, id: str = shortuuid.uuid(),
+    def __init__(self, content: str, id: str = None,
                  attributes: Dict = None, vector: List[float] = None):
         """
         Initialise document with content, id and attributes
@@ -13,6 +13,9 @@ class Document:
 
         if content == "":
             raise ValueError("content may not be the empty string ''")
+
+        if id is None:
+            id = shortuuid.uuid()
 
         if type(id) is not str:
             raise TypeError("id must be a string")
