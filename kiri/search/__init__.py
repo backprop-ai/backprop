@@ -1,2 +1,2 @@
-from .documents import Document, ElasticDocument
+from .documents import Document, ElasticDocument, ChunkedDocument, ElasticChunkedDocument
 from .search import DocStore, ElasticDocStore, SearchResult, SearchResults

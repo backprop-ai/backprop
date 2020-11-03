@@ -1,8 +1,8 @@
 from typing import Dict
 
 
-def elastic_to_search_results(res: Dict, score_modifier: float):
-    from ..search import Document, SearchResult, SearchResults
+def elastic_to_search_results(res: Dict, score_modifier: float, doc_class):
+    from ..search import SearchResult, SearchResults
 
     hits = res.get("hits")
 
@@ -15,9 +15,9 @@ def elastic_to_search_results(res: Dict, score_modifier: float):
 
         # score_modifier was added when searching on elasticsearch
         score = hit["_score"] - score_modifier
-        document = Document(source.get("content"), hit.get("_id"),
-                            attributes=source.get("attributes"),
-                            vector=source.get("vector"))
+
+        document = doc_class.from_elastic(id=hit.get("_id"),
+                                          **source)
         search_result = SearchResult(document, score)
         search_results.append(search_result)
 

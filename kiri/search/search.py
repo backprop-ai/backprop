@@ -35,6 +35,7 @@ class ElasticDocStore(DocStore):
                  doc_class: ElasticDocument = ElasticDocument):
         self._client = Elasticsearch([url])
         self._index = index
+        self._doc_class = doc_class
 
         correct_mapping = doc_class.elastic_mappings()
 
@@ -43,6 +44,9 @@ class ElasticDocStore(DocStore):
             # Check if mapping is correct
             mapping = self._client.indices.get_mapping(
                 self._index).get(self._index).get("mappings")
+
+            print(mapping)
+            print(correct_mapping)
 
             if mapping != correct_mapping:
                 # Update mapping
@@ -56,7 +60,7 @@ class ElasticDocStore(DocStore):
             self._client.indices.create(
                 self._index, body={"mappings": correct_mapping})
 
-    def upload(self, documents: List[Document], vectorize_func, vectorize_model, index: str = None) -> None:
+    def upload(self, documents: List[ElasticDocument], vectorize_func, vectorize_model, index: str = None) -> None:
         """
         Upload documents to elasticsearch
         """
@@ -71,10 +75,10 @@ class ElasticDocStore(DocStore):
         for document in documents:
             # Calculate missing vectors
             if document.vector is None:
-                document.vector = vectorize_func(document, vectorize_model)
+                vectorize_func(document, vectorize_model)
 
             # JSON representation of document
-            doc_json = vars(document)
+            doc_json = document.to_elastic()
 
             # Add correct index
             doc_json["_index"] = index
@@ -120,6 +124,7 @@ class ElasticDocStore(DocStore):
             }
 
         res = self._client.search(index=self._index, body=body)
-        search_results = elastic_to_search_results(res, score_modifier)
+        search_results = elastic_to_search_results(
+            res, score_modifier, self._doc_class)
 
         return search_results

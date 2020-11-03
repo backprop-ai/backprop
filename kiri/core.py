@@ -2,7 +2,7 @@ from typing import Callable, Dict, List
 from sentence_transformers import SentenceTransformer
 
 from .search import DocStore, SearchResults, Document
-from .utils import vectorize_document
+from .utils import process_document
 
 
 class Kiri:
@@ -21,7 +21,7 @@ class Kiri:
 
         if vectorize_func is None:
             # Use default vectorizer
-            vectorize_func = vectorize_document
+            vectorize_func = process_document
 
         self._store = store
         self._vectorize_func = vectorize_func
