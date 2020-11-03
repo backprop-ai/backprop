@@ -1,2 +1,3 @@
 sentence_transformers
 nltk
+scipy

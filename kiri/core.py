@@ -44,10 +44,9 @@ class Kiri:
         """
         Search documents from document store
         """
-        search_results = self._store.search(query, self._vectorize_model,
-                                            max_results=max_results, min_score=min_score,
-                                            ids=ids, body=body)
+        search_results, query_vec = self._store.search(query, self._vectorize_model,
+                                                       max_results=max_results, min_score=min_score,
+                                                       ids=ids, body=body)
         self._process_results_func(
-            search_results, self._vectorize_model, self._store._doc_class,
-            preview_length)
+            search_results, query_vec, self._store._doc_class, preview_length)
         return search_results

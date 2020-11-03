@@ -137,4 +137,4 @@ class ElasticDocStore(DocStore):
         search_results = elastic_to_search_results(
             res, score_modifier, self._doc_class)
 
-        return search_results
+        return search_results, query_vec
