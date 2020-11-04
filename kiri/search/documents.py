@@ -6,10 +6,10 @@ class Document:
     """Base document class for extension as needed.
     
     Attributes:
-        content: Text content of the document.
-        id: Unique ID for the document. Generated if not provided.
-        attributes: Dictionary of user-defined attributes.
-        vector: List of floats for doc vector representation.
+        content: Text content of the document
+        id: Unique ID for the document. Generated if not provided
+        attributes: Dictionary of user-defined attributes
+        vector: List of floats for doc vector representation
     """
 
     def __init__(self, content: str, id: str = None,
@@ -35,7 +35,7 @@ class Document:
         self.vector = vector
 
     def to_json(self):
-        """Gets JSON form of hte document
+        """Gets JSON form of the document.
         Returns:
             __dict__ of the document object
             """
@@ -48,8 +48,8 @@ class ChunkedDocument(Document):
     Attributes:
         args: Document superclass arguments
         chunking_level: 
-        chunks: List of pre-chunked strings from the document.
-        chunk_vectors: List of vectors for each chunk of the document.
+        chunks: List of pre-chunked strings from the document
+        chunk_vectors: List of vectors for each chunk of the document
     """
 
     def __init__(self, *args, chunking_level: int = 5, chunks: List[str] = None,
@@ -83,10 +83,10 @@ class ElasticDocument(Document):
     """Document with additional mapping required for ElasticSearch.
     
     Attributes:
-        content: Text content of the document.
-        id: Unique ID for the document. Generated if not provided.
-        attributes: Dictionary of user-defined attributes.
-        vector: List of floats for doc vector representation.
+        content: Text content of the document
+        id: Unique ID for the document -- generated if not provided
+        attributes: Dictionary of user-defined attributes
+        vector: List of floats for doc vector representation
     """
 
     @staticmethod
@@ -147,7 +147,7 @@ class ElasticChunkedDocument(ChunkedDocument, ElasticDocument):
     def elastic_mappings(dims=512):
         """Get mappings for elastic index
 
-        Arguments:
+        Args:
             dims: Dimensions of document's vectors
         
         Returns:
