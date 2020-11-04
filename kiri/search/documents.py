@@ -10,6 +10,10 @@ class Document:
         id: Unique ID for the document. Generated if not provided
         attributes: Dictionary of user-defined attributes
         vector: List of floats for doc vector representation
+    
+    Raises:
+        TypeError: If content or id is not a string
+        ValueError: If content or id is an empty string
     """
 
     def __init__(self, content: str, id: str = None,
@@ -50,6 +54,12 @@ class ChunkedDocument(Document):
         chunking_level: 
         chunks: List of pre-chunked strings from the document
         chunk_vectors: List of vectors for each chunk of the document
+    
+    Raises:
+        TypeError: If chunk_level is not an int, 
+            chunks is not a list of strings, or 
+            chunk_vectors is not a list of vectors
+        ValueError: If chunk_level is <= 1
     """
 
     def __init__(self, *args, chunking_level: int = 5, chunks: List[str] = None,

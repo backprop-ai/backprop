@@ -62,6 +62,8 @@ class SearchResults:
 class DocStore:
     """Base DocStore class for extension.
 
+    Raises:
+        NotImplementedError: If core init, upload, or search functions are not implemented
     """
 
     def __init__(self, *args, **kwargs):
