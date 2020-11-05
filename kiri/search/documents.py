@@ -62,7 +62,7 @@ class ChunkedDocument(Document):
 
 class ElasticDocument(Document):
     @staticmethod
-    def elastic_mappings(dims=512):
+    def elastic_mappings(dims=768):
         """
         Get mappings for elastic index
         """
@@ -100,7 +100,7 @@ class ElasticChunkedDocument(ChunkedDocument, ElasticDocument):
         super(ElasticChunkedDocument, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def elastic_mappings(dims=512):
+    def elastic_mappings(dims=768):
         """
         Get mappings for elastic index
         """

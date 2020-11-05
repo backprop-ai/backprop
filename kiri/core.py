@@ -19,7 +19,7 @@ class Kiri:
 
         if vectorize_model is None:
             # Use default vectorization model
-            vectorize_model = "distiluse-base-multilingual-cased-v2"
+            vectorize_model = "ojasaar/distilbert-sentence-msmarco-en-et"
 
         if process_doc_func is None:
             # Use default vectorizer

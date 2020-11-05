@@ -4,6 +4,8 @@ import shortuuid
 from ..utils import elastic_to_search_results
 from .documents import Document, ElasticDocument
 
+import time
+
 
 class SearchResult:
     def __init__(self, document: Document, score: float, preview: str = None):
@@ -118,21 +120,40 @@ class ElasticDocStore(DocStore):
                 "min_score": min_score + score_modifier,
                 "size": max_results,
                 "query": {
-                    "script_score": {
+                    "function_score": {
                         "query": {
-                            "match_all": {}
+                            "bool": {
+                                "should": [
+                                    {"match": {
+                                        "content": query
+                                    }},
+                                    {"match_all": {}}
+
+                                ]
+                            }
+
                         },
+                        "script_score": {
+                            "script": {
+                                "source": f"(cosineSimilarity(params.query_vector, 'vector') + {score_modifier}) * (_score + 1)",
+                                "params": {
+                                    "query_vector": query_vec.tolist()}
+                            }
+                        },
+                    }
+                },
+                "highlight": {
+                    "pre_tags": ["<b>"],
+                    "post_tags": ["</b>"],
+                    "fragment_size": 100,
+                    "fields": {
+                        "content": {}
+                    }
+                },
 
-                        "script": {
-                            "source": f"cosineSimilarity(params.query_vector, 'vector') + {score_modifier}",
-                            "params": {
-                                "query_vector": query_vec.tolist()}
-                        }
-
-                    },
-                }
             }
 
+        start = time.time()
         res = self._client.search(index=self._index, body=body)
         search_results = elastic_to_search_results(
             res, score_modifier, self._doc_class)

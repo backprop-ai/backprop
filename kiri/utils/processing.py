@@ -48,14 +48,17 @@ def process_document(document: Document, model: SentenceTransformer):
             f"vectorisation of document of type {type(document)} is not implemented")
 
 
-def calc_doc_score(doc_score: float, chunk_scores: Tuple[str, float], top_chunks: int = 3):
+def calc_doc_score(max_score: float, doc_score: float, chunk_scores: Tuple[str, float], top_chunks: int = 3):
     doc_scores = []
+
+    norm_doc_score = doc_score / max_score
 
     for chunk, score in chunk_scores[:top_chunks]:
         doc_scores.append(score)
 
-    # Avg of initial doc score and avg of top_chunks chunk scores
-    final_score = (doc_score + (sum(doc_scores) / len(doc_scores))) / 2
+    avg_chunk_score = sum(doc_scores) / len(doc_scores)
+
+    final_score = (norm_doc_score * avg_chunk_score + avg_chunk_score) / 2
     return final_score
 
 
@@ -101,7 +104,8 @@ def process_results(search_results, query_vec, doc_class, preview_length: int):
         if issubclass(doc_class, ChunkedDocument):
             chunk_scores = calc_chunk_scores(document.chunks, document.chunk_vectors,
                                              query_vec)
-            score = calc_doc_score(result.score, chunk_scores)
+            score = calc_doc_score(
+                search_results.max_score, result.score, chunk_scores)
             result.score = score
             if score > max_score:
                 max_score = score
