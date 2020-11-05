@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="kiri",  # Replace with your own username
-    version="0.1.2",
+    name="kiri",
+    version="0.1.3",
     author="Kiri OÜ",
     author_email="hello@kiri.ai",
     description="Kiri Natural Language Engine",
@@ -16,7 +16,9 @@ setuptools.setup(
     install_requires=[
         "sentence_transformers",
         "nltk",
-        "scipy"
+        "scipy",
+        "shortuuid",
+        "elasticsearch"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
