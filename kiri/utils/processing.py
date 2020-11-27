@@ -96,7 +96,7 @@ def process_results(search_results, query_vec, doc_class, preview_length: int):
     """
     Process search results based on document type
     """
-    max_score = search_results.max_score
+    max_score = -1.0
 
     for result in search_results.results:
         document = result.document
@@ -116,6 +116,14 @@ def process_results(search_results, query_vec, doc_class, preview_length: int):
             result.preview = preview
         elif issubclass(doc_class, Document):
             # Treat entire content as a chunk
+            chunk_scores = calc_chunk_scores([document.content], [document.vector],
+                                             query_vec)
+            score = calc_doc_score(
+                search_results.max_score, result.score, chunk_scores)
+            result.score = score
+            if score > max_score:
+                max_score = score
+
             preview = gen_preview_from_chunks(
                 [document.content], preview_length)
             result.preview = preview
