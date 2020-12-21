@@ -3,11 +3,21 @@ from typing import Dict, List
 
 
 class Document:
+    """Base document class for extension as needed.
+    
+    Attributes:
+        content: Text content of the document
+        id: Unique ID for the document. Generated if not provided
+        attributes: Dictionary of user-defined attributes
+        vector: List of floats for doc vector representation
+    
+    Raises:
+        TypeError: If content or id is not a string
+        ValueError: If content or id is an empty string
+    """
+
     def __init__(self, content: str, id: str = None,
                  attributes: Dict = None, vector: List[float] = None):
-        """
-        Initialise document with content, id and attributes
-        """
         if type(content) is not str:
             raise TypeError("content must be a string")
 
@@ -29,16 +39,31 @@ class Document:
         self.vector = vector
 
     def to_json(self):
+        """Gets JSON form of the document.
+        Returns:
+            __dict__ of the document object
+            """
         return vars(self)
 
 
 class ChunkedDocument(Document):
+    """Document subclass with support for finer-grained vector chunking.
+
+    Attributes:
+        args: Document superclass arguments
+        chunking_level: 
+        chunks: List of pre-chunked strings from the document
+        chunk_vectors: List of vectors for each chunk of the document
+    
+    Raises:
+        TypeError: If chunk_level is not an int, 
+            chunks is not a list of strings, or 
+            chunk_vectors is not a list of vectors
+        ValueError: If chunk_level is <= 1
+    """
+
     def __init__(self, *args, chunking_level: int = 5, chunks: List[str] = None,
                  chunk_vectors: List[List[float]] = None, **kwargs):
-        """
-        Init chunked document, inheriting from document
-
-        """
         super(ChunkedDocument, self).__init__(*args, **kwargs)
         if type(chunking_level) != int:
             raise TypeError("chunking_level must be an int")
@@ -57,14 +82,32 @@ class ChunkedDocument(Document):
         self.chunk_vectors = chunk_vectors
 
     def to_json(self):
+        """Gets JSON form of the document
+        Returns:
+            __dict__ attr of the document object
+            """
         return vars(self)
 
 
 class ElasticDocument(Document):
+    """Document with additional mapping required for ElasticSearch.
+    
+    Attributes:
+        content: Text content of the document
+        id: Unique ID for the document -- generated if not provided
+        attributes: Dictionary of user-defined attributes
+        vector: List of floats for doc vector representation
+    """
+
     @staticmethod
     def elastic_mappings(dims=768):
-        """
-        Get mappings for elastic index
+        """Gets mappings for Elastic index
+
+        Args:
+            dims: Dimensions of document vector
+        
+        Returns:
+            Dictionary of Elastic metadata 
         """
         # TODO: determine dims automatically
         mappings = {
@@ -85,6 +128,11 @@ class ElasticDocument(Document):
         return mappings
 
     def to_elastic(self):
+        """Turns Document object into JSON form for Elastic
+
+        Returns:
+            __dict__ attribute of ElasticDocument object
+        """
         return vars(self)
 
     @classmethod
@@ -96,13 +144,24 @@ class ElasticDocument(Document):
 
 
 class ElasticChunkedDocument(ChunkedDocument, ElasticDocument):
+    """Elastic-ready document with chunked vectorisation
+
+    Attributes:
+        args: Document & ChunkedDocument superclass arguments
+    """
+
     def __init__(self, *args, **kwargs):
         super(ElasticChunkedDocument, self).__init__(*args, **kwargs)
 
     @staticmethod
     def elastic_mappings(dims=768):
-        """
-        Get mappings for elastic index
+        """Get mappings for elastic index
+
+        Args:
+            dims: Dimensions of document's vectors
+        
+        Returns:
+            Dictionary of Elastic metadata 
         """
         # TODO: determine dims automatically
         mappings = {
@@ -132,6 +191,11 @@ class ElasticChunkedDocument(ChunkedDocument, ElasticDocument):
         return mappings
 
     def to_elastic(self):
+        """Turns Document object into JSON form for Elastic
+
+        Returns:
+            __dict__ attribute of ElasticDocument object
+        """
         json_repr = vars(self)
         json_repr["chunk_vectors"] = [{"vector": v}
                                       for v in json_repr["chunk_vectors"]]

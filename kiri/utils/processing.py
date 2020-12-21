@@ -7,14 +7,27 @@ from ..search import Document, ChunkedDocument
 
 
 def get_sentences(content):
+    """Tokenizes document content into sentences
+
+    Args:
+        content: String of document contents
+    
+    Returns:
+        list of strings, the separate sentences of <content>
+    """
     sentences = sent_tokenize(content)
 
     return sentences
 
 
 def chunk_document(document: ChunkedDocument):
-    """
-    Return list of document chunks based on chunking level
+    """Gets document chunks based on chunking level
+
+    Args:
+        document: Document to be chunked 
+    
+    Returns:
+        Chunks to be assigned to <document>
     """
 
     chunking_level = document.chunking_level
@@ -32,8 +45,14 @@ def chunk_document(document: ChunkedDocument):
 
 
 def process_document(document: Document, model: SentenceTransformer):
-    """
-    Process document based on type
+    """Processes document based on type
+
+    Args:
+        document: Document to be processed
+        model: SentenceTransformer model used for processing
+
+    Raises:
+        ValueError: If the given document's type doesn't have a vectorisation function
     """
     if isinstance(document, ChunkedDocument):
         chunks = chunk_document(document)
@@ -49,6 +68,19 @@ def process_document(document: Document, model: SentenceTransformer):
 
 
 def calc_doc_score(max_score: float, doc_score: float, chunk_scores: Tuple[str, float], top_chunks: int = 3):
+# def calc_doc_score(doc_score: float, chunk_scores: Tuple[str, float], top_chunks: int = 3):
+    """Calculates the overall score of a chunked document
+    
+    Args:
+        max_score: The maximum score returned by the search, for normalization
+        doc_score: The base relevancy score from Elasticsearch
+        chunk_scores: Tuple of each chunk with its corresponding score
+        top_chunks: number of chunks to be included in the weighting
+
+    Returns:
+        The final weighted score for the document
+    """
+    
     doc_scores = []
 
     norm_doc_score = doc_score / max_score
@@ -63,6 +95,17 @@ def calc_doc_score(max_score: float, doc_score: float, chunk_scores: Tuple[str, 
 
 
 def calc_chunk_scores(chunks: List[str], chunk_vectors: List[List[float]], query_vec: List[float]):
+    """Calculates score of each chunk of a document
+
+    Args:
+        chunks: List of sentence chunks on the desired document
+        chunk_vectors: List of vectors for each chunk in the document
+        query_vec: Vectorized query string
+    
+    Returns:
+        Sorted list of chunks, with the highest first.
+    """
+    
     distances = cdist(
         [query_vec], chunk_vectors, "cosine")[0]
     scores = [1.0 - d for d in distances]
@@ -75,6 +118,15 @@ def calc_chunk_scores(chunks: List[str], chunk_vectors: List[List[float]], query
 
 
 def gen_preview_from_chunks(chunks: List[str], preview_length: int):
+    """Generates a preview string for a document
+    
+    Args:
+        chunks: List of strings, the chunks of the document
+        preview_length: Number of characters in the preview
+
+    Returns:
+        Preview/metatext string
+    """
     preview = ""
     reached_length = False
     for chunk in chunks:
@@ -93,8 +145,13 @@ def gen_preview_from_chunks(chunks: List[str], preview_length: int):
 
 
 def process_results(search_results, query_vec, doc_class, preview_length: int):
-    """
-    Process search results based on document type
+    """Calculates final scores for returned search results
+
+    Args:
+        search_results: Kiri SearchResults object.
+        query_vec: Vectorised query string
+        doc_class: Type of Document being processed
+        preview_length: Number of characters in the preview string
     """
     max_score = -1.0
 

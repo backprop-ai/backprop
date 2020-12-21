@@ -3,3 +3,4 @@ nltk
 scipy
 shortuuid
 elasticsearch
+pydoc-markdown
