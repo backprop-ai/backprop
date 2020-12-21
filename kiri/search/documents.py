@@ -41,10 +41,10 @@ class ChunkedDocument(Document):
         """
         super(ChunkedDocument, self).__init__(*args, **kwargs)
         if type(chunking_level) != int:
-            raise TypeError("chunk_level must be an int")
+            raise TypeError("chunking_level must be an int")
 
         if chunking_level < 1:
-            raise ValueError("chunk_level must be >= 1")
+            raise ValueError("chunking_level must be >= 1")
 
         if chunks and type(chunks) is not list:
             raise TypeError("chunks must be a list of strings")
