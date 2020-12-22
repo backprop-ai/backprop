@@ -77,10 +77,6 @@ class Kiri:
             search_results, query_vec, self._store._doc_class, preview_length)
         return search_results
 
-    # TODO: "Modularize" this -- make separate QA components,
-    #        rather than directly doing logic in here.
-    #        Need default handling function (T5) w/ this logic,
-    #        overridable with other function.
     def qa(self, query: str, context: str = None, context_doc: Document = None):
         """Perform QA, either on docstore or on provided context.
 
@@ -91,13 +87,8 @@ class Kiri:
         else:
             search_results = self.search(query)
             answers = []
-            for result in search_results[:3]:
-                text = result.document.content
-                input_text = f"q: {query} c: {text}"
-                features = self._qa_tokenizer(
-                    [input_text], return_tensors="pt")
-                output = self._qa_model.generate(input_ids=features["input_ids"],
-                                                 attention_mask=features["attention_mask"])
-                answer = self._qa_tokenizer.decode(output[0])
+            for result in search_results.results[:3]:
+                c_string = result.document.content
+                answer = qa(query, c_string)
                 answers.append(answer)
-            return zip(answers, search_results[:3])
+            return list(zip(answers, search_results.results[:3]))
