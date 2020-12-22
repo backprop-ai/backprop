@@ -4,18 +4,19 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 from .search import DocStore, SearchResults, Document
 from .utils import process_document, process_results
+from .models import qa
 
 
 class Kiri:
     """Core class of natural language engine
-    
+
     Attributes:
         store: DocStore object to be used as the engine backend
         vectorize_model: Name of the SentenceTransformer model to be used in operations
         qa_model: Name of HuggingFace model to be used for Question/Answer
         process_doc_func: Function to be used when vectorizing updloaded documents
         process_results_func: Function to be used for calculating final scores of results
-    
+
     Raises:
         ValueError: If a DocStore is not provided
     """
@@ -33,11 +34,6 @@ class Kiri:
             # Use default vectorization model
             vectorize_model = "ojasaar/distilbert-sentence-msmarco-en-et"
 
-        if qa_model is None:
-            # Default, may not even be T5 soon.
-            # TODO: Handle different Transformer types.
-            qa_model = "google/t5-small"
-
         if process_doc_func is None:
             # Use default vectorizer
             process_doc_func = process_document
@@ -49,8 +45,6 @@ class Kiri:
         self._process_doc_func = process_doc_func
         self._process_results_func = process_results
         self._vectorize_model = SentenceTransformer(vectorize_model)
-        self._qa_model = T5ForConditionalGeneration.from_pretrained(qa_model)
-        self._qa_tokenizer = T5Tokenizer.from_pretrained(qa_model)
 
     def upload(self, documents: List[Document]) -> None:
         """Uploads documents to store
@@ -93,22 +87,17 @@ class Kiri:
         """
         if context_doc or context:
             c_string = context if context else context_doc.content
-            input_text = f"q: {query} c: {c_string}"
-            features = self._qa_tokenizer([input_text], return_tensors="pt")
-            output = self._qa_model(input_ids=features["input_ids"].cuda(),
-                                    attention_mask=features["attention_mask"].cuda())
-            answer = self._qa_tokenizer.decode(output[0])
-            return answer
+            return qa(query, c_string)
         else:
             search_results = self.search(query)
             answers = []
             for result in search_results[:3]:
                 text = result.document.content
                 input_text = f"q: {query} c: {text}"
-                features = self._qa_tokenizer([input_text], return_tensors="pt")
-                output = self._qa_model(input_ids=features["input_ids"].cuda(),
-                                        attention_mask=features["attention_mask"].cuda())
+                features = self._qa_tokenizer(
+                    [input_text], return_tensors="pt")
+                output = self._qa_model.generate(input_ids=features["input_ids"],
+                                                 attention_mask=features["attention_mask"])
                 answer = self._qa_tokenizer.decode(output[0])
                 answers.append(answer)
             return zip(answers, search_results[:3])
-            
