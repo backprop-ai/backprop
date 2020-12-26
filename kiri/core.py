@@ -4,7 +4,7 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 from .search import DocStore, SearchResults, Document
 from .utils import process_document, process_results
-from .models import qa, summarise, emotion
+from .models import qa, summarise, emotion, zero_shot
 
 
 class Kiri:
@@ -111,3 +111,18 @@ class Kiri:
             raise ValueError("input_text must not be an empty string")
 
         return emotion(input_text)
+
+    def classify(self, input_text, labels: List[str]):
+        if type(input_text) != str:
+            raise TypeError("input_text must be a string")
+
+        if input_text == "":
+            raise ValueError("input_text must not be an empty string")
+
+        if not isinstance(labels, list):
+            raise TypeError("labels must be a list of strings")
+
+        if len(labels) == 0:
+            raise ValueError("labels must contain at least one label")
+
+        return zero_shot(input_text, labels)
