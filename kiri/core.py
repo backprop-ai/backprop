@@ -1,10 +1,10 @@
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Tuple
 from sentence_transformers import SentenceTransformer
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 from .search import DocStore, SearchResults, Document
 from .utils import process_document, process_results
-from .models import qa
+from .models import qa, summarise, emotion
 
 
 class Kiri:
@@ -77,18 +77,37 @@ class Kiri:
             search_results, query_vec, self._store._doc_class, preview_length)
         return search_results
 
-    def qa(self, query: str, context: str = None, context_doc: Document = None):
+    def qa(self, question: str, context: str = None,
+           prev_qa: List[Tuple[str, str]] = [], context_doc: Document = None):
         """Perform QA, either on docstore or on provided context.
 
         """
         if context_doc or context:
             c_string = context if context else context_doc.content
-            return qa(query, c_string)
+            return qa(question, c_string, prev_qa=prev_qa)
         else:
-            search_results = self.search(query)
+            search_results = self.search(question)
             answers = []
             for result in search_results.results[:3]:
                 c_string = result.document.content
-                answer = qa(query, c_string)
+                answer = qa(question, c_string, prev_qa=prev_qa)
                 answers.append(answer)
             return list(zip(answers, search_results.results[:3]))
+
+    def summarise(self, input_text):
+        if type(input_text) != str:
+            raise TypeError("input_text must be a string")
+
+        if input_text == "":
+            raise ValueError("input_text must not be an empty string")
+
+        return summarise(input_text)
+
+    def emotion(self, input_text):
+        if type(input_text) != str:
+            raise TypeError("input_text must be a string")
+
+        if input_text == "":
+            raise ValueError("input_text must not be an empty string")
+
+        return emotion(input_text)
