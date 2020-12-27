@@ -3,6 +3,7 @@ from typing import Dict, List
 import shortuuid
 from ..utils import elastic_to_search_results
 from .documents import Document, ElasticDocument
+from ..models import vectorise
 
 import time
 
@@ -87,18 +88,18 @@ class InMemoryDocStore(DocStore):
         self.documents = []
         self._doc_class = doc_class
 
-    def upload(self, documents: List[Document], vectorize_func,
-               vectorize_model) -> None:
+    def upload(self, documents: List[Document], vectorise_func,
+               vectorise_model) -> None:
         for document in documents:
             # Calculate missing vectors
             if document.vector is None:
-                vectorize_func(document, vectorize_model)
+                vectorise_func(document, vectorise_model)
                 # Add document to memory
                 self.documents.append(document)
 
-    def search(self, query, vectorize_model, max_results=10, min_score=0.0,
+    def search(self, query, vectorise_model, max_results=10, min_score=0.0,
                ids=None, body=None):
-        query_vec = vectorize_model.encode(query)
+        query_vec = vectorise(query)
 
         documents = self.documents
 
@@ -146,13 +147,13 @@ class ElasticDocStore(DocStore):
             self._client.indices.create(
                 self._index, body={"mappings": correct_mapping})
 
-    def upload(self, documents: List[ElasticDocument], vectorize_func, vectorize_model, index: str = None) -> None:
+    def upload(self, documents: List[ElasticDocument], vectorise_func, vectorise_model, index: str = None) -> None:
         """Upload documents to Elasticsearch
 
         Args:
             documents: List of documents to be uploaded to backend
-            vectorize_func: Function used to vectorize document contents
-            vectorize_model: NLP model used during vectorization function
+            vectorise_func: Function used to vectorise document contents
+            vectorise_model: Sentence transformer model name used for vectorisation
             index: Index (db) to be used -- uses initialized default if none provided
         """
         if not index:
@@ -166,7 +167,7 @@ class ElasticDocStore(DocStore):
         for document in documents:
             # Calculate missing vectors
             if document.vector is None:
-                vectorize_func(document, vectorize_model)
+                vectorise_func(document, vectorise_model)
 
             # JSON representation of document
             doc_json = document.to_elastic()
@@ -185,21 +186,21 @@ class ElasticDocStore(DocStore):
         # Update index
         self._client.indices.refresh(index=self._index)
 
-    def search(self, query, vectorize_model, max_results=10, min_score=0.0, ids=None, body=None):
+    def search(self, query, vectorise_model, max_results=10, min_score=0.0, ids=None, body=None):
         """Search documents from Elasticsearch
 
         Args:
             query: Question from which search is based
-            vectorize_model: NLP model used to vectorize the query -- should match one used on docs
+            vectorise_model: NLP model used to vectorise the query -- should match one used on docs
             max_results: Maximum number of search results to return
             min_score: Minimum relevancy score required to be included in results
             ids: 
             body: Elasticsearch parameters to be used in search -- default made if none provided
 
         Returns:
-            Tuple with the SearchResults object and the vectorized query
+            Tuple with the SearchResults object and the vectorised query
         """
-        query_vec = vectorize_model.encode(query)
+        query_vec = vectorise(query)
 
         # elasticsearch does not support negative scores
         score_modifier = 1.0

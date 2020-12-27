@@ -4,6 +4,7 @@ from scipy.spatial.distance import cdist
 from typing import List, Tuple
 
 from ..search import Document, ChunkedDocument
+from ..models import vectorise
 
 
 def get_sentences(content):
@@ -44,24 +45,24 @@ def chunk_document(document: ChunkedDocument):
     return chunks
 
 
-def process_document(document: Document, model: SentenceTransformer):
+def process_document(document: Document, model_name: str):
     """Processes document based on type
 
     Args:
         document: Document to be processed
-        model: SentenceTransformer model used for processing
+        model: SentenceTransformer model name used for processing
 
     Raises:
         ValueError: If the given document's type doesn't have a vectorisation function
     """
     if isinstance(document, ChunkedDocument):
         chunks = chunk_document(document)
-        chunk_vectors = model.encode(chunks)
+        chunk_vectors = vectorise(chunks, model_name=model_name)
         document.chunks = chunks
         document.chunk_vectors = chunk_vectors
-        document.vector = model.encode(document.content)
+        document.vector = vectorise(document.content, model_name=model_name)
     elif isinstance(document, Document):
-        document.vector = model.encode(document.content)
+        document.vector = vectorise(document.content, model_name=model_name)
     else:
         raise ValueError(
             f"vectorisation of document of type {type(document)} is not implemented")
@@ -100,7 +101,7 @@ def calc_chunk_scores(chunks: List[str], chunk_vectors: List[List[float]], query
     Args:
         chunks: List of sentence chunks on the desired document
         chunk_vectors: List of vectors for each chunk in the document
-        query_vec: Vectorized query string
+        query_vec: vectorised query string
 
     Returns:
         Sorted list of chunks, with the highest first.

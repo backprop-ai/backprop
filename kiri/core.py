@@ -12,14 +12,14 @@ class Kiri:
 
     Attributes:
         store: DocStore object to be used as the engine backend
-        vectorize_model: Name of the SentenceTransformer model to be used in operations
+        vectorise_model: Name of the SentenceTransformer model to be used in operations
         qa_model: Name of HuggingFace model to be used for Question/Answer
-        process_doc_func: Function to be used when vectorizing updloaded documents
+        process_doc_func: Function to be used when vectorising uploaded documents
         process_results_func: Function to be used for calculating final scores of results
 
     """
 
-    def __init__(self, store: DocStore = None, vectorize_model: str = None,
+    def __init__(self, store: DocStore = None, vectorise_model: str = None,
                  qa_model: str = None,
                  process_doc_func: Callable[[
                      Document, SentenceTransformer], List[float]] = None,
@@ -28,12 +28,8 @@ class Kiri:
         if store is None:
             store = InMemoryDocStore()
 
-        if vectorize_model is None:
-            # Use default vectorization model
-            vectorize_model = "msmarco-distilroberta-base-v2"
-
         if process_doc_func is None:
-            # Use default vectorizer
+            # Use default vectoriser
             process_doc_func = process_document
 
         if process_results_func is None:
@@ -42,7 +38,7 @@ class Kiri:
         self._store = store
         self._process_doc_func = process_doc_func
         self._process_results_func = process_results
-        self._vectorize_model = SentenceTransformer(vectorize_model)
+        self._vectorise_model = vectorise_model
 
     def upload(self, documents: List[Document]) -> None:
         """Uploads documents to store
@@ -53,7 +49,7 @@ class Kiri:
         """
 
         return self._store.upload(documents, self._process_doc_func,
-                                  self._vectorize_model)
+                                  self._vectorise_model)
 
     def search(self, query: str, max_results=10, min_score=0.0,
                preview_length=100, ids=None, body=None) -> SearchResults:
@@ -68,7 +64,7 @@ class Kiri:
             body: Elasticsearch request body to be passed to the backend
 
         """
-        search_results, query_vec = self._store.search(query, self._vectorize_model,
+        search_results, query_vec = self._store.search(query, self._vectorise_model,
                                                        max_results=max_results, min_score=min_score,
                                                        ids=ids, body=body)
         self._process_results_func(
