@@ -1,16 +1,17 @@
 import shortuuid
 from typing import Dict, List
+from ..models import summarise
 
 
 class Document:
     """Base document class for extension as needed.
-    
+
     Attributes:
         content: Text content of the document
         id: Unique ID for the document. Generated if not provided
         attributes: Dictionary of user-defined attributes
         vector: List of floats for doc vector representation
-    
+
     Raises:
         TypeError: If content or id is not a string
         ValueError: If content or id is an empty string
@@ -38,6 +39,9 @@ class Document:
         self.attributes = attributes
         self.vector = vector
 
+    def summarise(self):
+        return summarise(self.content)
+
     def to_json(self):
         """Gets JSON form of the document.
         Returns:
@@ -54,7 +58,7 @@ class ChunkedDocument(Document):
         chunking_level: 
         chunks: List of pre-chunked strings from the document
         chunk_vectors: List of vectors for each chunk of the document
-    
+
     Raises:
         TypeError: If chunk_level is not an int, 
             chunks is not a list of strings, or 
@@ -91,7 +95,7 @@ class ChunkedDocument(Document):
 
 class ElasticDocument(Document):
     """Document with additional mapping required for ElasticSearch.
-    
+
     Attributes:
         content: Text content of the document
         id: Unique ID for the document -- generated if not provided
@@ -105,7 +109,7 @@ class ElasticDocument(Document):
 
         Args:
             dims: Dimensions of document vector
-        
+
         Returns:
             Dictionary of Elastic metadata 
         """
@@ -159,7 +163,7 @@ class ElasticChunkedDocument(ChunkedDocument, ElasticDocument):
 
         Args:
             dims: Dimensions of document's vectors
-        
+
         Returns:
             Dictionary of Elastic metadata 
         """

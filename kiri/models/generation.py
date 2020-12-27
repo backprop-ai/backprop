@@ -36,7 +36,7 @@ def generate(input_text, model_name: str = None, tokenizer_name: str = None,
 
         features = tokenizer([input_text], return_tensors='pt')
         tokens = model.generate(input_ids=features['input_ids'],
-                                attention_mask=features['attention_mask'], max_length=64)
+                                attention_mask=features['attention_mask'], max_length=128)
         return tokenizer.decode(tokens[0], skip_special_tokens=True)
 
     else:
