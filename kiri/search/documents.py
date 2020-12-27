@@ -1,6 +1,6 @@
 import shortuuid
 from typing import Dict, List
-from ..models import summarise
+from ..models import summarise, zero_shot, qa, emotion
 
 
 class Document:
@@ -40,7 +40,21 @@ class Document:
         self.vector = vector
 
     def summarise(self):
+        # TODO: Handle long content
         return summarise(self.content)
+
+    def classify(self, labels: List[str]):
+        # TODO: Handle long content
+        return zero_shot(self.content, labels)
+
+    def qa(self, question):
+        # TODO: Handle long content
+        # TODO: Support previous qa
+        return qa(question, self.content)
+
+    def emotion(self):
+        # TODO: Handle long content
+        return emotion(self.content)
 
     def to_json(self):
         """Gets JSON form of the document.
