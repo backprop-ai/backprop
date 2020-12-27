@@ -78,6 +78,39 @@ class DocStore:
         raise NotImplementedError("search is not implemented!")
 
 
+class InMemoryDocStore(DocStore):
+    """DocStore variant for in memory document storage.
+    Meant to be used for development and testing.
+    """
+
+    def __init__(self, doc_class: Document = Document):
+        self.documents = []
+        self._doc_class = doc_class
+
+    def upload(self, documents: List[Document], vectorize_func,
+               vectorize_model) -> None:
+        for document in documents:
+            # Calculate missing vectors
+            if document.vector is None:
+                vectorize_func(document, vectorize_model)
+                # Add document to memory
+                self.documents.append(document)
+
+    def search(self, query, vectorize_model, max_results=10, min_score=0.0,
+               ids=None, body=None):
+        query_vec = vectorize_model.encode(query)
+
+        documents = self.documents
+
+        # Filter by id
+        if ids:
+            documents = [d for d in documents if d.id in ids]
+
+        results = [SearchResult(d, -1.0) for d in documents]
+        search_results = SearchResults(-1.0, len(results), results)
+        return search_results, query_vec
+
+
 class ElasticDocStore(DocStore):
     """DocStore variant for an Elasticsearch backend.
 
@@ -162,7 +195,7 @@ class ElasticDocStore(DocStore):
             min_score: Minimum relevancy score required to be included in results
             ids: 
             body: Elasticsearch parameters to be used in search -- default made if none provided
-        
+
         Returns:
             Tuple with the SearchResults object and the vectorized query
         """

@@ -11,7 +11,7 @@ def get_sentences(content):
 
     Args:
         content: String of document contents
-    
+
     Returns:
         list of strings, the separate sentences of <content>
     """
@@ -25,7 +25,7 @@ def chunk_document(document: ChunkedDocument):
 
     Args:
         document: Document to be chunked 
-    
+
     Returns:
         Chunks to be assigned to <document>
     """
@@ -68,9 +68,9 @@ def process_document(document: Document, model: SentenceTransformer):
 
 
 def calc_doc_score(max_score: float, doc_score: float, chunk_scores: Tuple[str, float], top_chunks: int = 3):
-# def calc_doc_score(doc_score: float, chunk_scores: Tuple[str, float], top_chunks: int = 3):
+    # def calc_doc_score(doc_score: float, chunk_scores: Tuple[str, float], top_chunks: int = 3):
     """Calculates the overall score of a chunked document
-    
+
     Args:
         max_score: The maximum score returned by the search, for normalization
         doc_score: The base relevancy score from Elasticsearch
@@ -80,7 +80,7 @@ def calc_doc_score(max_score: float, doc_score: float, chunk_scores: Tuple[str, 
     Returns:
         The final weighted score for the document
     """
-    
+
     doc_scores = []
 
     norm_doc_score = doc_score / max_score
@@ -101,11 +101,11 @@ def calc_chunk_scores(chunks: List[str], chunk_vectors: List[List[float]], query
         chunks: List of sentence chunks on the desired document
         chunk_vectors: List of vectors for each chunk in the document
         query_vec: Vectorized query string
-    
+
     Returns:
         Sorted list of chunks, with the highest first.
     """
-    
+
     distances = cdist(
         [query_vec], chunk_vectors, "cosine")[0]
     scores = [1.0 - d for d in distances]
@@ -119,7 +119,7 @@ def calc_chunk_scores(chunks: List[str], chunk_vectors: List[List[float]], query
 
 def gen_preview_from_chunks(chunks: List[str], preview_length: int):
     """Generates a preview string for a document
-    
+
     Args:
         chunks: List of strings, the chunks of the document
         preview_length: Number of characters in the preview
@@ -144,7 +144,8 @@ def gen_preview_from_chunks(chunks: List[str], preview_length: int):
     return preview
 
 
-def process_results(search_results, query_vec, doc_class, preview_length: int):
+def process_results(search_results, query_vec, doc_class, preview_length: int,
+                    max_results: int, min_score: float):
     """Calculates final scores for returned search results
 
     Args:
@@ -185,7 +186,12 @@ def process_results(search_results, query_vec, doc_class, preview_length: int):
                 [document.content], preview_length)
             result.preview = preview
 
+    # Order by decreasing score, up to max_results
     search_results.results = sorted(
-        search_results.results, key=lambda r: r.score, reverse=True)
+        search_results.results, key=lambda r: r.score, reverse=True)[:max_results]
+
+    # Remove documents with score < min_score
+    search_results.results = [
+        r for r in search_results.results if r.score >= min_score]
 
     search_results.max_score = max_score

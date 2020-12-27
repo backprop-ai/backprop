@@ -63,7 +63,7 @@ class ChunkedDocument(Document):
         TypeError: If chunk_level is not an int, 
             chunks is not a list of strings, or 
             chunk_vectors is not a list of vectors
-        ValueError: If chunk_level is <= 1
+        ValueError: If chunk_level is < 1
     """
 
     def __init__(self, *args, chunking_level: int = 5, chunks: List[str] = None,

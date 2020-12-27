@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Tuple
 from sentence_transformers import SentenceTransformer
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 
-from .search import DocStore, SearchResults, Document
+from .search import DocStore, SearchResults, Document, InMemoryDocStore
 from .utils import process_document, process_results
 from .models import qa, summarise, emotion, zero_shot
 
@@ -17,18 +17,16 @@ class Kiri:
         process_doc_func: Function to be used when vectorizing updloaded documents
         process_results_func: Function to be used for calculating final scores of results
 
-    Raises:
-        ValueError: If a DocStore is not provided
     """
 
-    def __init__(self, store: DocStore, vectorize_model: str = None,
+    def __init__(self, store: DocStore = None, vectorize_model: str = None,
                  qa_model: str = None,
                  process_doc_func: Callable[[
                      Document, SentenceTransformer], List[float]] = None,
                  process_results_func: Callable[[SearchResults, SentenceTransformer], None] = None):
 
         if store is None:
-            raise ValueError("a DocStore implementation must be provided")
+            store = InMemoryDocStore()
 
         if vectorize_model is None:
             # Use default vectorization model
@@ -74,7 +72,8 @@ class Kiri:
                                                        max_results=max_results, min_score=min_score,
                                                        ids=ids, body=body)
         self._process_results_func(
-            search_results, query_vec, self._store._doc_class, preview_length)
+            search_results, query_vec, self._store._doc_class,
+            preview_length, max_results, min_score)
         return search_results
 
     def qa(self, question: str, context: str = None,
