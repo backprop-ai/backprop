@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore
-from .utils import process_document, process_results
+from .utils import process_documents, process_results
 from .models import qa, summarise, emotion, zero_shot
 
 
@@ -22,15 +22,15 @@ class Kiri:
     def __init__(self, store: DocStore = None, vectorise_model: str = None,
                  qa_model: str = None,
                  process_doc_func: Callable[[
-                     Document, SentenceTransformer], List[float]] = None,
-                 process_results_func: Callable[[SearchResults, SentenceTransformer], None] = None):
+                     Document, str], List[float]] = None,
+                 process_results_func: Callable[[SearchResults, str], None] = None):
 
         if store is None:
             store = InMemoryDocStore()
 
         if process_doc_func is None:
             # Use default vectoriser
-            process_doc_func = process_document
+            process_doc_func = process_documents
 
         if process_results_func is None:
             process_results_func = process_results

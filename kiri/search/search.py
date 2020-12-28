@@ -1,11 +1,11 @@
+import time
+from ..models import vectorise
+from .documents import Document, ElasticDocument
 from elasticsearch import Elasticsearch, helpers
 from typing import Dict, List
 import shortuuid
-from ..utils import elastic_to_search_results
-from .documents import Document, ElasticDocument
-from ..models import vectorise
-
-import time
+from ..utils import elastic_to_search_results, check_duplicate_documents, \
+    check_document_types, batch_items
 
 
 class SearchResult:
@@ -90,12 +90,17 @@ class InMemoryDocStore(DocStore):
 
     def upload(self, documents: List[Document], vectorise_func,
                vectorise_model) -> None:
-        for document in documents:
-            # Calculate missing vectors
-            if document.vector is None:
-                vectorise_func(document, vectorise_model)
-                # Add document to memory
-                self.documents.append(document)
+
+        # Check ID uniqueness
+        check_duplicate_documents(documents)
+        # Check type consistency
+        check_document_types(documents)
+        # Batching
+        batches = batch_items(documents)
+
+        for batch in batches:
+            vectorise_func(batch, vectorise_model)
+            self.documents += batch
 
     def search(self, query, vectorise_model, max_results=10, min_score=0.0,
                ids=None, body=None):
@@ -159,30 +164,34 @@ class ElasticDocStore(DocStore):
         if not index:
             index = self._index
 
-        # TODO: Check ID uniqueness
+        # Check ID uniqueness
+        check_duplicate_documents(documents)
+        # Check type consistency
+        check_document_types(documents)
+        # Batching
+        batches = batch_items(documents)
 
-        # TODO: Batching
+        for batch in batches:
+            payload = []
+            # Calculate vectors
+            vectorise_func(batch, vectorise_model)
 
-        payload = []
-        for document in documents:
-            # Calculate missing vectors
-            if document.vector is None:
-                vectorise_func(document, vectorise_model)
+            for document in batch:
+                # JSON representation of document
+                doc_json = document.to_elastic()
 
-            # JSON representation of document
-            doc_json = document.to_elastic()
+                # Add correct index
+                doc_json["_index"] = index
 
-            # Add correct index
-            doc_json["_index"] = index
+                # Rename id key
+                doc_json["_id"] = doc_json["id"]
+                del doc_json["id"]
 
-            # Rename id key
-            doc_json["_id"] = doc_json["id"]
-            del doc_json["id"]
+                payload.append(doc_json)
 
-            payload.append(doc_json)
+                # Bulk upload to elasticsearch
+                helpers.bulk(self._client, payload)
 
-        # Bulk upload to elasticsearch
-        helpers.bulk(self._client, payload)
         # Update index
         self._client.indices.refresh(index=self._index)
 
