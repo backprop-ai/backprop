@@ -6,6 +6,17 @@ model = None
 tokenizer = None
 
 
+def calculate_probability(input_text, label):
+    hypothesis = f"This example is {label}."
+    features = tokenizer.encode(input_text, hypothesis, return_tensors="pt",
+                                truncation_strategy="only_first")
+    logits = model(features)[0]
+    entail_contradiction_logits = logits[:, [0, 2]]
+    probs = entail_contradiction_logits.softmax(dim=1)
+    prob_label_is_true = probs[:, 1]
+    return prob_label_is_true.item()
+
+
 def zero_shot(input_text, labels: List[str], model_name: str = None,
               tokenizer_name: str = None, local: bool = True):
     # Refer to global variables
@@ -35,18 +46,25 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
             else:
                 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
-        results = {}
-        for label in labels:
-            hypothesis = f"This example is {label}."
-            features = tokenizer.encode(input_text, hypothesis, return_tensors="pt",
-                                        truncation_strategy="only_first")
-            logits = model(features)[0]
-            entail_contradiction_logits = logits[:, [0, 2]]
-            probs = entail_contradiction_logits.softmax(dim=1)
-            prob_label_is_true = probs[:, 1]
-            results[label] = prob_label_is_true.item()
+        if isinstance(input_text, list):
+            # Must have a consistent amount of examples
+            assert(len(input_text) == len(labels))
+            # TODO: implement proper batching
+            results_list = []
+            for text, labels in zip(input_text, labels):
+                results = {}
+                for label in labels:
+                    results[label] = calculate_probability(text, label)
 
-        return results
+                results_list.append(results)
+
+            return results_list
+        else:
+            results = {}
+            for label in labels:
+                results[label] = calculate_probability(input_text, label)
+
+            return results
 
     else:
         raise ValueError("Non local inference is not implemented!")

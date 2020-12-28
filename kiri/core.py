@@ -90,34 +90,34 @@ class Kiri:
             return list(zip(answers, search_results.results[:3]))
 
     def summarise(self, input_text):
-        if type(input_text) != str:
-            raise TypeError("input_text must be a string")
+        # if type(input_text) != str:
+        #     raise TypeError("input_text must be a string")
 
-        if input_text == "":
-            raise ValueError("input_text must not be an empty string")
+        # if input_text == "":
+        #     raise ValueError("input_text must not be an empty string")
 
         return summarise(input_text)
 
     def emotion(self, input_text):
-        if type(input_text) != str:
-            raise TypeError("input_text must be a string")
+        # if type(input_text) != str:
+        #     raise TypeError("input_text must be a string")
 
-        if input_text == "":
-            raise ValueError("input_text must not be an empty string")
+        # if input_text == "":
+        #     raise ValueError("input_text must not be an empty string")
 
         return emotion(input_text)
 
     def classify(self, input_text, labels: List[str]):
-        if type(input_text) != str:
-            raise TypeError("input_text must be a string")
+        # if type(input_text) != str:
+        #     raise TypeError("input_text must be a string")
 
-        if input_text == "":
-            raise ValueError("input_text must not be an empty string")
+        # if input_text == "":
+        #     raise ValueError("input_text must not be an empty string")
 
-        if not isinstance(labels, list):
-            raise TypeError("labels must be a list of strings")
+        # if not isinstance(labels, list):
+        #     raise TypeError("labels must be a list of strings")
 
-        if len(labels) == 0:
-            raise ValueError("labels must contain at least one label")
+        # if len(labels) == 0:
+        #     raise ValueError("labels must contain at least one label")
 
         return zero_shot(input_text, labels)
