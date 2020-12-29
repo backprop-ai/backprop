@@ -1,5 +1,5 @@
 import shortuuid
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from ..models import summarise, zero_shot, qa, emotion
 
 
@@ -47,10 +47,9 @@ class Document:
         # TODO: Handle long content
         return zero_shot(self.content, labels)
 
-    def qa(self, question):
+    def qa(self, question, prev_qa: List[Tuple[str, str]] = []):
         # TODO: Handle long content
-        # TODO: Support previous qa
-        return qa(question, self.content)
+        return qa(question, self.content, prev_qa=prev_qa)
 
     def emotion(self):
         # TODO: Handle long content

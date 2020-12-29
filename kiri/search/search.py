@@ -223,27 +223,29 @@ class ElasticDocStore(DocStore):
         if body is None:
             q = {
                 "bool": {
-                    "must": [
-                        {
-                            "terms": {
-                                "_id": ids
-                            }
-                        },
-                        {
-                            "bool": {
-                                "should": [
-                                    {
-                                        "match": {
-                                            "content": query
-                                        }
-                                    },
-                                    {"match_all": {}}
-                                ]
-                            }
-                        }
+                    "should": [
+                        {"match": {
+                            "content": query
+                        }},
+                        {"match_all": {}}
+
                     ]
                 }
             }
+
+            if ids:
+                q = {
+                    "bool": {
+                        "must": [
+                            {
+                                "terms": {
+                                    "_id": ids
+                                }
+                            },
+                            q
+                        ]
+                    }
+                }
 
             body = {
                 "min_score": min_score + score_modifier,

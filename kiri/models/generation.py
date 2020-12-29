@@ -35,7 +35,7 @@ def generate(input_text, model_name: str = None, tokenizer_name: str = None,
                 tokenizer = T5Tokenizer.from_pretrained(tokenizer_name)
 
         is_list = False
-        if not isinstance(input_text, list):
+        if isinstance(input_text, list):
             is_list = True
 
         features = tokenizer(input_text, padding=True, return_tensors='pt')
