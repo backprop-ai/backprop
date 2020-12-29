@@ -25,12 +25,16 @@ class SearchResult:
     def to_json(self, exclude_vectors=True):
         """Gets JSON form of search result
 
+        Attributes:
+            exclude_vectors: Exclude content and chunk vectors from the json output
+
         Returns:
             __dict__ attribute of SearchResult object
         """
-        # TODO: implement excluding vectors
         json_repr = vars(self)
-        json_repr["document"] = vars(json_repr["document"])
+        json_repr["document"] = json_repr["document"].to_json(
+            exclude_vectors=exclude_vectors)
+
         return json_repr
 
 
@@ -51,11 +55,13 @@ class SearchResults:
     def to_json(self, exclude_vectors=True):
         """Gets JSON form of returned results
 
+        Attributes:
+            exclude_vectors: Exclude content and chunk vectors from the json output
+
         Returns:
             __dict__ attribute of SearchResults object
 
         """
-        # TODO: implement excluding vectors
         json_repr = vars(self)
         json_repr["results"] = [
             r.to_json(exclude_vectors=exclude_vectors) for r in json_repr["results"]]
@@ -195,7 +201,7 @@ class ElasticDocStore(DocStore):
         # Update index
         self._client.indices.refresh(index=self._index)
 
-    def search(self, query, vectorise_model, max_results=10, min_score=0.0, ids=None, body=None):
+    def search(self, query, vectorise_model, max_results=10, min_score=0.0, ids: List[str] = [], body=None):
         """Search documents from Elasticsearch
 
         Args:
@@ -203,7 +209,7 @@ class ElasticDocStore(DocStore):
             vectorise_model: NLP model used to vectorise the query -- should match one used on docs
             max_results: Maximum number of search results to return
             min_score: Minimum relevancy score required to be included in results
-            ids: 
+            ids: Filter search results by ids
             body: Elasticsearch parameters to be used in search -- default made if none provided
 
         Returns:
@@ -215,23 +221,36 @@ class ElasticDocStore(DocStore):
         score_modifier = 1.0
 
         if body is None:
+            q = {
+                "bool": {
+                    "must": [
+                        {
+                            "terms": {
+                                "_id": ids
+                            }
+                        },
+                        {
+                            "bool": {
+                                "should": [
+                                    {
+                                        "match": {
+                                            "content": query
+                                        }
+                                    },
+                                    {"match_all": {}}
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+
             body = {
                 "min_score": min_score + score_modifier,
                 "size": max_results,
                 "query": {
                     "function_score": {
-                        "query": {
-                            "bool": {
-                                "should": [
-                                    {"match": {
-                                        "content": query
-                                    }},
-                                    {"match_all": {}}
-
-                                ]
-                            }
-
-                        },
+                        "query": q,
                         "script_score": {
                             "script": {
                                 "source": f"(cosineSimilarity(params.query_vector, 'vector') + {score_modifier}) * (_score + 1)",

@@ -56,12 +56,15 @@ class Document:
         # TODO: Handle long content
         return emotion(self.content)
 
-    def to_json(self):
+    def to_json(self, exclude_vectors=True):
         """Gets JSON form of the document.
         Returns:
             __dict__ of the document object
             """
-        return vars(self)
+        json_repr = vars(self)
+        if exclude_vectors:
+            del json_repr["vector"]
+        return json_repr
 
 
 class ChunkedDocument(Document):
@@ -99,12 +102,16 @@ class ChunkedDocument(Document):
         self.chunks = chunks
         self.chunk_vectors = chunk_vectors
 
-    def to_json(self):
+    def to_json(self, exclude_vectors=True):
         """Gets JSON form of the document
         Returns:
             __dict__ attr of the document object
             """
-        return vars(self)
+        json_repr = vars(self)
+        if exclude_vectors:
+            del json_repr["vector"]
+            del json_repr["chunk_vectors"]
+        return json_repr
 
 
 class ElasticDocument(Document):

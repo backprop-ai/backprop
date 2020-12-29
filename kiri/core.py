@@ -52,7 +52,7 @@ class Kiri:
                                   self._vectorise_model)
 
     def search(self, query: str, max_results=10, min_score=0.0,
-               preview_length=100, ids=None, body=None) -> SearchResults:
+               preview_length=100, ids: List[str] = [], body=None) -> SearchResults:
         """Search documents from document store
 
         Args:
