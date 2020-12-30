@@ -60,7 +60,7 @@ class Kiri:
             max_results: Maximum amount of documents to be returned from search
             min_score: Minimum score required to be included in results
             preview_length: Number of characters in the preview/metatext of results
-            ids: 
+            ids: List of ids to search from
             body: Elasticsearch request body to be passed to the backend
 
         """
@@ -73,13 +73,12 @@ class Kiri:
         return search_results
 
     def qa(self, question: str, context: str = None,
-           prev_qa: List[Tuple[str, str]] = [], context_doc: Document = None):
+           prev_qa: List[Tuple[str, str]] = []):
         """Perform QA, either on docstore or on provided context.
 
         """
-        if context_doc or context:
-            c_string = context if context else context_doc.content
-            return qa(question, c_string, prev_qa=prev_qa)
+        if context:
+            return qa(question, context, prev_qa=prev_qa)
         else:
             search_results = self.search(question)
             answers = []

@@ -9,7 +9,7 @@ tokenizer = None
 def calculate_probability(input_text, label):
     hypothesis = f"This example is {label}."
     features = tokenizer.encode(input_text, hypothesis, return_tensors="pt",
-                                truncation_strategy="only_first")
+                                truncation=True)
     logits = model(features)[0]
     entail_contradiction_logits = logits[:, [0, 2]]
     probs = entail_contradiction_logits.softmax(dim=1)
