@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kiri",
-    version="0.1.4",
+    version="0.2.0",
     author="Kiri OÜ",
     author_email="hello@kiri.ai",
     description="Kiri Natural Language Engine",
@@ -14,6 +14,7 @@ setuptools.setup(
     url="https://github.com/kiri-ai/kiri",
     packages=setuptools.find_packages(),
     install_requires=[
+        "transformers>=4.0.0",
         "sentence_transformers",
         "nltk",
         "scipy",
