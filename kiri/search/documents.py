@@ -8,9 +8,9 @@ class Document:
 
     Attributes:
         content: Text content of the document
-        id: Unique ID for the document. Generated if not provided
-        attributes: Dictionary of user-defined attributes
-        vector: List of floats for doc vector representation
+        id (optional): Unique ID for the document. Generated if not provided
+        attributes (optional): Dictionary of user-defined attributes
+        vector (optional): List of floats for doc vector representation
 
     Raises:
         TypeError: If content or id is not a string
@@ -40,26 +40,35 @@ class Document:
         self.vector = vector
 
     def summarise(self):
+        """Summarises document content"""
         # TODO: Handle long content
         return summarise(self.content)
 
     def classify(self, labels: List[str]):
+        """Classifies document content according to provided labels"""
         # TODO: Handle long content
         return zero_shot(self.content, labels)
 
     def qa(self, question, prev_qa: List[Tuple[str, str]] = []):
+        """Performs qa on the document content"""
         # TODO: Handle long content
         return qa(question, self.content, prev_qa=prev_qa)
 
     def emotion(self):
+        """Detects emotion from document content"""
         # TODO: Handle long content
         return emotion(self.content)
 
     def to_json(self, exclude_vectors=True):
         """Gets JSON form of the document.
+
+        Args:
+            exclude_vectors (optional): exclude vectors from json, defaults to True
+
         Returns:
             __dict__ of the document object
-            """
+
+        """
         json_repr = vars(self)
         if exclude_vectors:
             del json_repr["vector"]
@@ -71,15 +80,17 @@ class ChunkedDocument(Document):
 
     Attributes:
         args: Document superclass arguments
-        chunking_level: 
-        chunks: List of pre-chunked strings from the document
-        chunk_vectors: List of vectors for each chunk of the document
+        kwargs: Document superclass keyword arguments
+        chunking_level (optional): Number of sentences in one chunk, defaults to 5
+        chunks (optional): List of pre-chunked strings from the document
+        chunk_vectors (optional): List of vectors for each chunk of the document
 
     Raises:
         TypeError: If chunk_level is not an int, 
             chunks is not a list of strings, or 
             chunk_vectors is not a list of vectors
         ValueError: If chunk_level is < 1
+
     """
 
     def __init__(self, *args, chunking_level: int = 5, chunks: List[str] = None,

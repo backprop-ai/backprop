@@ -134,7 +134,7 @@ class Kiri:
         return summarise(input_text)
 
     def emotion(self, input_text):
-        """Perform summarisation on input text.
+        """Perform emotion detection on input text.
 
         Args:
             input_text: string or list of strings to detect emotion from

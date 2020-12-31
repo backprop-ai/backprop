@@ -88,6 +88,9 @@ class DocStore:
 class InMemoryDocStore(DocStore):
     """DocStore variant for in memory document storage.
     Meant to be used for development and testing.
+
+    Attributes:
+        doc_class (optional): Document class used for the store, defaults to Document 
     """
 
     def __init__(self, doc_class: Document = Document):
@@ -96,6 +99,13 @@ class InMemoryDocStore(DocStore):
 
     def upload(self, documents: List[Document], vectorise_func,
                vectorise_model) -> None:
+        """Process and upload documents to memory
+
+        Args:
+            documents: List of documents
+            vectorise_func: Function used for vectorisation
+            vectorise_model: SentenceTransformer model used for vectorisation
+        """
 
         # Check ID uniqueness
         check_duplicate_documents(documents)
@@ -164,7 +174,7 @@ class ElasticDocStore(DocStore):
         Args:
             documents: List of documents to be uploaded to backend
             vectorise_func: Function used to vectorise document contents
-            vectorise_model: Sentence transformer model name used for vectorisation
+            vectorise_model: SentenceTransformer model name used for vectorisation
             index: Index (db) to be used -- uses initialized default if none provided
         """
         if not index:
