@@ -13,14 +13,11 @@ class Kiri:
     Attributes:
         store: DocStore object to be used as the engine backend
         vectorise_model: Name of the SentenceTransformer model to be used in operations
-        qa_model: Name of HuggingFace model to be used for Question/Answer
         process_doc_func: Function to be used when vectorising uploaded documents
         process_results_func: Function to be used for calculating final scores of results
-
     """
 
     def __init__(self, store: DocStore = None, vectorise_model: str = None,
-                 qa_model: str = None,
                  process_doc_func: Callable[[
                      Document, str], List[float]] = None,
                  process_results_func: Callable[[SearchResults, str], None] = None):
@@ -41,10 +38,17 @@ class Kiri:
         self._vectorise_model = vectorise_model
 
     def upload(self, documents: List[Document]) -> None:
-        """Uploads documents to store
+        """Processes and uploads documents to store
 
         Args:
             documents: List of documents for upload
+
+        Returns:
+            None
+
+        Example:
+            >>> kiri.upload([Document("First document"), Document("Second document")])
+            None
 
         """
 
@@ -63,6 +67,13 @@ class Kiri:
             ids: List of ids to search from
             body: Elasticsearch request body to be passed to the backend
 
+        Returns:
+            SearchResults object
+
+        Example:
+            >>> kiri.search("RTX 3090")
+            SearchResults object
+
         """
         search_results, query_vec = self._store.search(query, self._vectorise_model,
                                                        max_results=max_results, min_score=min_score,
@@ -76,6 +87,18 @@ class Kiri:
            prev_qa: List[Tuple[str, str]] = []):
         """Perform QA, either on docstore or on provided context.
 
+        Args:
+            question: Question (string or list of strings if using own context) for qa model.
+            context (optional): Context (string or list of strings) to ask question from.
+            prev_qa (optional): List of previous question, answer tuples or list of prev_qa.
+
+        Returns:
+            if context is given: Answer string or list of answer strings
+            if no context: List of three answer and SearchResult object pairs.
+
+        Example:
+            >>> kiri.qa("Where does Sally live?", "Sally lives in London.")
+            "London"
         """
         if context:
             return qa(question, context, prev_qa=prev_qa)
@@ -89,6 +112,19 @@ class Kiri:
             return list(zip(answers, search_results.results[:3]))
 
     def summarise(self, input_text):
+        """Perform summarisation on input text.
+
+        Args:
+            input_text: string or list of strings to be summarised - keep each string below 500 words.
+
+        Returns:
+            Summary string or list of summary strings.
+
+        Example:
+            >>> kiri.summarise("This is a long document that contains plenty of words")
+            "short summary of document"
+
+        """
         # if type(input_text) != str:
         #     raise TypeError("input_text must be a string")
 
@@ -98,6 +134,25 @@ class Kiri:
         return summarise(input_text)
 
     def emotion(self, input_text):
+        """Perform summarisation on input text.
+
+        Args:
+            input_text: string or list of strings to detect emotion from
+                keep this under a few sentences for best performance.
+
+        Returns:
+            Emotion string or list of emotion strings.
+                Each emotion string contains comma and space separated emotions.
+            Emotions are from: admiration, approval, annoyance, gratitude, disapproval, amusement,
+                curiosity, love, optimism, disappointment, joy, realization, anger, sadness, confusion,
+                caring, excitement, surprise, disgust, desire, fear, remorse, embarrassment, nervousness,
+                pride, relief, grief
+
+        Example:
+            >>> kiri.emotion("I really like what you did there")
+            "approval"
+
+        """
         # if type(input_text) != str:
         #     raise TypeError("input_text must be a string")
 
@@ -107,6 +162,21 @@ class Kiri:
         return emotion(input_text)
 
     def classify(self, input_text, labels: List[str]):
+        """Classify input text according to given labels.
+
+
+        Args:
+            input_text: string or list of strings to classify
+            labels: list of strings or list of labels
+
+        Returns:
+            dict where each key is a label and value is probability between 0 and 1, or list of dicts.
+
+        Example:
+            >>> kiri.classify("I am mad because my product broke.", ["product issue", "nature"])
+            {"product issue": 0.98, "nature": 0.05}
+
+        """
         # if type(input_text) != str:
         #     raise TypeError("input_text must be a string")
 
