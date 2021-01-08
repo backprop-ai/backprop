@@ -1,5 +1,5 @@
 from kiri import Kiri, ChunkedDocument, InMemoryDocStore
-from big_n_docs import big_n_docs
+from docs.big_n import big_n_docs
 
 """
 This example shows the use of Kiri's Q&A for a simple chatbot-esque loop.

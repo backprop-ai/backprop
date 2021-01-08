@@ -1,5 +1,5 @@
-from kiri import Kiri, Document, InMemoryDocStore
-from emails_docs import emails
+from kiri import Kiri
+from docs.emails import emails
 
 """
 Here's example functionality for a customer-service email system. 
@@ -24,13 +24,15 @@ kiri.classify("This is just to get rid of the example message before printing", 
 print("Inbox")
 print("==================")
 for email in emails:
-    classification = kiri.classify(email, labels)
-    label = max(classification, key=classification.get)
+    classification_results = kiri.classify(email, labels)
+    label = max(classification, key=classification_results.get)
+    
     emote = kiri.emotion(email)
-    high_priority = any([f in emote for f in negative_sentiments])
+    high_priority = any([e in emote for e in negative_sentiments])
+    
     print(f"Category: {label}")
     if high_priority:
-        print("PRIORITY")
+        print("\033[91mPRIORITY\033[0m")
     print(f"{email[:85]}...")
     print("------------------")
 
