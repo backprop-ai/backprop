@@ -19,7 +19,7 @@ jobs:
           python-version: '3.7'
       - name: Regen Sphinx .rst files
         run: |
-          pip install -r requirements.txt
+          pip install sphinx
           cd ./docs
           sphinx-apidoc -f -o ./source ../kiri
       - name: Commit files
