@@ -9,14 +9,13 @@ With Kiri, no experience in AI is needed to solve valuable real world problems u
 - Semantic search (for ecommerce, documentation, etc.)
 - Conversational question answering (for FAQ chatbots, text analysis, etc.)
 - Zero-shot classification (for email sorting, intent detection, etc.)
-- Summarisation (tldr-s for long documents)
+- Summarisation (TLDRs for long documents)
 - Emotion detection (for customer satisfaction, text analysis, etc.)
 
 Run everything locally or take your code to production using our free, optimised inference [API](https://kiri.ai).
 
-|                                        |                                           |
-| -------------------------------------- | ----------------------------------------- |
 | ⚡ [Getting started](#getting-started) | Installation, few minute introduction     |
+| -------------------------------------- | ----------------------------------------- |
 | 💡 [Examples](#examples)               | Sample problems solved using Kiri         |
 | 📙 [Docs](#documentation)              | In-depth documentation for advanced usage |
 
