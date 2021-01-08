@@ -32,7 +32,7 @@ print(f"Query: {query}")
 documents = []
 kiri.upload(documents)
 
-results = kiri.search("Hello there", max_results=50, min_score=0.01)
+results = kiri.search(query, max_results=50, min_score=0.01)
 
 print("Total results:", results.total_results)
 for result in results.results:

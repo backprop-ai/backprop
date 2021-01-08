@@ -26,6 +26,7 @@ emails = ["Hi, how long will it take for my order to arrive? I've been waiting f
           "I'm trying to order a few items for an upcoming birthday. For some reason, I can't checkout. I can load the cart just fine, but the checkout button clears everything I've added, and I can't continue the purchase."]
 
 
+# Print example, just to display local results
 print("Inbox")
 print("==================")
 for email in emails:
