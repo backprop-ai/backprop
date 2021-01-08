@@ -42,28 +42,36 @@ def test_classify():
 
 
 def test_doc_qa():
+    kiri = Kiri(local=True)
     c = "I am a document."
     doc = Document(c)
+    kiri.upload([doc])
     out = doc.qa("What are you?")
     assert type(out) == str
 
 
 def test_doc_summarise():
+    kiri = Kiri(local=True)
     c = "I am a document."
     doc = Document(c)
+    kiri.upload([doc])
     out = doc.summarise()
     assert type(out) == str
 
 
 def test_doc_summarise():
+    kiri = Kiri(local=True)
     c = "I am a document."
     doc = Document(c)
+    kiri.upload([doc])
     out = doc.emotion()
     assert type(out) == str
 
 
 def test_doc_summarise():
+    kiri = Kiri(local=True)
     c = "I am a document."
     doc = Document(c)
+    kiri.upload([doc])
     out = doc.classify(["random"])
     assert isinstance(out, dict)
