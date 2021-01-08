@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   kiri.goodtest
    kiri.models
    kiri.search
    kiri.utils
