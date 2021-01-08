@@ -1,11 +1,11 @@
+import time
+from ..models import vectorise
+from .documents import Document, ElasticDocument, ChunkedDocument
 from elasticsearch import Elasticsearch, helpers
 from typing import Dict, List
 import shortuuid
-from ..utils import elastic_to_search_results
-from .documents import Document, ElasticDocument
-from ..models import vectorise
-
-import time
+from ..utils import elastic_to_search_results, check_duplicate_documents, \
+    check_document_types, batch_items
 
 
 class SearchResult:
@@ -25,12 +25,16 @@ class SearchResult:
     def to_json(self, exclude_vectors=True):
         """Gets JSON form of search result
 
+        Attributes:
+            exclude_vectors: Exclude content and chunk vectors from the json output
+
         Returns:
             __dict__ attribute of SearchResult object
         """
-        # TODO: implement excluding vectors
         json_repr = vars(self)
-        json_repr["document"] = vars(json_repr["document"])
+        json_repr["document"] = json_repr["document"].to_json(
+            exclude_vectors=exclude_vectors)
+
         return json_repr
 
 
@@ -47,15 +51,18 @@ class SearchResults:
         self.max_score = max_score
         self.total_results = total_results
         self.results = results
+        self.top_chunks = []
 
     def to_json(self, exclude_vectors=True):
         """Gets JSON form of returned results
+
+        Attributes:
+            exclude_vectors: Exclude content and chunk vectors from the json output
 
         Returns:
             __dict__ attribute of SearchResults object
 
         """
-        # TODO: implement excluding vectors
         json_repr = vars(self)
         json_repr["results"] = [
             r.to_json(exclude_vectors=exclude_vectors) for r in json_repr["results"]]
@@ -82,6 +89,9 @@ class DocStore:
 class InMemoryDocStore(DocStore):
     """DocStore variant for in memory document storage.
     Meant to be used for development and testing.
+
+    Attributes:
+        doc_class (optional): Document class used for the store, defaults to Document 
     """
 
     def __init__(self, doc_class: Document = Document):
@@ -90,12 +100,28 @@ class InMemoryDocStore(DocStore):
 
     def upload(self, documents: List[Document], vectorise_func,
                vectorise_model) -> None:
-        for document in documents:
-            # Calculate missing vectors
-            if document.vector is None:
-                vectorise_func(document, vectorise_model)
-                # Add document to memory
-                self.documents.append(document)
+        """Process and upload documents to memory
+
+        Args:
+            documents: List of documents
+            vectorise_func: Function used for vectorisation
+            vectorise_model: SentenceTransformer model used for vectorisation
+        """
+
+        # Check ID uniqueness
+        check_duplicate_documents(documents)
+        # Check type consistency
+        check_document_types(documents)
+        # Batching
+        batches = batch_items(documents)
+
+        # Update document class conveniently
+        if issubclass(type(documents[0]), ChunkedDocument):
+            self._doc_class = ChunkedDocument
+
+        for batch in batches:
+            vectorise_func(batch, vectorise_model)
+            self.documents += batch
 
     def search(self, query, vectorise_model, max_results=10, min_score=0.0,
                ids=None, body=None):
@@ -153,40 +179,44 @@ class ElasticDocStore(DocStore):
         Args:
             documents: List of documents to be uploaded to backend
             vectorise_func: Function used to vectorise document contents
-            vectorise_model: Sentence transformer model name used for vectorisation
+            vectorise_model: SentenceTransformer model name used for vectorisation
             index: Index (db) to be used -- uses initialized default if none provided
         """
         if not index:
             index = self._index
 
-        # TODO: Check ID uniqueness
+        # Check ID uniqueness
+        check_duplicate_documents(documents)
+        # Check type consistency
+        check_document_types(documents)
+        # Batching
+        batches = batch_items(documents)
 
-        # TODO: Batching
+        for batch in batches:
+            payload = []
+            # Calculate vectors
+            vectorise_func(batch, vectorise_model)
 
-        payload = []
-        for document in documents:
-            # Calculate missing vectors
-            if document.vector is None:
-                vectorise_func(document, vectorise_model)
+            for document in batch:
+                # JSON representation of document
+                doc_json = document.to_elastic()
 
-            # JSON representation of document
-            doc_json = document.to_elastic()
+                # Add correct index
+                doc_json["_index"] = index
 
-            # Add correct index
-            doc_json["_index"] = index
+                # Rename id key
+                doc_json["_id"] = doc_json["id"]
+                del doc_json["id"]
 
-            # Rename id key
-            doc_json["_id"] = doc_json["id"]
-            del doc_json["id"]
+                payload.append(doc_json)
 
-            payload.append(doc_json)
+                # Bulk upload to elasticsearch
+                helpers.bulk(self._client, payload)
 
-        # Bulk upload to elasticsearch
-        helpers.bulk(self._client, payload)
         # Update index
         self._client.indices.refresh(index=self._index)
 
-    def search(self, query, vectorise_model, max_results=10, min_score=0.0, ids=None, body=None):
+    def search(self, query, vectorise_model, max_results=10, min_score=0.0, ids: List[str] = [], body=None):
         """Search documents from Elasticsearch
 
         Args:
@@ -194,7 +224,7 @@ class ElasticDocStore(DocStore):
             vectorise_model: NLP model used to vectorise the query -- should match one used on docs
             max_results: Maximum number of search results to return
             min_score: Minimum relevancy score required to be included in results
-            ids: 
+            ids: Filter search results by ids
             body: Elasticsearch parameters to be used in search -- default made if none provided
 
         Returns:
@@ -206,23 +236,38 @@ class ElasticDocStore(DocStore):
         score_modifier = 1.0
 
         if body is None:
+            q = {
+                "bool": {
+                    "should": [
+                        {"match": {
+                            "content": query
+                        }},
+                        {"match_all": {}}
+
+                    ]
+                }
+            }
+
+            if ids:
+                q = {
+                    "bool": {
+                        "must": [
+                            {
+                                "terms": {
+                                    "_id": ids
+                                }
+                            },
+                            q
+                        ]
+                    }
+                }
+
             body = {
                 "min_score": min_score + score_modifier,
                 "size": max_results,
                 "query": {
                     "function_score": {
-                        "query": {
-                            "bool": {
-                                "should": [
-                                    {"match": {
-                                        "content": query
-                                    }},
-                                    {"match_all": {}}
-
-                                ]
-                            }
-
-                        },
+                        "query": q,
                         "script_score": {
                             "script": {
                                 "source": f"(cosineSimilarity(params.query_vector, 'vector') + {score_modifier}) * (_score + 1)",

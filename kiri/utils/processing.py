@@ -1,10 +1,16 @@
 from sentence_transformers import SentenceTransformer
 from nltk import sent_tokenize
 from scipy.spatial.distance import cdist
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from ..search import Document, ChunkedDocument
 from ..models import vectorise
+
+
+def batch_items(items, batch_size=16):
+    batches = [items[i:i + batch_size]
+               for i in range(0, len(items), batch_size)]
+    return batches
 
 
 def get_sentences(content):
@@ -45,25 +51,35 @@ def chunk_document(document: ChunkedDocument):
     return chunks
 
 
-def process_document(document: Document, model_name: str):
+def process_documents(documents: Union[Document, List[Document]], model_name: str):
     """Processes document based on type
 
     Args:
-        document: Document to be processed
+        documents: Document or list of Documents to be processed
         model: SentenceTransformer model name used for processing
 
     Raises:
         ValueError: If the given document's type doesn't have a vectorisation function
     """
-    if isinstance(document, ChunkedDocument):
-        chunks = chunk_document(document)
-        chunk_vectors = vectorise(chunks, model_name=model_name)
-        document.chunks = chunks
-        document.chunk_vectors = chunk_vectors
-        document.vector = vectorise(document.content, model_name=model_name)
-    elif isinstance(document, Document):
-        document.vector = vectorise(document.content, model_name=model_name)
-    else:
+    # Example for instance verification
+    doc_example = documents[0]
+    if isinstance(doc_example, Document):
+        contents = [d.content for d in documents]
+        content_vectors = vectorise(contents, model_name=model_name)
+
+        # Set vectors for each document
+        for document, vector in zip(documents, content_vectors):
+            document.vector = vector
+
+    # TODO: Batching for document chunks
+    if isinstance(doc_example, ChunkedDocument):
+        for document in documents:
+            chunks = chunk_document(document)
+            chunk_vectors = vectorise(chunks, model_name=model_name)
+            document.chunks = chunks
+            document.chunk_vectors = chunk_vectors
+
+    if not isinstance(doc_example, Document) and not isinstance(doc_example, ChunkedDocument):
         raise ValueError(
             f"vectorisation of document of type {type(document)} is not implemented")
 
@@ -147,7 +163,7 @@ def gen_preview_from_chunks(chunks: List[str], preview_length: int):
 
 def process_results(search_results, query_vec, doc_class, preview_length: int,
                     max_results: int, min_score: float):
-    """Calculates final scores for returned search results
+    """Calculates final scores for returned search results, updates SearchResults
 
     Args:
         search_results: Kiri SearchResults object.
@@ -156,6 +172,7 @@ def process_results(search_results, query_vec, doc_class, preview_length: int,
         preview_length: Number of characters in the preview string
     """
     max_score = -1.0
+    all_chunks = []
 
     for result in search_results.results:
         document = result.document
@@ -171,6 +188,9 @@ def process_results(search_results, query_vec, doc_class, preview_length: int,
 
             # Chunks ordered by highest score
             top_chunks = [cs[0] for cs in chunk_scores]
+            # Keep track of all chunks
+            all_chunks += [{"chunk": cs[0], "score": cs[1],
+                            "search_result": result} for cs in chunk_scores]
             preview = gen_preview_from_chunks(top_chunks, preview_length)
             result.preview = preview
         elif issubclass(doc_class, Document):
@@ -190,6 +210,10 @@ def process_results(search_results, query_vec, doc_class, preview_length: int,
     # Order by decreasing score, up to max_results
     search_results.results = sorted(
         search_results.results, key=lambda r: r.score, reverse=True)[:max_results]
+
+    # Order chunks by decreasing score, up to max_results
+    search_results.top_chunks = sorted(
+        all_chunks, key=lambda c: c["score"], reverse=True)[:max_results]
 
     # Remove documents with score < min_score
     search_results.results = [

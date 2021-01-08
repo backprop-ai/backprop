@@ -34,10 +34,17 @@ def generate(input_text, model_name: str = None, tokenizer_name: str = None,
             else:
                 tokenizer = T5Tokenizer.from_pretrained(tokenizer_name)
 
-        features = tokenizer([input_text], return_tensors='pt')
+        is_list = False
+        if isinstance(input_text, list):
+            is_list = True
+
+        features = tokenizer(input_text, padding=True, return_tensors='pt')
         tokens = model.generate(input_ids=features['input_ids'],
                                 attention_mask=features['attention_mask'], max_length=128)
-        return tokenizer.decode(tokens[0], skip_special_tokens=True)
+        if is_list:
+            return [tokenizer.decode(tokens, skip_special_tokens=True) for tokens in tokens]
+        else:
+            return tokenizer.decode(tokens[0], skip_special_tokens=True)
 
     else:
         raise ValueError("Non local inference is not implemented!")
