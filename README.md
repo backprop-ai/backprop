@@ -1,6 +1,24 @@
 # Kiri Natural Language Engine
 
-![PyPI](https://img.shields.io/pypi/v/kiri) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kiri)[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
+![PyPI](https://img.shields.io/pypi/v/kiri) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kiri) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Kiri Natural Language Engine is a high level Python library that makes using state-of-the-art language models easy, accessible and scalable.
+
+With Kiri, no experience in AI is needed to solve valuable real world problems using:
+
+- Semantic search (for ecommerce, documentation, etc.)
+- Conversational question answering (for FAQ chatbots, text analysis, etc.)
+- Zero-shot classification (for email sorting, intent detection, etc.)
+- Summarisation (tldr-s for long documents)
+- Emotion detection (for customer satisfaction, text analysis, etc.)
+
+Run everything locally or take your code to production using our free, optimised inference [API](https://kiri.ai).
+
+|                                        |                                           |
+| -------------------------------------- | ----------------------------------------- |
+| ⚡ [Getting started](#getting-started) | Installation, few minute introduction     |
+| 💡 [Examples](#examples)               | Sample problems solved using Kiri         |
+| 📙 [Docs](#documentation)              | In-depth documentation for advanced usage |
 
 ## Getting started
 
@@ -12,40 +30,60 @@ Install Kiri via PyPi:
 pip install kiri
 ```
 
-For more information about the models used in this package, check out our [organization](https://huggingface.co/kiri-ai) page on huggingface.
-
-
-
-### Usage 
+### Basic usage
 
 ```python
-from kiri import Kiri, ElasticDocStore, ElasticChunkedDocument
+from kiri import Kiri, Document
 
-# Unvectorized documents
+# Unprocessed documents
 documents = [
-    ElasticDocument(content="This is amazing content"), 	      
-    ElasticDocument(content="This is some other interesting content")
+    Document("Look at examples to see awesome use cases!"),
+    Document("Check out the docs to see what's possible!")
 ]
 
-# Pass the url to the elastic server.
-elastic_url = "http://localhost:9200"
-doc_store = ElasticDocStore(elastic_url, doc_store=ElasticChunkedDocument)
+# Use our inference API
+kiri = Kiri(api_key="abc")
+# Or run locally
+kiri = Kiri(local=True)
 
-kiri = Kiri(doc_store)
+# Process documents
+kiri.upload(documents)
 
-elastic_docs = [ElasticChunkedDocument(doc["content"]) for doc in documents]
+# Start building!
+search_results = kiri.search("What are some cool apps that have been built?")
 
-# Upload documents to store
-kiri.upload(elastic_docs)
+print(search_results.to_json())
 
+# Prints
+{
+   "max_score": 0.3804888461635889,
+   "total_results": 2,
+   "results": [
+      {
+         "document": {
+            "id":"LzhtWcpV2eoMk8GJwaw7na",
+            "content":"Look at examples to see awesome use cases!"
+         },
+         "score": 0.3804888461635889,
+         "preview":" Look at examples to see awesome use cases!"
+      },
+      {
+         "document": {
+            "id":"bcLb8xUK585Zm6rZrwj89A",
+            "content":"Check out the docs to see what's possible!"
+         },
+         "score": 0.1742559312454076,
+         "preview":" Check out the docs to see what's possible!"
+      }
+   ]
+}
 
 ```
 
+## Examples
 
+Take a look at the [examples folder](/examples).
 
 ## Documentation
 
-For more in-depth documentation on the package, check out our official [docs]() page made with Hugo.
-
-
-
+Check out our [docs]().
