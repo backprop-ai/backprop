@@ -1,6 +1,6 @@
 import time
 from ..models import vectorise
-from .documents import Document, ElasticDocument
+from .documents import Document, ElasticDocument, ChunkedDocument
 from elasticsearch import Elasticsearch, helpers
 from typing import Dict, List
 import shortuuid
@@ -51,6 +51,7 @@ class SearchResults:
         self.max_score = max_score
         self.total_results = total_results
         self.results = results
+        self.top_chunks = []
 
     def to_json(self, exclude_vectors=True):
         """Gets JSON form of returned results
@@ -113,6 +114,10 @@ class InMemoryDocStore(DocStore):
         check_document_types(documents)
         # Batching
         batches = batch_items(documents)
+
+        # Update document class conveniently
+        if issubclass(type(documents[0]), ChunkedDocument):
+            self._doc_class = ChunkedDocument
 
         for batch in batches:
             vectorise_func(batch, vectorise_model)
