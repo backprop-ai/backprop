@@ -15,7 +15,7 @@ With Kiri, no experience in AI is needed to solve valuable real world problems u
 Run everything locally or take your code to production using our free, optimised inference [API](https://kiri.ai).
 
 | ⚡ [Getting started](#getting-started) | Installation, few minute introduction     |
-| -------------------------------------- | ----------------------------------------- |
+| -------------------------------------- | :---------------------------------------- |
 | 💡 [Examples](#examples)               | Sample problems solved using Kiri         |
 | 📙 [Docs](#documentation)              | In-depth documentation for advanced usage |
 
