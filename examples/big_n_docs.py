@@ -36,15 +36,15 @@ Amazon is known for its disruption of well-established industries through techno
 
 Amazon distributes downloads and streaming of video, music, and audiobooks through its Prime Video, Amazon Music, Twitch, and Audible subsidiaries. Amazon also has a publishing arm, Amazon Publishing, a film and television studio, Amazon Studios, and a cloud computing subsidiary, Amazon Web Services. It produces consumer electronics including Kindle e-readers, Fire tablets, Fire TV, and Echo devices. Its acquisitions over the years include Ring, Twitch, Whole Foods Market, and IMDb. The company has been criticized for various practices including technological surveillance overreach,[25] a hyper-competitive and demanding work culture,[26] tax avoidance,[27] and for being anti-competitive."""
 
-TSLA_doc = ChunkedDocument(TSLA, chunking_level=3)
-AAPL_doc = ChunkedDocument(AAPL, chunking_level=3)
-MSFT_doc = ChunkedDocument(MSFT, chunking_level=3)
-AMZN_doc = ChunkedDocument(AMZN, chunking_level=3)
+TSLA_doc = ChunkedDocument(TSLA, chunking_level=5)
+AAPL_doc = ChunkedDocument(AAPL, chunking_level=5)
+MSFT_doc = ChunkedDocument(MSFT, chunking_level=5)
+AMZN_doc = ChunkedDocument(AMZN, chunking_level=5)
 
-TSLA_edoc = ElasticChunkedDocument(TSLA, chunking_level=3)
-AAPL_edoc = ElasticChunkedDocument(AAPL, chunking_level=3)
-MSFT_edoc = ElasticChunkedDocument(MSFT, chunking_level=3)
-AMZN_edoc = ElasticChunkedDocument(AMZN, chunking_level=3)
+TSLA_edoc = ElasticChunkedDocument(TSLA, chunking_level=5)
+AAPL_edoc = ElasticChunkedDocument(AAPL, chunking_level=5)
+MSFT_edoc = ElasticChunkedDocument(MSFT, chunking_level=5)
+AMZN_edoc = ElasticChunkedDocument(AMZN, chunking_level=5)
 
-docs = [TSLA_doc, AAPL_doc, MSFT_doc, AMZN_doc]
-elastic_docs = [TSLA_edoc, AAPL_edoc, MSFT_edoc, AMZN_edoc]
+big_n_docs = {"memory": [TSLA_doc, AAPL_doc, MSFT_doc, AMZN_doc],
+              "elastic": [TSLA_edoc, AAPL_edoc, MSFT_edoc, AMZN_edoc]}

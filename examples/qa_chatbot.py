@@ -1,5 +1,5 @@
 from kiri import Kiri, ChunkedDocument, InMemoryDocStore
-from example_docs import docs, elastic_docs
+from big_n_docs import big_n_docs
 
 """
 This example shows the use of Kiri's Q&A for a simple chatbot-esque loop.
@@ -12,10 +12,10 @@ elastic = False
 
 if elastic:
     doc_store = ElasticDocStore("http://localhost:9000", doc_class=ElasticChunkedDocument, index="kiri_default")
-    documents = elastic_docs
+    documents = big_n_docs["elastic"]
 else:
     doc_store = InMemoryDocStore(doc_class=ChunkedDocument)
-    documents = docs
+    documents = big_n_docs["memory"]
 
 kiri = Kiri(doc_store)
 
@@ -32,5 +32,6 @@ while True:
         print(answers[0][0])
         prev_qa = (question, answers[0][0])
         session_qa += prev_qa            
+        print()
     except Exception as e:
         print("Something broke, try again.")
