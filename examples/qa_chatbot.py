@@ -6,6 +6,9 @@ This example shows the use of Kiri's Q&A for a simple chatbot-esque loop.
 
 In practice, Q&A performs search for document relevancy, and then
 returns the top-rated answer within the documents found.
+
+For this example, just the answer in the most relevant document is returned to the user,
+and used for additional context.
 """
 
 elastic = False
@@ -17,7 +20,7 @@ else:
     doc_store = InMemoryDocStore(doc_class=ChunkedDocument)
     documents = big_n_docs["memory"]
 
-kiri = Kiri(doc_store)
+kiri = Kiri(doc_store, local=True)
 
 kiri.upload(documents)
 

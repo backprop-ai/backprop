@@ -185,34 +185,6 @@ Configuration
 
     Secrets should never be checked into source control – these must be injected at build-time using Gitlab secrets.
 
-Project Structure
-Files
-
-Static files and assets should reside in the /public folder, in the root of the repository.
-
-All other source code should be in the /src directory.
-Organising Source Code
-
-Note: The following section assumes the context is within /src.
-
-UI elements should be sorted into the following subdirectories:
-
-    api, containing the common error type, request factories
-
-    components, for stateless, presentational components (i.e. components that render data with no knowledge of loading or altering data) – these should be stateless functional components
-
-        examples include alert dialogs, cards, breadcrumbs, empty states, buttons, pickers, dropdowns, spinners
-
-    containers, for stateful components concerned with providing data and behaviour to children (which are typically presentational components)
-
-        examples include home page, dashboard, billing
-
-    models, for storing interfaces and types that are shared between components
-
-        note: props, or types used in only once component, do not need to be stored in models
-
-    contexts, for global context hooks, such as authentication
-
 Component Guidelines
 
     All components should use the modern functional components over their class-based predecessors
