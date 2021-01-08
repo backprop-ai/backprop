@@ -1,6 +1,5 @@
 import shortuuid
 from typing import Dict, List, Tuple
-from ..models import summarise, zero_shot, qa, emotion
 
 
 class Document:
@@ -38,26 +37,27 @@ class Document:
         self.content = content
         self.attributes = attributes
         self.vector = vector
+        self.doc_store = None
 
     def summarise(self):
         """Summarises document content"""
         # TODO: Handle long content
-        return summarise(self.content)
+        return self.doc_store.kiri.summarise(self.content)
 
     def classify(self, labels: List[str]):
         """Classifies document content according to provided labels"""
         # TODO: Handle long content
-        return zero_shot(self.content, labels)
+        return self.doc_store.kiri.classify(self.content, labels)
 
     def qa(self, question, prev_qa: List[Tuple[str, str]] = []):
         """Performs qa on the document content"""
         # TODO: Handle long content
-        return qa(question, self.content, prev_qa=prev_qa)
+        return self.doc_store.kiri.qa(question, self.content, prev_qa=prev_qa)
 
     def emotion(self):
         """Detects emotion from document content"""
         # TODO: Handle long content
-        return emotion(self.content)
+        return self.doc_store.kiri.emotion(self.content)
 
     def to_json(self, exclude_vectors=True):
         """Gets JSON form of the document.
@@ -116,7 +116,7 @@ class ChunkedDocument(Document):
         """Gets JSON form of the document
         Returns:
             __dict__ attr of the document object
-            """
+        """
         json_repr = vars(self)
         if exclude_vectors:
             del json_repr["vector"]

@@ -18,25 +18,25 @@ def test_make_chunk_doc():
 
 
 def test_qa():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     out = kiri.qa("What does Jon like?", text)
     assert type(out) == str
 
 
 def test_summarise():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     out = kiri.summarise(text)
     assert type(out) == str
 
 
 def test_emotion():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     out = kiri.emotion(text)
     assert type(out) == str
 
 
 def test_classify():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     out = kiri.classify(text, ["interests", "alcoholism"])
     assert isinstance(out, dict)
 

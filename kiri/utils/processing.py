@@ -4,7 +4,6 @@ from scipy.spatial.distance import cdist
 from typing import List, Tuple, Union
 
 from ..search import Document, ChunkedDocument
-from ..models import vectorise
 
 
 def batch_items(items, batch_size=16):
@@ -51,12 +50,13 @@ def chunk_document(document: ChunkedDocument):
     return chunks
 
 
-def process_documents(documents: Union[Document, List[Document]], model_name: str):
+def process_documents(documents: Union[Document, List[Document]], doc_store):
     """Processes document based on type
 
     Args:
         documents: Document or list of Documents to be processed
         model: SentenceTransformer model name used for processing
+        doc_store: Document store that holds the documents
 
     Raises:
         ValueError: If the given document's type doesn't have a vectorisation function
@@ -65,7 +65,7 @@ def process_documents(documents: Union[Document, List[Document]], model_name: st
     doc_example = documents[0]
     if isinstance(doc_example, Document):
         contents = [d.content for d in documents]
-        content_vectors = vectorise(contents, model_name=model_name)
+        content_vectors = doc_store.kiri.vectorise(contents)
 
         # Set vectors for each document
         for document, vector in zip(documents, content_vectors):
@@ -75,7 +75,7 @@ def process_documents(documents: Union[Document, List[Document]], model_name: st
     if isinstance(doc_example, ChunkedDocument):
         for document in documents:
             chunks = chunk_document(document)
-            chunk_vectors = vectorise(chunks, model_name=model_name)
+            chunk_vectors = doc_store.kiri.vectorise(chunks)
             document.chunks = chunks
             document.chunk_vectors = chunk_vectors
 

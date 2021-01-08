@@ -1,5 +1,4 @@
 import time
-from ..models import vectorise
 from .documents import Document, ElasticDocument, ChunkedDocument
 from elasticsearch import Elasticsearch, helpers
 from typing import Dict, List
@@ -77,6 +76,7 @@ class DocStore:
     """
 
     def __init__(self, *args, **kwargs):
+        self.kiri = None
         raise NotImplementedError("__init__ is not implemented!")
 
     def upload(self, *args, **kwargs):
@@ -98,8 +98,7 @@ class InMemoryDocStore(DocStore):
         self.documents = []
         self._doc_class = doc_class
 
-    def upload(self, documents: List[Document], vectorise_func,
-               vectorise_model) -> None:
+    def upload(self, documents: List[Document], vectorise_func) -> None:
         """Process and upload documents to memory
 
         Args:
@@ -108,6 +107,9 @@ class InMemoryDocStore(DocStore):
             vectorise_model: SentenceTransformer model used for vectorisation
         """
 
+        # Add doc_store to documents
+        for d in documents:
+            d.doc_store = self
         # Check ID uniqueness
         check_duplicate_documents(documents)
         # Check type consistency
@@ -120,12 +122,12 @@ class InMemoryDocStore(DocStore):
             self._doc_class = ChunkedDocument
 
         for batch in batches:
-            vectorise_func(batch, vectorise_model)
+            vectorise_func(batch, self)
             self.documents += batch
 
-    def search(self, query, vectorise_model, max_results=10, min_score=0.0,
+    def search(self, query, max_results=10, min_score=0.0,
                ids=None, body=None):
-        query_vec = vectorise(query)
+        query_vec = self.kiri.vectorise(query)
 
         documents = self.documents
 
@@ -173,18 +175,20 @@ class ElasticDocStore(DocStore):
             self._client.indices.create(
                 self._index, body={"mappings": correct_mapping})
 
-    def upload(self, documents: List[ElasticDocument], vectorise_func, vectorise_model, index: str = None) -> None:
+    def upload(self, documents: List[ElasticDocument], vectorise_func, index: str = None) -> None:
         """Upload documents to Elasticsearch
 
         Args:
             documents: List of documents to be uploaded to backend
             vectorise_func: Function used to vectorise document contents
-            vectorise_model: SentenceTransformer model name used for vectorisation
             index: Index (db) to be used -- uses initialized default if none provided
         """
         if not index:
             index = self._index
 
+        # Add doc_store to documents
+        for d in documents:
+            d.doc_store = self
         # Check ID uniqueness
         check_duplicate_documents(documents)
         # Check type consistency
@@ -195,7 +199,7 @@ class ElasticDocStore(DocStore):
         for batch in batches:
             payload = []
             # Calculate vectors
-            vectorise_func(batch, vectorise_model)
+            vectorise_func(batch, self)
 
             for document in batch:
                 # JSON representation of document
@@ -216,12 +220,11 @@ class ElasticDocStore(DocStore):
         # Update index
         self._client.indices.refresh(index=self._index)
 
-    def search(self, query, vectorise_model, max_results=10, min_score=0.0, ids: List[str] = [], body=None):
+    def search(self, query, max_results=10, min_score=0.0, ids: List[str] = [], body=None):
         """Search documents from Elasticsearch
 
         Args:
             query: Question from which search is based
-            vectorise_model: NLP model used to vectorise the query -- should match one used on docs
             max_results: Maximum number of search results to return
             min_score: Minimum relevancy score required to be included in results
             ids: Filter search results by ids
@@ -230,7 +233,7 @@ class ElasticDocStore(DocStore):
         Returns:
             Tuple with the SearchResults object and the vectorised query
         """
-        query_vec = vectorise(query)
+        query_vec = self.kiri.vectorise(query)
 
         # elasticsearch does not support negative scores
         score_modifier = 1.0
@@ -290,7 +293,12 @@ class ElasticDocStore(DocStore):
 
         start = time.time()
         res = self._client.search(index=self._index, body=body)
+
         search_results = elastic_to_search_results(
             res, score_modifier, self._doc_class)
+
+        # Add doc_store to documents
+        for result in search_results.results:
+            result.document.doc_store = self
 
         return search_results, query_vec

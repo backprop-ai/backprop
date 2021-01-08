@@ -26,7 +26,7 @@ def init_elastic_kiri(doc_class=ElasticDocument):
     elastic_url = "http://localhost:9200"
     requests.delete(f"{elastic_url}/{index_name}")
     store = ElasticDocStore(elastic_url, index=index_name, doc_class=doc_class)
-    kiri = Kiri(store=store)
+    kiri = Kiri(store=store, local=True)
     return kiri
 
 

@@ -20,11 +20,11 @@ def get_chunked_docs(chunking_level=1):
 
 
 def test_init():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
 
 
 def test_upload():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_docs()
     kiri.upload(docs)
     assert docs[0].vector is not None, "Document not vectorised"
@@ -33,7 +33,7 @@ def test_upload():
 
 
 def test_upload_chunked():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_chunked_docs(chunking_level=1)
     kiri.upload(docs)
     assert len(kiri._store.documents) == 2, "Incorrect number of documents in mem"
@@ -43,7 +43,7 @@ def test_upload_chunked():
 
 
 def test_upload_dup_id():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_docs()
     for doc in docs:
         doc.id = "123"
@@ -53,7 +53,7 @@ def test_upload_dup_id():
 
 
 def test_upload_mixed_type():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = [Document("a"), ChunkedDocument("b")]
 
     with pytest.raises(ValueError):
@@ -61,7 +61,7 @@ def test_upload_mixed_type():
 
 
 def test_search():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_docs()
     kiri.upload(docs)
     results = kiri.search("another")
@@ -69,7 +69,7 @@ def test_search():
 
 
 def test_search_max_results():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_docs()
     kiri.upload(docs)
     results = kiri.search("another", max_results=1)
@@ -77,7 +77,7 @@ def test_search_max_results():
 
 
 def test_search_ids():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_docs()
     docs[0].id = "123"
     kiri.upload(docs)
@@ -86,7 +86,7 @@ def test_search_ids():
 
 
 def test_search_chunk():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_chunked_docs()
     kiri.upload(docs)
     results = kiri.search("another")
@@ -94,7 +94,7 @@ def test_search_chunk():
 
 
 def test_search_max_results_chunk():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_chunked_docs()
     kiri.upload(docs)
     results = kiri.search("another", max_results=1)
@@ -102,7 +102,7 @@ def test_search_max_results_chunk():
 
 
 def test_search_ids_chunk():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_chunked_docs()
     docs[0].id = "123"
     kiri.upload(docs)
@@ -111,7 +111,7 @@ def test_search_ids_chunk():
 
 
 def test_qa():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_docs()
     kiri.upload(docs)
     results = kiri.qa("another?")
@@ -122,7 +122,7 @@ def test_qa():
 
 
 def test_qa_chunk():
-    kiri = Kiri()
+    kiri = Kiri(local=True)
     docs = get_chunked_docs()
     kiri.upload(docs)
     results = kiri.qa("another?")

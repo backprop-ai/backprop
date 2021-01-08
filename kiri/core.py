@@ -4,7 +4,9 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
 from .utils import process_documents, process_results
-from .models import qa, summarise, emotion, zero_shot
+from .models import qa, summarise, emotion, zero_shot, vectorise
+
+from sys import exit
 
 
 class Kiri:
@@ -17,13 +19,21 @@ class Kiri:
         process_results_func: Function to be used for calculating final scores of results
     """
 
-    def __init__(self, store: DocStore = None, vectorise_model: str = None,
+    def __init__(self, store: DocStore = None, local=False, api_key=None,
+                 vectorise_model: str = None,
                  process_doc_func: Callable[[
                      Document, str], List[float]] = None,
                  process_results_func: Callable[[SearchResults, str], None] = None):
 
         if store is None:
             store = InMemoryDocStore()
+
+        store.kiri = self
+
+        if local == False and api_key == None:
+            print(
+                "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
+            exit(1)
 
         if process_doc_func is None:
             # Use default vectoriser
@@ -32,6 +42,8 @@ class Kiri:
         if process_results_func is None:
             process_results_func = process_results
 
+        self._local = local
+        self._api_key = api_key
         self._store = store
         self._process_doc_func = process_doc_func
         self._process_results_func = process_results
@@ -52,8 +64,7 @@ class Kiri:
 
         """
 
-        return self._store.upload(documents, self._process_doc_func,
-                                  self._vectorise_model)
+        return self._store.upload(documents, self._process_doc_func)
 
     def search(self, query: str, max_results=10, min_score=0.0,
                preview_length=100, ids: List[str] = [], body=None) -> SearchResults:
@@ -75,7 +86,7 @@ class Kiri:
             SearchResults object
 
         """
-        search_results, query_vec = self._store.search(query, self._vectorise_model,
+        search_results, query_vec = self._store.search(query,
                                                        max_results=max_results, min_score=min_score,
                                                        ids=ids, body=body)
         self._process_results_func(
@@ -102,18 +113,21 @@ class Kiri:
             "London"
         """
         if context:
-            return qa(question, context, prev_qa=prev_qa)
+            return qa(question, context, prev_qa=prev_qa,
+                      local=self._local, api_key=self._api_key)
         else:
             search_results = self.search(question)
             answers = []
             if issubclass(self._store._doc_class, ChunkedDocument):
                 for chunk in search_results.top_chunks[:num_answers]:
-                    answer = qa(question, chunk["chunk"], prev_qa=prev_qa)
+                    answer = qa(question, chunk["chunk"], prev_qa=prev_qa,
+                                local=self._local, api_key=self._api_key)
                     answers.append((answer, chunk["search_result"]))
             else:
                 for result in search_results.results[:num_answers]:
                     c_string = result.document.content
-                    answer = qa(question, c_string, prev_qa=prev_qa)
+                    answer = qa(question, c_string, prev_qa=prev_qa,
+                                local=self._local, api_key=self._api_key)
                     answers.append((answer, result))
             return answers
 
@@ -137,7 +151,7 @@ class Kiri:
         # if input_text == "":
         #     raise ValueError("input_text must not be an empty string")
 
-        return summarise(input_text)
+        return summarise(input_text, local=self._local, api_key=self._api_key)
 
     def emotion(self, input_text):
         """Perform emotion detection on input text.
@@ -165,7 +179,7 @@ class Kiri:
         # if input_text == "":
         #     raise ValueError("input_text must not be an empty string")
 
-        return emotion(input_text)
+        return emotion(input_text, local=self._local, api_key=self._api_key)
 
     def classify(self, input_text, labels: List[str]):
         """Classify input text according to given labels.
@@ -195,4 +209,35 @@ class Kiri:
         # if len(labels) == 0:
         #     raise ValueError("labels must contain at least one label")
 
-        return zero_shot(input_text, labels)
+        return zero_shot(input_text, labels,
+                         local=self._local, api_key=self._api_key)
+
+    def vectorise(self, input_text):
+        """Vectorise input text.
+
+
+        Args:
+            input_text: string or list of strings to vectorise
+
+        Returns:
+            Vector or list of vectors
+
+        Example:
+            >>> kiri.vectorise("iPhone 12 128GB")
+            [0.92949192, 0.23123010, ...]
+
+        """
+        # if type(input_text) != str:
+        #     raise TypeError("input_text must be a string")
+
+        # if input_text == "":
+        #     raise ValueError("input_text must not be an empty string")
+
+        # if not isinstance(labels, list):
+        #     raise TypeError("labels must be a list of strings")
+
+        # if len(labels) == 0:
+        #     raise ValueError("labels must contain at least one label")
+
+        return vectorise(input_text, model_name=self._vectorise_model,
+                         local=self._local, api_key=self._api_key)
