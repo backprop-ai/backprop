@@ -48,6 +48,6 @@ def qa(question, context, prev_qa: List[Tuple[str, str]] = [],
         }
 
         res = requests.post("https://api.kiri.ai/qa", json=body,
-                            headers={"x-api-key": api_key})
+                            headers={"x-api-key": api_key}).json()
 
         return res["answer"]

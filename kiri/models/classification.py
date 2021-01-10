@@ -79,6 +79,6 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
         }
 
         res = requests.post("https://api.kiri.ai/classification", json=body,
-                            headers={"x-api-key": api_key})
+                            headers={"x-api-key": api_key}).json()
 
         return res["probabilities"]

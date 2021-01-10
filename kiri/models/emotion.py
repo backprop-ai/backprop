@@ -30,6 +30,6 @@ def emotion(input_text,
         }
 
         res = requests.post("https://api.kiri.ai/emotion", json=body,
-                            headers={"x-api-key": api_key})
+                            headers={"x-api-key": api_key}).json()
 
         return res["emotion"]
