@@ -39,7 +39,8 @@ def qa(question, context, prev_qa: List[Tuple[str, str]] = [],
                 "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
 
         # List of two tuples
-        prev_qa = list(zip(*prev_qa))
+        prev_qa = [[q for q, a in prev_qa], [a for q, a in prev_qa]]
+
         body = {
             "question": question,
             "context": context,
