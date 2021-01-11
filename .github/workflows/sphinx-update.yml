@@ -23,12 +23,16 @@ jobs:
           cd ./docs
           sphinx-apidoc -f -o ./source ../kiri
       - name: Commit files
+        id: commit
         run: |
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
           git add .
+          set +e
           git commit -m "Docs Update [auto]" -a
+          set -e
       - name: Push to main
+        if: steps.commit.outputs.exit_code == 0
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
