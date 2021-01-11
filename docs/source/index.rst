@@ -11,6 +11,8 @@ Welcome to Kiri's documentation!
    :caption: Contents:
 
    modules
+   Search
+   Other
    
 
 Indices and tables
