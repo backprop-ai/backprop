@@ -25,7 +25,7 @@ print("Inbox")
 print("==================")
 for email in emails:
     classification_results = kiri.classify(email, labels)
-    label = max(classification, key=classification_results.get)
+    label = max(classification_results, key=classification_results.get)
     
     emote = kiri.emotion(email)
     high_priority = any([e in emote for e in negative_sentiments])
