@@ -13,6 +13,7 @@ Welcome to Kiri's documentation!
    modules
    Search
    Other
+   Documents
    
 
 Indices and tables
