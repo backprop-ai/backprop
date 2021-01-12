@@ -56,4 +56,4 @@ Example With Code
 -----------------
 Refer to our repo examples_ to see how search works.
 
-.. _examples: https://github.com/kiri-ai/kiri/blob/main/examples/core/Search.ipynb
+.. _examples: https://github.com/kiri-ai/kiri/blob/main/examples/core_functionality/Search.ipynb
