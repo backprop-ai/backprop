@@ -1,12 +1,10 @@
 from typing import Callable, Dict, List, Tuple
-from sentence_transformers import SentenceTransformer
-from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
 from .utils import process_documents, process_results
 from .models import qa, summarise, emotion, zero_shot, vectorise
 
-from sys import exit
+import logging
 
 
 class Kiri:
@@ -31,9 +29,12 @@ class Kiri:
         store.kiri = self
 
         if local == False and api_key == None:
-            print(
+            raise ValueError(
                 "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
-            exit(1)
+
+        if local == False and vectorise_model:
+            logging.warning(
+                "User specified models for non-local inference are not supported. Using default models.")
 
         if process_doc_func is None:
             # Use default vectoriser
