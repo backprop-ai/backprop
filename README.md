@@ -79,6 +79,22 @@ print(search_results.to_json())
 
 ```
 
+## Why Kiri?
+
+1. No experience needed
+
+   - Entrance to practical AI should be simple
+   - Get state-of-the-art performance in your task without being an expert
+
+2. There is an overwhelming amount of models
+
+   - We implement the best ones for various use cases
+   - A few general models can accomplish more with less optimisation
+
+3. Deploying models cost effectively is hard work
+   - If our models suit your use case, no deployment is needed
+   - Our API scales, is always available, and you only pay for usage
+
 ## Examples
 
 Take a look at the [examples folder](https://github.com/kiri-ai/kiri/tree/main/examples).
