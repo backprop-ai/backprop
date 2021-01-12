@@ -15,6 +15,7 @@ class Kiri:
         vectorise_model: Name of the SentenceTransformer model to be used in operations
         process_doc_func: Function to be used when vectorising uploaded documents
         process_results_func: Function to be used for calculating final scores of results
+        device: Pytorch device to run inference on. Detected automatically if not specified.
     """
 
     def __init__(self, store: DocStore = None, local=False, api_key=None,
