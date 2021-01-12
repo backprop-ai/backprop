@@ -7,7 +7,7 @@ model = None
 
 
 def vectorise(input_text, model_name: str = None,
-              local: bool = False, api_key: str = None):
+              local: bool = False, api_key: str = None, device: str = "cpu"):
     # Refer to global variables
     global model
     # Setup

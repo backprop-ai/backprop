@@ -7,7 +7,7 @@ tokenizer = None
 
 
 def generate(input_text, model_name: str = None, tokenizer_name: str = None,
-             local: bool = True):
+             local: bool = True, device: str = "cpu"):
     # Refer to global variables
     global model
     global tokenizer

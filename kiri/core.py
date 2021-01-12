@@ -21,7 +21,9 @@ class Kiri:
                  vectorise_model: str = None,
                  process_doc_func: Callable[[
                      Document, str], List[float]] = None,
-                 process_results_func: Callable[[SearchResults, str], None] = None):
+                 process_results_func: Callable[[
+                     SearchResults, str], None] = None,
+                 device: str = None):
 
         if store is None:
             store = InMemoryDocStore()
@@ -36,6 +38,10 @@ class Kiri:
             logging.warning(
                 "User specified models for non-local inference are not supported. Using default models.")
 
+        if local and not device:
+            import torch
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+
         if process_doc_func is None:
             # Use default vectoriser
             process_doc_func = process_documents
@@ -43,6 +49,7 @@ class Kiri:
         if process_results_func is None:
             process_results_func = process_results
 
+        self._device = device
         self._local = local
         self._api_key = api_key
         self._store = store
@@ -115,20 +122,20 @@ class Kiri:
         """
         if context:
             return qa(question, context, prev_qa=prev_qa,
-                      local=self._local, api_key=self._api_key)
+                      local=self._local, api_key=self._api_key, device=self._device)
         else:
             search_results = self.search(question)
             answers = []
             if issubclass(self._store._doc_class, ChunkedDocument):
                 for chunk in search_results.top_chunks[:num_answers]:
                     answer = qa(question, chunk["chunk"], prev_qa=prev_qa,
-                                local=self._local, api_key=self._api_key)
+                                local=self._local, api_key=self._api_key, device=self._device)
                     answers.append((answer, chunk["search_result"]))
             else:
                 for result in search_results.results[:num_answers]:
                     c_string = result.document.content
                     answer = qa(question, c_string, prev_qa=prev_qa,
-                                local=self._local, api_key=self._api_key)
+                                local=self._local, api_key=self._api_key, device=self._device)
                     answers.append((answer, result))
             return answers
 
@@ -152,7 +159,7 @@ class Kiri:
         # if input_text == "":
         #     raise ValueError("input_text must not be an empty string")
 
-        return summarise(input_text, local=self._local, api_key=self._api_key)
+        return summarise(input_text, local=self._local, api_key=self._api_key, device=self._device)
 
     def emotion(self, input_text):
         """Perform emotion detection on input text.
@@ -180,7 +187,7 @@ class Kiri:
         # if input_text == "":
         #     raise ValueError("input_text must not be an empty string")
 
-        return emotion(input_text, local=self._local, api_key=self._api_key)
+        return emotion(input_text, local=self._local, api_key=self._api_key, device=self._device)
 
     def classify(self, input_text, labels: List[str]):
         """Classify input text according to given labels.
@@ -211,7 +218,7 @@ class Kiri:
         #     raise ValueError("labels must contain at least one label")
 
         return zero_shot(input_text, labels,
-                         local=self._local, api_key=self._api_key)
+                         local=self._local, api_key=self._api_key, device=self._device)
 
     def vectorise(self, input_text):
         """Vectorise input text.
@@ -241,4 +248,4 @@ class Kiri:
         #     raise ValueError("labels must contain at least one label")
 
         return vectorise(input_text, model_name=self._vectorise_model,
-                         local=self._local, api_key=self._api_key)
+                         local=self._local, api_key=self._api_key, device=self._device)

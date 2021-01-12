@@ -15,7 +15,7 @@ def process_item(question, context, prev_qa):
 
 def qa(question, context, prev_qa: List[Tuple[str, str]] = [],
        model_name: str = None, tokenizer_name: str = None,
-       local: bool = False, api_key: str = None):
+       local: bool = False, api_key: str = None, device: str = "cpu"):
     if local:
         if isinstance(question, list):
             # Must have a consistent amount of examples

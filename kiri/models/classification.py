@@ -8,10 +8,10 @@ model = None
 tokenizer = None
 
 
-def calculate_probability(input_text, label):
+def calculate_probability(input_text, label, device):
     hypothesis = f"This example is {label}."
     features = tokenizer.encode(input_text, hypothesis, return_tensors="pt",
-                                truncation=True)
+                                truncation=True).to(device)
     logits = model(features)[0]
     entail_contradiction_logits = logits[:, [0, 2]]
     probs = entail_contradiction_logits.softmax(dim=1)
@@ -20,7 +20,8 @@ def calculate_probability(input_text, label):
 
 
 def zero_shot(input_text, labels: List[str], model_name: str = None,
-              tokenizer_name: str = None, local: bool = False, api_key: str = None):
+              tokenizer_name: str = None, local: bool = False,
+              api_key: str = None, device: str = "cpu"):
     # Refer to global variables
     global model
     global tokenizer
@@ -32,11 +33,11 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
             # Use the default model
             if model_name == None:
                 model = AutoModelForSequenceClassification.from_pretrained(
-                    DEFAULT_MODEL)
+                    DEFAULT_MODEL).to(device)
             # Use the user defined model
             else:
                 model = AutoModelForSequenceClassification.from_pretrained(
-                    model_name)
+                    model_name).to(device)
 
         # Initialise tokenizer
         if tokenizer == None:
@@ -56,7 +57,7 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
             for text, labels in zip(input_text, labels):
                 results = {}
                 for label in labels:
-                    results[label] = calculate_probability(text, label)
+                    results[label] = calculate_probability(text, label, device)
 
                 results_list.append(results)
 
@@ -64,7 +65,8 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
         else:
             results = {}
             for label in labels:
-                results[label] = calculate_probability(input_text, label)
+                results[label] = calculate_probability(
+                    input_text, label, device)
 
             return results
 
@@ -80,5 +82,4 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
 
         res = requests.post("https://api.kiri.ai/classification", json=body,
                             headers={"x-api-key": api_key}).json()
-        print(res)
         return res["probabilities"]
