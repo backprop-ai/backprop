@@ -40,7 +40,7 @@ With Docker
 ~~~~~~~~~~~
 There's a simple Docker one-liner that can be used to instantly set up Elasticsearch.
 
-`docker run -d -p 9200:9200 -e "docker run -p 9200:9200 -d -e "discovery.type=single-node"elasticsearch:7.10.1`
+`docker run -p 9200:9200 -d -e "discovery.type=single-node" elasticsearch:7.10.1`
 
 The `-d` flag refers to detached mode, meaning it will run in the background. Omit `-d` to get logs in your terminal instance.
 
