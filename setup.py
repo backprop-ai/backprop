@@ -19,7 +19,8 @@ setuptools.setup(
         "nltk",
         "scipy",
         "shortuuid",
-        "elasticsearch"
+        "elasticsearch",
+        "torch"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
