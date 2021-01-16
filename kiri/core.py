@@ -11,15 +11,16 @@ class Kiri:
     """Core class of natural language engine
 
     Attributes:
-        store: DocStore object to be used as the engine backend
-        vectorise_model: Name of the SentenceTransformer model to be used in operations
-        process_doc_func: Function to be used when vectorising uploaded documents
-        process_results_func: Function to be used for calculating final scores of results
-        device: Pytorch device to run inference on. Detected automatically if not specified.
+        store (optional): DocStore object to be used as the engine backend
+        vectorisation_model (optional): "english" or "multilingual".
+            For local inference, the name of a SentenceTransformer model is also supported.
+        process_doc_func (optional): Function to be used when vectorising uploaded documents
+        process_results_func (optional): Function to be used for calculating final scores of results
+        device (optional): Pytorch device to run inference on. Detected automatically if not specified.
     """
 
     def __init__(self, store: DocStore = None, local=False, api_key=None,
-                 vectorise_model: str = None,
+                 vectorisation_model: str = None,
                  process_doc_func: Callable[[
                      Document, str], List[float]] = None,
                  process_results_func: Callable[[
@@ -35,9 +36,9 @@ class Kiri:
             raise ValueError(
                 "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
 
-        if local == False and vectorise_model:
-            logging.warning(
-                "User specified models for non-local inference are not supported. Using default models.")
+        if local == False and vectorisation_model not in ["english", "multilingual", None]:
+            raise ValueError(
+                "The only valid model choices for non-local inference are english and multilingual.")
 
         if local and not device:
             import torch
@@ -56,7 +57,7 @@ class Kiri:
         self._store = store
         self._process_doc_func = process_doc_func
         self._process_results_func = process_results
-        self._vectorise_model = vectorise_model
+        self._vectorisation_model = vectorisation_model
 
     def upload(self, documents: List[Document]) -> None:
         """Processes and uploads documents to store
@@ -248,5 +249,5 @@ class Kiri:
         # if len(labels) == 0:
         #     raise ValueError("labels must contain at least one label")
 
-        return vectorise(input_text, model_name=self._vectorise_model,
+        return vectorise(input_text, model_name=self._vectorisation_model,
                          local=self._local, api_key=self._api_key, device=self._device)
