@@ -6,7 +6,7 @@ Kiri Natural Language Engine is a high level Python library that makes using sta
 
 With Kiri, no experience in AI is needed to solve valuable real world problems using:
 
-- Semantic search (for ecommerce, documentation, etc.)
+- Semantic search in 50+ languages (for ecommerce, documentation, etc.)
 - Conversational question answering (for FAQ chatbots, text analysis, etc.)
 - Zero-shot classification (for email sorting, intent detection, etc.)
 - Summarisation (TLDRs for long documents)
