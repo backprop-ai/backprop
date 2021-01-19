@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Tuple
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
 from .utils import process_documents, process_results
-from .models import qa, summarise, emotion, zero_shot, vectorise
+from .models import qa, summarise, emotion, zero_shot, vectorise, b_generate
 
 import logging
 
@@ -250,3 +250,12 @@ class Kiri:
 
         return vectorise(input_text, model_name=self._vectorise_model,
                          local=self._local, api_key=self._api_key, device=self._device)
+
+    def generate(self, input_text, model_type: str = 'gpt2', model_name: str = None, tokenizer_name: str = None):
+        """Generates text to continue off the given input.
+
+        Args:
+            input_text: Text from which model will begin generating.
+
+        """
+        return b_generate(input_text, model_type=model_type, local=self._local, device=self._device)
