@@ -69,7 +69,7 @@ class Document:
             __dict__ of the document object
 
         """
-        json_repr = vars(self)
+        json_repr = vars(self).copy()
         del json_repr["doc_store"]
         if exclude_vectors:
             del json_repr["vector"]
@@ -118,7 +118,7 @@ class ChunkedDocument(Document):
         Returns:
             __dict__ attr of the document object
         """
-        json_repr = vars(self)
+        json_repr = vars(self).copy()
         del json_repr["doc_store"]
         if exclude_vectors:
             del json_repr["vector"]
@@ -170,7 +170,7 @@ class ElasticDocument(Document):
         Returns:
             __dict__ attribute of ElasticDocument object
         """
-        json_repr = vars(self)
+        json_repr = vars(self).copy()
         del json_repr["doc_store"]
         return json_repr
 
@@ -235,7 +235,7 @@ class ElasticChunkedDocument(ChunkedDocument, ElasticDocument):
         Returns:
             __dict__ attribute of ElasticDocument object
         """
-        json_repr = vars(self)
+        json_repr = vars(self).copy()
         del json_repr["doc_store"]
         json_repr["chunk_vectors"] = [{"vector": v}
                                       for v in json_repr["chunk_vectors"]]

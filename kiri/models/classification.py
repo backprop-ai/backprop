@@ -4,6 +4,17 @@ import requests
 
 DEFAULT_MODEL = "facebook/bart-large-mnli"
 DEFAULT_TOKENIZER = "facebook/bart-large-mnli"
+
+MODELS = {
+    "english": DEFAULT_MODEL,
+    "multilingual": "joeddav/xlm-roberta-large-xnli"
+}
+
+TOKENIZERS = {
+    "english": DEFAULT_TOKENIZER,
+    "multilingual": "joeddav/xlm-roberta-large-xnli"
+}
+
 model = None
 tokenizer = None
 
@@ -36,6 +47,8 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
                     DEFAULT_MODEL).to(device)
             # Use the user defined model
             else:
+                # Get from predefined list or try to find remotely
+                model_name = MODELS.get(model_name) or model_name
                 model = AutoModelForSequenceClassification.from_pretrained(
                     model_name).to(device)
 
@@ -47,6 +60,8 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
                 tokenizer = AutoTokenizer.from_pretrained(DEFAULT_TOKENIZER)
             # Use the user defined tokenizer
             else:
+                # Get from predefined list or try to find remotely
+                tokenizer_name = TOKENIZERS.get(tokenizer_name) or tokenizer_name
                 tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
         if isinstance(input_text, list):
@@ -75,9 +90,13 @@ def zero_shot(input_text, labels: List[str], model_name: str = None,
             raise ValueError(
                 "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
 
+        if model_name == None:
+            model_name = "english"
+
         body = {
             "text": input_text,
-            "labels": labels
+            "labels": labels,
+            "model": model_name
         }
 
         res = requests.post("https://api.kiri.ai/classification", json=body,

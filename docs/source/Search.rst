@@ -11,6 +11,9 @@ to find results that closely match the meaning of the query, regardless of exact
 
 Included in Kiri
 ~~~~~~~~~~~~~~~~
+Search is supported in over 50 languages: ar, bg, ca, cs, da, de, el, es, et, fa, fi, fr, fr-ca, gl, gu, he, hi, hr, hu, hy, id, it, ja, ka, ko, ku, lt, lv, mk, mn, mr, ms, my, nb, nl, pl, pt, pt, pt-br, ro, ru, sk, sl, sq, sr, sv, th, tr, uk, ur, vi, zh-cn, zh-tw.
+It defaults to just English for optimised performance.
+
 We've got two flavors of search bundled in: In-memory, and Elastic-based search.
 
 The in-memory version is meant for local testing, experimenting -- dev stuff.
