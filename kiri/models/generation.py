@@ -77,7 +77,7 @@ def model_generate(model, tokenizer, device, input_text, **kwargs):
 
 def generate(input_text, model_name: str = None, 
                tokenizer_name: str = None, local: bool = True, 
-               api_key: str = None, device: str = "cpu", **kwargs):
+               api_key: str = None, device: str = "cpu", do_sample=False, **kwargs):
 
     global model
     global tokenizer
