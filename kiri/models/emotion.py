@@ -3,9 +3,6 @@ from .generation import generate
 
 import requests
 
-DEFAULT_MODEL = "kiri-ai/t5-base-qa-summary-emotion"
-DEFAULT_TOKENIZER = "t5-base"
-
 def process_item(item):
     return f"emotion: {item}"
 
