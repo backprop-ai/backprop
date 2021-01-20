@@ -271,10 +271,9 @@ class Kiri:
         return vectorise(input_text, model_name=self._vectorisation_model,
                          local=self._local, api_key=self._api_key, device=self._device)
 
-    def generate(self, input_text, model_name: str = None, tokenizer_name: str = None,
-                min_length=10, max_length=20, temperature=1.0, top_k=0.0, top_p=1.0,
-                repetition_penalty=1.0, length_penalty=1.0, num_beams=1, num_generations=1,
-                do_sample=True):
+    def generate(self, input_text, min_length=10, max_length=20, temperature=1.0,
+                top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
+                num_beams=1, num_generations=1, do_sample=True):
         """Generates text to continue off the given input.
 
         Args:
@@ -292,8 +291,8 @@ class Kiri:
             num_generations:
             do_sample:
         """
-        return generate(input_text, model_name=model_name,
-                          tokenizer_name=tokenizer_name,
+        return generate(input_text, model_name=self._generation_model,
+                          tokenizer_name=self._generation_tokenizer,
                           local=self._local, api_key=self._api_key,
                           device=self._device, min_length=min_length,
                           max_length=max_length, temperature=temperature,
