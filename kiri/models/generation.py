@@ -94,7 +94,8 @@ def generate(input_text, model_name: str = None,
                 # Get from predefined list or try to find remotely
                 model_name = MODELS.get(model_name) or model_name
                 model = AutoModelForPreTraining.from_pretrained(model_name)
-            model.to(device)
+        
+        model.to(device)
         
         # Initialise tokenizer, allow switching if new one is provided.
         if not tokenizer or (tokenizer_name and tokenizer_name != t_checkpoint):
