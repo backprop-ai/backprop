@@ -23,7 +23,8 @@ def generate(input_text: str, model_name: str = None,
                 model = AutoModelForPreTraining.from_pretrained(DEFAULT)
             else:
                 model = AutoModelForPreTraining.from_pretrained(model_name)
-            model.to(device)
+        
+        model.to(device)
         
         # Initialise tokenizer, allow switching if new one is provided.
         if not tokenizer or (tokenizer_name and tokenizer_name != t_checkpoint):
