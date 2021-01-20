@@ -271,7 +271,7 @@ class Kiri:
         return vectorise(input_text, model_name=self._vectorisation_model,
                          local=self._local, api_key=self._api_key, device=self._device)
 
-    def generate(self, input_text, model_name: str = None, tokenizer_name: str = None):
+    def generate(self, input_text, model_name: str = None, tokenizer_name: str = None, **kwargs):
         """Generates text to continue off the given input.
 
         Args:
@@ -280,4 +280,5 @@ class Kiri:
         """
         return generate(input_text, model_name=model_name,
                           tokenizer_name=tokenizer_name,
-                          local=self._local, device=self._device)
+                          local=self._local, api_key=self._api_key,
+                          device=self._device, **kwargs)
