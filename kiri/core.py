@@ -24,6 +24,7 @@ class Kiri:
     def __init__(self, store: DocStore = None, local=False, api_key=None,
                  vectorisation_model: str = None,
                  classification_model: str = None,
+                 generation_model: str = None,
                  process_doc_func: Callable[[
                      Document, str], List[float]] = None,
                  process_results_func: Callable[[
@@ -47,6 +48,10 @@ class Kiri:
             raise ValueError(
                 "The only valid classification_model choices for non-local inference are english and multilingual.")
 
+        if local == False and generation_model not in ["gpt2-large", "t5-base-qa-summary-emotion", None]:
+            raise ValueError(
+                "The only valid generation_model choices for non-local inference are gpt2-large and t5-base-qa-summary-emotion.")
+
         if local and not device:
             import torch
             device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -66,8 +71,10 @@ class Kiri:
         self._process_results_func = process_results
         self._vectorisation_model = vectorisation_model
         self._classification_model = classification_model
+        self._generation_model = generation_model
         # Tokenizers and models are named the same
         self._classification_tokenizer = classification_model
+        self._generation_tokenizer = generation_model
 
     def upload(self, documents: List[Document]) -> None:
         """Processes and uploads documents to store
