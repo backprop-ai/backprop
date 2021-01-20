@@ -279,7 +279,18 @@ class Kiri:
 
         Args:
             input_text: Text from which model will begin generating.
-
+            model_name:
+            tokenizer_name:
+            min_length:
+            max_length:
+            temperature:
+            top_k:
+            top_p:
+            repetition_penalty:
+            length_penalty:
+            num_beams:
+            num_generations:
+            do_sample:
         """
         return generate(input_text, model_name=model_name,
                           tokenizer_name=tokenizer_name,
