@@ -1,50 +1,57 @@
-from typing import List, Tuple
+from transformers import AutoModelForPreTraining, AutoTokenizer
 
-DEFAULT_MODEL = "kiri-ai/t5-base-qa-summary-emotion"
-DEFAULT_TOKENIZER = "t5-base"
+DEFAULT = "gpt2"
+
 model = None
 tokenizer = None
+m_checkpoint = None
+t_checkpoint = None
 
+def generate(input_text: str, model_name: str = None, 
+               tokenizer_name: str = None, local: bool = True, 
+               device: str = 'cpu'):
 
-def generate(input_text, model_name: str = None, tokenizer_name: str = None,
-             local: bool = True, device: str = "cpu"):
-    # Refer to global variables
     global model
     global tokenizer
-    # Setup
+    global m_checkpoint
+    global t_checkpoint
+    
     if local:
-        # Initialise model
-        if model == None:
-            from transformers import T5ForConditionalGeneration
-            # Use the default model
-            if model_name == None:
-                model = T5ForConditionalGeneration.from_pretrained(
-                    DEFAULT_MODEL)
-            # Use the user defined model
+        # Initialise model, allow switching if new one is provided.
+        if not model or (model_name and model_name != m_checkpoint):
+            if not model_name:
+                model = AutoModelForPreTraining.from_pretrained(DEFAULT)
             else:
-                model = T5ForConditionalGeneration.from_pretrained(model_name)
-
-        # Initialise tokenizer
-        if tokenizer == None:
-            from transformers import T5Tokenizer
-            # Use the default tokenizer
-            if tokenizer_name == None:
-                tokenizer = T5Tokenizer.from_pretrained(DEFAULT_TOKENIZER)
-            # Use the user defined tokenizer
+                model = AutoModelForPreTraining.from_pretrained(model_name)
+            model.to(device)
+        
+        # Initialise tokenizer, allow switching if new one is provided.
+        if not tokenizer or (tokenizer_name and tokenizer_name != t_checkpoint):
+            if not tokenizer_name:
+                tokenizer = AutoTokenizer.from_pretrained(DEFAULT, use_fast=False)
             else:
-                tokenizer = T5Tokenizer.from_pretrained(tokenizer_name)
+                tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=False)
+        
+        # Set the checkpoints used to load the model/tokenizer
+        m_checkpoint = model_name
+        t_checkpoint = tokenizer_name
 
-        is_list = False
-        if isinstance(input_text, list):
-            is_list = True
+        is_list = isinstance(input_text, list)
 
-        features = tokenizer(input_text, padding=True, return_tensors='pt')
-        tokens = model.generate(input_ids=features['input_ids'],
-                                attention_mask=features['attention_mask'], max_length=128)
+        encoded_input = tokenizer.encode(input_text, return_tensors='pt')
+        encoded_input = encoded_input.to(device)
+
+        output = model.generate(input_ids=encoded_input, num_return_sequences=1)
+
         if is_list:
-            return [tokenizer.decode(tokens, skip_special_tokens=True) for tokens in tokens]
+            return [tokenizer.decode(tokens, skip_special_tokens=True) for tokens in output]
         else:
-            return tokenizer.decode(tokens[0], skip_special_tokens=True)
-
+            return tokenizer.decode(output[0], skip_special_tokens=True)
     else:
-        raise ValueError("Non local inference is not implemented!")
+        raise ValueError('Non-local inference is not currently implemented')
+
+
+
+
+
+

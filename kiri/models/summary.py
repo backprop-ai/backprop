@@ -9,8 +9,9 @@ def process_item(item):
 
 
 def summarise(input_text,
-              model_name: str = None, tokenizer_name: str = None,
-              local: bool = False, api_key: str = None, device: str = "cpu"):
+              model_name: str = "kiri-ai/t5-base-qa-summary-emotion", 
+              tokenizer_name: str = "t5-base", local: bool = False, 
+              api_key: str = None, device: str = "cpu"):
     if local:
         if isinstance(input_text, list):
             # Process according to the model used
