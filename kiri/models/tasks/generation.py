@@ -131,9 +131,3 @@ def generate(input_text, model_name: str = None,
         res = requests.post("https://api.kiri.ai/generation", json=body,
                             headers={"x-api-key": api_key}).json()
         return res["output"]
-
-
-
-
-
-
