@@ -278,18 +278,19 @@ class Kiri:
 
         Args:
             input_text: Text from which model will begin generating.
-            model_name:
-            tokenizer_name:
-            min_length:
-            max_length:
-            temperature:
-            top_k:
-            top_p:
-            repetition_penalty:
-            length_penalty:
-            num_beams:
-            num_generations:
-            do_sample:
+            min_length: Minimum length of generation before EOS can be generated.
+            max_length: Maximum length of generated sequence.
+            temperature: Value that alters softmax probabilities.
+            top_k: Sampling strategy in which probabilities are redistributed among top k most-likely words.
+            top_p: Sampling strategy in which probabilities are distributed among 
+                set of words with combined probability greater than p.
+            repetition_penalty: Penalty to be applied to words present in the input_text and
+                words already generated in the sequence.
+            length_penalty: Penalty applied to overall sequence length. Set >1 for longer sequences,
+                or <1 for shorter ones. 
+            num_beams: Number of beams to be used in beam search. (1: no beam search)
+            num_generations: How many times to run generation. 
+            do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
         """
         return generate(input_text, model_name=self._generation_model,
                           tokenizer_name=self._generation_tokenizer,
