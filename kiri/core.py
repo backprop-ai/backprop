@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Tuple
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
 from .utils import process_documents, process_results
-from .models import qa, summarise, emotion, zero_shot, vectorise, generate
+from .models import qa, summarise, emotion, zero_shot, generate, Vectorisation
 
 import logging
 
@@ -36,22 +36,6 @@ class Kiri:
 
         store.kiri = self
 
-        if local == False and api_key == None:
-            raise ValueError(
-                "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
-
-        if local == False and vectorisation_model not in ["english", "multilingual", None]:
-            raise ValueError(
-                "The only valid vectorisation_model choices for non-local inference are english and multilingual.")
-
-        if local == False and classification_model not in ["english", "multilingual", None]:
-            raise ValueError(
-                "The only valid classification_model choices for non-local inference are english and multilingual.")
-
-        if local == False and generation_model not in ["gpt2-large", "t5-base-qa-summary-emotion", None]:
-            raise ValueError(
-                "The only valid generation_model choices for non-local inference are gpt2-large and t5-base-qa-summary-emotion.")
-
         if local and not device:
             import torch
             device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -62,6 +46,10 @@ class Kiri:
 
         if process_results_func is None:
             process_results_func = process_results
+
+        self._vectorise = Vectorisation(vectorisation_model, local=local,
+                                        api_key=api_key, device=device, init=False)
+
 
         self._device = device
         self._local = local
@@ -268,8 +256,7 @@ class Kiri:
         # if len(labels) == 0:
         #     raise ValueError("labels must contain at least one label")
 
-        return vectorise(input_text, model_name=self._vectorisation_model,
-                         local=self._local, api_key=self._api_key, device=self._device)
+        return self._vectorise(input_text)
 
     def generate(self, input_text, min_length=10, max_length=20, temperature=1.0,
                 top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,

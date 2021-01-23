@@ -10,7 +10,7 @@ class BaseModel:
         return self.model(*args, **kwargs)
 
 
-class PathModel:
+class PathModel(BaseModel):
     def __init__(self, model_path, tokenizer_path=None, init_model=None,
                 init_tokenizer=None, device=None, init=True):
         self.initialised = False
@@ -88,20 +88,65 @@ class VectorisationModel(PathModel):
 
 
     def __call__(self, *args, **kwargs):
+        return self.vectorise(*args, **kwargs)
+
+    def vectorise(self, *args, **kwargs):
         self.check_init()
         return self.model.encode(*args, **kwargs)
 
 
 class GenerationModel(HuggingModel):
-    def generate(self, text):
+    def generate(self, text, **kwargs):
         self.check_init()
-        features = self.tokenizer(text, return_tensors="pt")
 
-        for k, v in features.items():
-            features[k] = v.to(self.device)
+        # Get and remove do_sample or set to False
+        do_sample = kwargs.pop("do_sample", None) or False
+        params = ["temperature", "top_k", "top_p", "repetition_penalty",
+                    "length_penalty", "num_beams", "num_return_sequences"]
 
-        #with torch.no_grad():
-        tokens = self.model.generate(**features)[0]
+        # If params are changed, we want to sample
+        for param in params:
+            if param in kwargs.keys():
+                do_sample = True
+                break
+
+        is_list = False
+        if isinstance(text, list):
+            is_list = True
+
+        if not is_list:
+            text = [text]
+
+        all_tokens = []
+        for text in text:
+            features = self.tokenizer(text, return_tensors="pt")
+
+            for k, v in features.items():
+                features[k] = v.to(self.device)
+
+            with torch.no_grad():
+                tokens = self.model.generate(do_sample=do_sample,
+                                            **features, **kwargs)
+
+            all_tokens.append(tokens)
+            
+        value = []
+        for tokens in all_tokens:
+            value.append([self.tokenizer.decode(tokens, skip_special_tokens=True)
+                    for tokens in tokens])
         
-        output = self.tokenizer.decode(tokens, skip_special_tokens=True)
+        output = value
+
+        # Unwrap generation list
+        if kwargs.get("num_return_sequences", 1) == 1:
+            output_unwrapped = []
+            for value in output:
+                output_unwrapped.append(value[0])
+
+            output = output_unwrapped
+        
+        # Return single item
+        if not is_list:
+            output = output[0]
+
         return output

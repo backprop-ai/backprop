@@ -1,52 +1,51 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
+from ..models import BaseModel, VectorisationModel
+from .base import Task
 
 import requests
 
-DEFAULT_MODEL = "msmarco-distilroberta-base-v2"
+DEFAULT_LOCAL_MODEL = "msmarco-distilroberta-base-v2"
 
-MODELS = {
-    "english": DEFAULT_MODEL,
+LOCAL_MODELS = {
+    "english": DEFAULT_LOCAL_MODEL,
     "multilingual": "distiluse-base-multilingual-cased-v2"
 }
 
-model = None
+DEFAULT_API_MODEL = "english"
 
+API_MODELS = ["english", "multilingual"]
 
-def vectorise(input_text, model_name: str = None,
-              local: bool = False, api_key: str = None, device: str = "cpu"):
-    # Refer to global variables
-    global model
-    # Setup
-    if local:
-        # Initialise model
-        if model == None:
-            from sentence_transformers import SentenceTransformer
-            # Use the default model
-            if model_name == None:
-                model = SentenceTransformer(
-                    DEFAULT_MODEL)
-            # Use the user defined model
-            else:
-                # Get from predefined list or try to find remotely
-                model_name = MODELS.get(model_name) or model_name
-                model = SentenceTransformer(model_name)
+class Vectorisation(Task):
+    def __init__(self, model: Union[str, BaseModel] = None,
+                local: bool = False, api_key: str = None, device: str = "cpu",
+                init: bool = False):
 
-        return model.encode(input_text)
+        super().__init__(model, local=local, api_key=api_key, device=device,
+                        init=init, local_models=LOCAL_MODELS, api_models=API_MODELS,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        default_api_model=DEFAULT_API_MODEL)
+        
+        # Model must implement the task
+        if self.local:
+            # Still needs to be initialised
+            if type(self.model) == str:
+                self.model = VectorisationModel(self.model, init=init, device=device)
 
-    else:
-        if api_key is None:
-            raise ValueError(
-                "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
+            task = getattr(self.model, "vectorise", None)
+            if not callable(task):
+                raise ValueError(f"The model {model} cannot be used for vectorisation.\
+                                It does not implement the `vectorise` method.")
+    
+    def __call__(self, text, *args, **kwargs):
+        if self.local:
+            return self.model.vectorise(text, *args, **kwargs)
+        else:
+            body = {
+                "text": text,
+                "model": self.model
+            }
 
-        if model_name == None:
-            model_name = "english"
+            res = requests.post("https://api.kiri.ai/vectorisation", json=body,
+                                headers={"x-api-key": self.api_key}).json()
 
-        body = {
-            "text": input_text,
-            "model": model_name
-        }
-
-        res = requests.post("https://api.kiri.ai/vectorisation", json=body,
-                            headers={"x-api-key": api_key}).json()
-
-        return res["vector"]
+            return res["vector"]
