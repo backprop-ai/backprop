@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Tuple
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
 from .utils import process_documents, process_results
-from .models import qa, summarise, emotion, zero_shot, generate, Vectorisation
+from .models import Generation, Vectorisation
 
 import logging
 
@@ -48,6 +48,9 @@ class Kiri:
             process_results_func = process_results
 
         self._vectorise = Vectorisation(vectorisation_model, local=local,
+                                        api_key=api_key, device=device, init=False)
+        
+        self._generate = Generation(generation_model, local=local,
                                         api_key=api_key, device=device, init=False)
 
 
@@ -127,24 +130,25 @@ class Kiri:
             >>> kiri.qa("Where does Sally live?", "Sally lives in London.")
             "London"
         """
-        if context:
-            return qa(question, context, prev_qa=prev_qa,
-                      local=self._local, api_key=self._api_key, device=self._device)
-        else:
-            search_results = self.search(question)
-            answers = []
-            if issubclass(self._store._doc_class, ChunkedDocument):
-                for chunk in search_results.top_chunks[:num_answers]:
-                    answer = qa(question, chunk["chunk"], prev_qa=prev_qa,
-                                local=self._local, api_key=self._api_key, device=self._device)
-                    answers.append((answer, chunk["search_result"]))
-            else:
-                for result in search_results.results[:num_answers]:
-                    c_string = result.document.content
-                    answer = qa(question, c_string, prev_qa=prev_qa,
-                                local=self._local, api_key=self._api_key, device=self._device)
-                    answers.append((answer, result))
-            return answers
+        pass
+        # if context:
+        #     return qa(question, context, prev_qa=prev_qa,
+        #               local=self._local, api_key=self._api_key, device=self._device)
+        # else:
+        #     search_results = self.search(question)
+        #     answers = []
+        #     if issubclass(self._store._doc_class, ChunkedDocument):
+        #         for chunk in search_results.top_chunks[:num_answers]:
+        #             answer = qa(question, chunk["chunk"], prev_qa=prev_qa,
+        #                         local=self._local, api_key=self._api_key, device=self._device)
+        #             answers.append((answer, chunk["search_result"]))
+        #     else:
+        #         for result in search_results.results[:num_answers]:
+        #             c_string = result.document.content
+        #             answer = qa(question, c_string, prev_qa=prev_qa,
+        #                         local=self._local, api_key=self._api_key, device=self._device)
+        #             answers.append((answer, result))
+        #     return answers
 
     def summarise(self, input_text):
         """Perform summarisation on input text.
@@ -165,8 +169,8 @@ class Kiri:
 
         # if input_text == "":
         #     raise ValueError("input_text must not be an empty string")
-
-        return summarise(input_text, local=self._local, api_key=self._api_key, device=self._device)
+        pass
+        # return summarise(input_text, local=self._local, api_key=self._api_key, device=self._device)
 
     def emotion(self, input_text):
         """Perform emotion detection on input text.
@@ -193,8 +197,8 @@ class Kiri:
 
         # if input_text == "":
         #     raise ValueError("input_text must not be an empty string")
-
-        return emotion(input_text, local=self._local, api_key=self._api_key, device=self._device)
+        pass
+        # return emotion(input_text, local=self._local, api_key=self._api_key, device=self._device)
 
     def classify(self, input_text, labels: List[str]):
         """Classify input text according to given labels.
@@ -224,10 +228,11 @@ class Kiri:
         # if len(labels) == 0:
         #     raise ValueError("labels must contain at least one label")
 
-        return zero_shot(input_text, labels,
-                         local=self._local, api_key=self._api_key, device=self._device,
-                         model_name=self._classification_model,
-                         tokenizer_name=self._classification_tokenizer)
+        pass
+        # return zero_shot(input_text, labels,
+        #                  local=self._local, api_key=self._api_key, device=self._device,
+        #                  model_name=self._classification_model,
+        #                  tokenizer_name=self._classification_tokenizer)
 
     def vectorise(self, input_text):
         """Vectorise input text.
@@ -279,10 +284,8 @@ class Kiri:
             num_generations: How many times to run generation. 
             do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
         """
-        return generate(input_text, model_name=self._generation_model,
-                          tokenizer_name=self._generation_tokenizer,
-                          local=self._local, api_key=self._api_key,
-                          device=self._device, min_length=min_length,
+        return self._generate(input_text,
+                          min_length=min_length,
                           max_length=max_length, temperature=temperature,
                           top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
                           length_penalty=length_penalty, num_beams=num_beams,

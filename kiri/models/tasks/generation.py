@@ -1,44 +1,52 @@
-from transformers import AutoModelForPreTraining, AutoTokenizer
-import torch
+from typing import List, Tuple, Union
+from ..models import BaseModel, GenerationModel
+from .base import Task
 
 import requests
 
-DEFAULT_MODEL = "gpt2"
-DEFAULT_TOKENIZER = "gpt2"
+DEFAULT_LOCAL_MODEL = "gpt2"
 
-MODELS = {
-    "gpt2": DEFAULT_MODEL,
-    "t5-base-qa-summary-emotion": "kiri-ai/t5-base-qa-summary-emotion"
+LOCAL_MODELS = {
+    "gpt2": "gpt2",
+    "t5-base-qa-summary-emotion": "t5-base-qa-summary-emotion"
 }
 
-TOKENIZERS = {
-    "gpt2": DEFAULT_TOKENIZER,
-    "t5-base-qa-summary-emotion": "kiri-ai/t5-base-qa-summary-emotion"
-}
+DEFAULT_API_MODEL = "gpt2-large"
 
+API_MODELS = ["gpt2-large", "t5-base-qa-summary-emotion"]
 
-def generate(model, text, local: bool = True, 
-            api_key: str = None, **kwargs):
-    if local:
-        # Name according to huggingface
-        kwargs["num_return_sequences"] = kwargs.pop("num_generations", 1)
+class Generation(Task):
+    def __init__(self, model: Union[str, BaseModel] = None,
+                local: bool = False, api_key: str = None, device: str = "cpu",
+                init: bool = False):
 
-        return model_generate(model, tokenizer, device, input_text, **kwargs)
-    else:
-        if api_key is None:
-            raise ValueError(
-                "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
-
-        if model_name == None:
-            model_name = "gpt2-large"
-
-        body = {
-            "text": input_text,
-            "model": model_name
-        }
-
-        body = {**body, **kwargs}
+        super().__init__(model, local=local, api_key=api_key, device=device,
+                        init=init, local_models=LOCAL_MODELS, api_models=API_MODELS,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        default_api_model=DEFAULT_API_MODEL)
         
-        res = requests.post("https://api.kiri.ai/generation", json=body,
-                            headers={"x-api-key": api_key}).json()
-        return res["output"]
+        # Model must implement the task
+        if self.local:
+            # Still needs to be initialised
+            if type(self.model) == str:
+                self.model = GenerationModel(self.model, init=init, device=device)
+
+            task = getattr(self.model, "generate", None)
+            if not callable(task):
+                raise ValueError(f"The model {model} cannot be used for vectorisation.\
+                                It does not implement the 'generate' method.")
+    
+    def __call__(self, text, *args, **kwargs):
+        if self.local:
+            return self.model.generate(text, *args, **kwargs)
+        else:
+            body = {
+                "text": text,
+                "model": self.model,
+                **kwargs
+            }
+
+            res = requests.post("https://api.kiri.ai/generation", json=body,
+                                headers={"x-api-key": self.api_key}).json()
+
+            return res["output"]
