@@ -33,7 +33,7 @@ class Generation(Task):
 
             task = getattr(self.model, "generate", None)
             if not callable(task):
-                raise ValueError(f"The model {model} cannot be used for vectorisation.\
+                raise ValueError(f"The model {model} cannot be used for generation.\
                                 It does not implement the 'generate' method.")
     
     def __call__(self, text, *args, **kwargs):

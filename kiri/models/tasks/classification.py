@@ -1,104 +1,52 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
+from ..models import BaseModel, ClassificationModel
+from .base import Task
 
 import requests
 
-DEFAULT_MODEL = "facebook/bart-large-mnli"
-DEFAULT_TOKENIZER = "facebook/bart-large-mnli"
+DEFAULT_LOCAL_MODEL = "facebook/bart-large-mnli"
 
-MODELS = {
-    "english": DEFAULT_MODEL,
+LOCAL_MODELS = {
+    "english": DEFAULT_LOCAL_MODEL,
     "multilingual": "joeddav/xlm-roberta-large-xnli"
 }
 
-TOKENIZERS = {
-    "english": DEFAULT_TOKENIZER,
-    "multilingual": "joeddav/xlm-roberta-large-xnli"
-}
+DEFAULT_API_MODEL = "english"
 
-model = None
-tokenizer = None
+API_MODELS = ["english", "multilingual"]
 
+class Classification(Task):
+    def __init__(self, model: Union[str, BaseModel] = None,
+                local: bool = False, api_key: str = None, device: str = "cpu",
+                init: bool = False):
 
-def calculate_probability(input_text, label, device):
-    hypothesis = f"This example is {label}."
-    features = tokenizer.encode(input_text, hypothesis, return_tensors="pt",
-                                truncation=True).to(device)
-    logits = model(features)[0]
-    entail_contradiction_logits = logits[:, [0, 2]]
-    probs = entail_contradiction_logits.softmax(dim=1)
-    prob_label_is_true = probs[:, 1]
-    return prob_label_is_true.item()
+        super().__init__(model, local=local, api_key=api_key, device=device,
+                        init=init, local_models=LOCAL_MODELS, api_models=API_MODELS,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        default_api_model=DEFAULT_API_MODEL)
+        
+        # Model must implement the task
+        if self.local:
+            # Still needs to be initialised
+            if type(self.model) == str:
+                self.model = ClassificationModel(self.model, init=init, device=device)
 
-
-def zero_shot(input_text, labels: List[str], model_name: str = None,
-              tokenizer_name: str = None, local: bool = False,
-              api_key: str = None, device: str = "cpu"):
-    # Refer to global variables
-    global model
-    global tokenizer
-    # Setup
-    if local:
-        # Initialise model
-        if model == None:
-            from transformers import AutoModelForSequenceClassification
-            # Use the default model
-            if model_name == None:
-                model = AutoModelForSequenceClassification.from_pretrained(
-                    DEFAULT_MODEL).to(device)
-            # Use the user defined model
-            else:
-                # Get from predefined list or try to find remotely
-                model_name = MODELS.get(model_name) or model_name
-                model = AutoModelForSequenceClassification.from_pretrained(
-                    model_name).to(device)
-
-        # Initialise tokenizer
-        if tokenizer == None:
-            from transformers import AutoTokenizer
-            # Use the default tokenizer
-            if tokenizer_name == None:
-                tokenizer = AutoTokenizer.from_pretrained(DEFAULT_TOKENIZER)
-            # Use the user defined tokenizer
-            else:
-                # Get from predefined list or try to find remotely
-                tokenizer_name = TOKENIZERS.get(tokenizer_name) or tokenizer_name
-                tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-
-        if isinstance(input_text, list):
-            # Must have a consistent amount of examples
-            assert(len(input_text) == len(labels))
-            # TODO: implement proper batching
-            results_list = []
-            for text, labels in zip(input_text, labels):
-                results = {}
-                for label in labels:
-                    results[label] = calculate_probability(text, label, device)
-
-                results_list.append(results)
-
-            return results_list
+            task = getattr(self.model, "classify", None)
+            if not callable(task):
+                raise ValueError(f"The model {model} cannot be used for classification.\
+                                It does not implement the 'classify' method.")
+    
+    def __call__(self, text, labels):
+        if self.local:
+            return self.model.classify(text, labels)
         else:
-            results = {}
-            for label in labels:
-                results[label] = calculate_probability(
-                    input_text, label, device)
+            body = {
+                "text": text,
+                "labels": labels,
+                "model": self.model,
+            }
 
-            return results
+            res = requests.post("https://api.kiri.ai/classification", json=body,
+                                headers={"x-api-key": self.api_key}).json()
 
-    else:
-        if api_key is None:
-            raise ValueError(
-                "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
-
-        if model_name == None:
-            model_name = "english"
-
-        body = {
-            "text": input_text,
-            "labels": labels,
-            "model": model_name
-        }
-
-        res = requests.post("https://api.kiri.ai/classification", json=body,
-                            headers={"x-api-key": api_key}).json()
-        return res["probabilities"]
+            return res["probabilities"]

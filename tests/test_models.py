@@ -1,4 +1,4 @@
-from kiri.models import vectorise, qa, summarise, emotion, zero_shot
+from kiri.models import Vectorisation, QA, Summarisation, Emotion, Classification
 import numpy as np
 import torch
 
@@ -21,16 +21,21 @@ classify_correct = "product issue"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+vectorise = Vectorisation(local=True, device=device)
+qa = QA(local=True, device=device)
+emotion = Emotion(local=True, device=device)
+summarise = Summarisation(local=True, device=device)
+classify = Classification(local=True, device=device)
 
 def test_vectorisation_single():
-    out = vectorise("This is a sample thing.", local=True, device=device)
+    out = vectorise("This is a sample thing.")
     assert isinstance(out, np.ndarray), "Not an array"
     assert type(out[0]) == np.dtype("float32"), "Vector dimension not float32"
 
 
 def test_vectorisation_batch():
     out = vectorise(["This is a sample thing.",
-                     "This is another sample thing."], local=True, device=device)
+                     "This is another sample thing."])
     assert isinstance(out, np.ndarray), "Not an array"
     assert len(out) == 2, "Not the right size"
     assert type(out[0][0]) == np.dtype(
@@ -40,14 +45,14 @@ def test_vectorisation_batch():
 
 
 def test_qa_single():
-    out = qa(qa_example["q1"], qa_example["c"], local=True, device=device)
+    out = qa(qa_example["q1"], qa_example["c"])
     assert type(out) == str, "Qa answer not a string"
     assert out == qa_example["a1"], "Wrong answer to simple qa"
 
 
 def test_qa_batch():
     out = qa([qa_example["q1"], qa_example["q2"]],
-             [qa_example["c"], qa_example["c"]], local=True, device=device)
+             [qa_example["c"], qa_example["c"]])
     assert isinstance(out, list), "Output is not a list"
     assert len(out) == 2, "Incorrect number of answers"
     assert out[0] == qa_example["a1"], "Wrong answer to simple qa"
@@ -56,7 +61,7 @@ def test_qa_batch():
 
 def test_qa_conv_single():
     out = qa(qa_example["q2_conv"], qa_example["c"], prev_qa=[
-             (qa_example["q1"], qa_example["a1"])], local=True, device=device)
+             (qa_example["q1"], qa_example["a1"])])
     assert type(out) == str, "Qa answer not a string"
     assert out == qa_example["a2"], "Wrong answer to simple conversational qa"
 
@@ -67,7 +72,7 @@ def test_qa_conv_batch():
     prev_qa = [[(qa_example["q1"], qa_example["a1"])], [
         (qa_example["q2"], qa_example["a2"])]]
 
-    out = qa(questions, ctxs, prev_qa=prev_qa, local=True, device=device)
+    out = qa(questions, ctxs, prev_qa=prev_qa)
     assert isinstance(out, list), "Output not a list"
     assert len(out) == 2, "Incorrect number of answers"
     assert out[0] == qa_example["a2"], "Wrong answer to simple conversational qa"
@@ -75,14 +80,13 @@ def test_qa_conv_batch():
 
 
 def test_summary_single():
-    out = summarise(summary_context, local=True, device=device)
+    out = summarise(summary_context)
     assert type(out) == str, "Summary not a string"
     assert len(out) < len(summary_context), "Summary not shorter than input"
 
 
 def test_summary_bulk():
-    out = summarise([summary_context, summary_context],
-                    local=True, device=device)
+    out = summarise([summary_context, summary_context])
     assert isinstance(out, list), "Output not a list"
     assert len(out) == 2, "Incorrect number of outputs"
     assert len(out[0]) < len(summary_context), "Summary not shorter than input"
@@ -90,8 +94,7 @@ def test_summary_bulk():
 
 
 def test_classify_single():
-    out = zero_shot(classify_context, classify_labels,
-                    local=True, device=device)
+    out = classify(classify_context, classify_labels)
     assert isinstance(out, dict), "Output is not a dict"
     assert len(out.keys()) == len(
         classify_labels), "Incorrect number of labels"
@@ -100,8 +103,8 @@ def test_classify_single():
 
 
 def test_classify_batch():
-    out = zero_shot([classify_context, classify_context],
-                    [classify_labels, classify_labels], local=True, device=device)
+    out = classify([classify_context, classify_context],
+                    [classify_labels, classify_labels])
     assert isinstance(out, list), "Output is not a list"
 
     for out in out:
@@ -113,13 +116,12 @@ def test_classify_batch():
 
 
 def test_emotion_single():
-    out = emotion("I am really angry.", local=True, device=device)
+    out = emotion("I am really angry.")
     assert type(out) == str, "Output is not a string"
 
 
 def test_emotion_batch():
-    out = emotion(["I am really angry.", "You are really angry."],
-                  local=True, device=device)
+    out = emotion(["I am really angry.", "You are really angry."])
     assert isinstance(out, list), "Output is not a list"
 
     for out in out:

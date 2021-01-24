@@ -24,7 +24,7 @@ class Task:
                 if model not in local_models.values():
                     logger.warning(f"Model '{model}' is not officially supported, but it may function.")
                 
-                self.model = model
+            self.model = model
         else:
             if model is None:
                 model = default_api_model

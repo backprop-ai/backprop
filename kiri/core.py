@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Tuple
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
 from .utils import process_documents, process_results
-from .models import Generation, Vectorisation
+from .models import Generation, Vectorisation, Summarisation, Emotion, QA, Classification, T5QASummaryEmotion
 
 import logging
 
@@ -47,25 +47,32 @@ class Kiri:
         if process_results_func is None:
             process_results_func = process_results
 
+        t5_qa_summary_emotion = T5QASummaryEmotion(device=device, init=False)
+
         self._vectorise = Vectorisation(vectorisation_model, local=local,
                                         api_key=api_key, device=device, init=False)
         
         self._generate = Generation(generation_model, local=local,
                                         api_key=api_key, device=device, init=False)
 
+        self._classify = Classification(classification_model, local=local,
+                            api_key=api_key, device=device, init=False)
 
+        self._qa = QA(t5_qa_summary_emotion, local=local,
+                            api_key=api_key, device=device, init=False)
+        
+        self._emotion = Emotion(t5_qa_summary_emotion, local=local,
+                            api_key=api_key, device=device, init=False)
+
+        self._summarise = Summarisation(t5_qa_summary_emotion, local=local,
+                            api_key=api_key, device=device, init=False)
+        
         self._device = device
         self._local = local
         self._api_key = api_key
         self._store = store
         self._process_doc_func = process_doc_func
         self._process_results_func = process_results
-        self._vectorisation_model = vectorisation_model
-        self._classification_model = classification_model
-        self._generation_model = generation_model
-        # Tokenizers and models are named the same
-        self._classification_tokenizer = classification_model
-        self._generation_tokenizer = generation_model
 
     def upload(self, documents: List[Document]) -> None:
         """Processes and uploads documents to store
@@ -130,25 +137,22 @@ class Kiri:
             >>> kiri.qa("Where does Sally live?", "Sally lives in London.")
             "London"
         """
-        pass
-        # if context:
-        #     return qa(question, context, prev_qa=prev_qa,
-        #               local=self._local, api_key=self._api_key, device=self._device)
-        # else:
-        #     search_results = self.search(question)
-        #     answers = []
-        #     if issubclass(self._store._doc_class, ChunkedDocument):
-        #         for chunk in search_results.top_chunks[:num_answers]:
-        #             answer = qa(question, chunk["chunk"], prev_qa=prev_qa,
-        #                         local=self._local, api_key=self._api_key, device=self._device)
-        #             answers.append((answer, chunk["search_result"]))
-        #     else:
-        #         for result in search_results.results[:num_answers]:
-        #             c_string = result.document.content
-        #             answer = qa(question, c_string, prev_qa=prev_qa,
-        #                         local=self._local, api_key=self._api_key, device=self._device)
-        #             answers.append((answer, result))
-        #     return answers
+        if context:
+            return self._qa(question, context, prev_qa=prev_qa)
+        else:
+            search_results = self.search(question)
+            answers = []
+            if issubclass(self._store._doc_class, ChunkedDocument):
+                for chunk in search_results.top_chunks[:num_answers]:
+                    answer = self._qa(question, chunk["chunk"], prev_qa=prev_qa)
+                    answers.append((answer, chunk["search_result"]))
+            else:
+                for result in search_results.results[:num_answers]:
+                    c_string = result.document.content
+                    answer = self._qa(question, c_string, prev_qa=prev_qa)
+                    answers.append((answer, result))
+            return answers
+
 
     def summarise(self, input_text):
         """Perform summarisation on input text.
@@ -164,13 +168,7 @@ class Kiri:
             "short summary of document"
 
         """
-        # if type(input_text) != str:
-        #     raise TypeError("input_text must be a string")
-
-        # if input_text == "":
-        #     raise ValueError("input_text must not be an empty string")
-        pass
-        # return summarise(input_text, local=self._local, api_key=self._api_key, device=self._device)
+        return self._summarise(input_text)
 
     def emotion(self, input_text):
         """Perform emotion detection on input text.
@@ -192,13 +190,7 @@ class Kiri:
             "approval"
 
         """
-        # if type(input_text) != str:
-        #     raise TypeError("input_text must be a string")
-
-        # if input_text == "":
-        #     raise ValueError("input_text must not be an empty string")
-        pass
-        # return emotion(input_text, local=self._local, api_key=self._api_key, device=self._device)
+        return self._emotion(input_text)
 
     def classify(self, input_text, labels: List[str]):
         """Classify input text according to given labels.
@@ -216,23 +208,7 @@ class Kiri:
             {"product issue": 0.98, "nature": 0.05}
 
         """
-        # if type(input_text) != str:
-        #     raise TypeError("input_text must be a string")
-
-        # if input_text == "":
-        #     raise ValueError("input_text must not be an empty string")
-
-        # if not isinstance(labels, list):
-        #     raise TypeError("labels must be a list of strings")
-
-        # if len(labels) == 0:
-        #     raise ValueError("labels must contain at least one label")
-
-        pass
-        # return zero_shot(input_text, labels,
-        #                  local=self._local, api_key=self._api_key, device=self._device,
-        #                  model_name=self._classification_model,
-        #                  tokenizer_name=self._classification_tokenizer)
+        return self._classify(input_text, labels)
 
     def vectorise(self, input_text):
         """Vectorise input text.
@@ -249,18 +225,6 @@ class Kiri:
             [0.92949192, 0.23123010, ...]
 
         """
-        # if type(input_text) != str:
-        #     raise TypeError("input_text must be a string")
-
-        # if input_text == "":
-        #     raise ValueError("input_text must not be an empty string")
-
-        # if not isinstance(labels, list):
-        #     raise TypeError("labels must be a list of strings")
-
-        # if len(labels) == 0:
-        #     raise ValueError("labels must contain at least one label")
-
         return self._vectorise(input_text)
 
     def generate(self, input_text, min_length=10, max_length=20, temperature=1.0,

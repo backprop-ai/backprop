@@ -1,4 +1,5 @@
-from transformers import AutoModelForPreTraining, AutoTokenizer
+from transformers import AutoModelForPreTraining, AutoTokenizer, \
+    AutoModelForSequenceClassification
 from sentence_transformers import SentenceTransformer
 import torch
 
@@ -92,7 +93,8 @@ class VectorisationModel(PathModel):
 
     def vectorise(self, *args, **kwargs):
         self.check_init()
-        return self.model.encode(*args, **kwargs)
+        with torch.no_grad():
+            return self.model.encode(*args, **kwargs)
 
 
 class GenerationModel(HuggingModel):
@@ -150,3 +152,46 @@ class GenerationModel(HuggingModel):
             output = output[0]
 
         return output
+
+
+class ClassificationModel(HuggingModel):
+    def __init__(self, model_path, tokenizer_path=None,
+                model_class=AutoModelForSequenceClassification,
+                tokenizer_class=AutoTokenizer, device=None, init=True):
+        return super().__init__(model_path, tokenizer_path=tokenizer_path,
+                    model_class=model_class, tokenizer_class=tokenizer_class,
+                    device=device, init=init)
+
+    def calculate_probability(self, text, label, device):
+        hypothesis = f"This example is {label}."
+        features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
+                                    truncation=True).to(self.device)
+        logits = self.model(features)[0]
+        entail_contradiction_logits = logits[:, [0, 2]]
+        probs = entail_contradiction_logits.softmax(dim=1)
+        prob_label_is_true = probs[:, 1]
+        return prob_label_is_true.item()
+
+
+    def classify(self, text, labels):
+        self.check_init()
+        if isinstance(text, list):
+            # Must have a consistent amount of examples
+            assert(len(text) == len(labels))
+            # TODO: implement proper batching
+            results_list = []
+            for text, labels in zip(text, labels):
+                results = {}
+                for label in labels:
+                    results[label] = self.calculate_probability(text, label, self.device)
+
+                results_list.append(results)
+
+            return results_list
+        else:
+            results = {}
+            for label in labels:
+                results[label] = self.calculate_probability(
+                    text, label, self.device)
+
+            return results

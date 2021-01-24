@@ -1,54 +1,57 @@
-from typing import List, Tuple
-from .generation import generate
+from typing import List, Tuple, Union
+from ..models import BaseModel
+from ..custom_models import T5QASummaryEmotion
+from .base import Task
 
 import requests
 
+DEFAULT_LOCAL_MODEL = "kiri-ai/t5-base-qa-summary-emotion"
 
-def process_item(question, context, prev_qa):
-    input_text = [f"q: {qa[0]} a: {qa[1]}" for qa in prev_qa]
-    input_text.append(f"q: {question}")
-    input_text.append(f"c: {context}")
-    input_text = " ".join(input_text)
+LOCAL_MODELS = {
+    "english": DEFAULT_LOCAL_MODEL
+}
 
-    return input_text
+DEFAULT_API_MODEL = "english"
 
+API_MODELS = ["english"]
 
-def qa(question, context, prev_qa: List[Tuple[str, str]] = [],
-       model_name: str = None, tokenizer_name: str = None,
-       local: bool = False, api_key: str = None, device: str = "cpu"):
-    if local:
-        if isinstance(question, list):
-            # Must have a consistent amount of examples
-            assert(len(question) == len(context))
-            if len(prev_qa) != 0:
-                assert(len(question) == len(prev_qa))
-            else:
-                prev_qa = [prev_qa] * len(question)
+class QA(Task):
+    def __init__(self, model: Union[str, BaseModel] = None, model_class=T5QASummaryEmotion,
+                local: bool = False, api_key: str = None, device: str = "cpu",
+                init: bool = False):
 
-            # Process according to the model used
-            input_text = [process_item(q, c, p)
-                          for q, c, p in zip(question, context, prev_qa)]
+        super().__init__(model, local=local, api_key=api_key, device=device,
+                        init=init, local_models=LOCAL_MODELS, api_models=API_MODELS,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        default_api_model=DEFAULT_API_MODEL)
+        
+        # Model must implement the task
+        if self.local:
+            # Still needs to be initialised
+            if type(self.model) == str:
+                self.model = model_class(self.model, init=init, device=device)
+
+            task = getattr(self.model, "qa", None)
+            if not callable(task):
+                raise ValueError(f"The model {model} cannot be used for qa.\
+                                It does not implement the 'qa' method.")
+    
+    def __call__(self, question, context, prev_qa: List[Tuple[str, str]] = []):
+        if self.local:
+            return self.model.qa(question, context, prev_qa=prev_qa)
         else:
-            input_text = process_item(question, context, prev_qa)
+            # List of two tuples
+            prev_qa = [[q for q, a in prev_qa], [a for q, a in prev_qa]]
 
-        return generate(input_text, model_name=model_name,
-                        tokenizer_name=tokenizer_name, local=local)
-    else:
-        if api_key is None:
-            raise ValueError(
-                "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
+            body = {
+                "question": question,
+                "context": context,
+                "prev_q": prev_qa[0],
+                "prev_a": prev_qa[1],
+                "model": self.model
+            }
 
-        # List of two tuples
-        prev_qa = [[q for q, a in prev_qa], [a for q, a in prev_qa]]
+            res = requests.post("https://api.kiri.ai/qa", json=body,
+                                headers={"x-api-key": self.api_key}).json()
 
-        body = {
-            "question": question,
-            "context": context,
-            "prev_q": prev_qa[0],
-            "prev_a": prev_qa[1]
-        }
-
-        res = requests.post("https://api.kiri.ai/qa", json=body,
-                            headers={"x-api-key": api_key}).json()
-
-        return res["answer"]
+            return res["answer"]
