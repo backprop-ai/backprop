@@ -1,53 +1,29 @@
 kiri.models package
 ===================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   kiri.models.tasks
+
 Submodules
 ----------
 
-kiri.models.classification module
+kiri.models.custom\_models module
 ---------------------------------
 
-.. automodule:: kiri.models.classification
+.. automodule:: kiri.models.custom_models
    :members:
    :undoc-members:
    :show-inheritance:
 
-kiri.models.emotion module
---------------------------
+kiri.models.models module
+-------------------------
 
-.. automodule:: kiri.models.emotion
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-kiri.models.generation module
------------------------------
-
-.. automodule:: kiri.models.generation
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-kiri.models.qa module
----------------------
-
-.. automodule:: kiri.models.qa
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-kiri.models.summary module
---------------------------
-
-.. automodule:: kiri.models.summary
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-kiri.models.vectorisation module
---------------------------------
-
-.. automodule:: kiri.models.vectorisation
+.. automodule:: kiri.models.models
    :members:
    :undoc-members:
    :show-inheritance:
