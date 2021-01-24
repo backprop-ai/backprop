@@ -38,7 +38,7 @@ class T5QASummaryEmotion(GenerationModel):
         else:
             input_text = self.process_qa(question, context, prev_qa)
 
-        return self.generate(input_text)
+        return self.generate(input_text, do_sample=False, max_length=96)
 
     
     def process_emotion(self, text):
@@ -53,7 +53,7 @@ class T5QASummaryEmotion(GenerationModel):
         else:
             text = self.process_emotion(text)
 
-        return self.generate(text)
+        return self.generate(text, do_sample=False, max_length=96)
 
     
     def process_summarisation(self, text):
@@ -68,4 +68,4 @@ class T5QASummaryEmotion(GenerationModel):
         else:
             text = self.process_summarisation(text)
 
-        return self.generate(text)
+        return self.generate(text, do_sample=False, max_length=96)
