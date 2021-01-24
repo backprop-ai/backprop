@@ -253,4 +253,4 @@ class Kiri:
                           max_length=max_length, temperature=temperature,
                           top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
                           length_penalty=length_penalty, num_beams=num_beams,
-                          num_generations=num_generations, do_sample=do_sample)
+                          num_return_sequences=num_generations, do_sample=do_sample)
