@@ -16,6 +16,20 @@ DEFAULT_API_MODEL = "english"
 API_MODELS = ["english", "multilingual"]
 
 class Vectorisation(Task):
+    """
+    Task for text vectorisation.
+
+    Attributes:
+        model:
+            1. Name of the model on Kiri's vectorisation endpoint (english, multilingual)
+            2. Officially supported local models (english, multilingual) or Sentence Transformer path to the model.
+            3. Kiri's VectorisationModel object
+        local (optional): Run locally. Defaults to True
+        api_key (optional): Kiri API key for non-local inference
+        device (optional): Device to run inference on. Defaults to "cuda" if available.
+        init (optional): Whether to initialise model immediately or wait until first call.
+            Defaults to False
+    """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = "cpu",
                 init: bool = False):
@@ -37,6 +51,9 @@ class Vectorisation(Task):
                                 It does not implement the `vectorise` method.")
     
     def __call__(self, text, *args, **kwargs):
+        """
+        Calls the vectorisation model with text and vectorisation *args, **kwargs.
+        """
         if self.local:
             return self.model.vectorise(text, *args, **kwargs)
         else:

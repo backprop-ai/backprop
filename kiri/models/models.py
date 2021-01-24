@@ -4,6 +4,13 @@ from sentence_transformers import SentenceTransformer
 import torch
 
 class BaseModel:
+    """
+    The base class for a model.
+    
+    Attributes:
+        model: Your model that takes some args, kwargs and returns an output.
+            Must be callable.
+    """
     def __init__(self, model):
         self.model = model
 
@@ -12,7 +19,19 @@ class BaseModel:
 
 
 class PathModel(BaseModel):
-    def __init__(self, model_path, tokenizer_path=None, init_model=None,
+    """
+    Class for models which are initialised from a path.
+
+    Attributes:
+        model_path: Path to the model
+        init_model: Callable to initialise model from path
+        tokenizer_path (optional): Path to the tokenizer
+        init_tokenizer (optional): Callable to initialise tokenizer from path
+        device (optional): Device for inference. Defaults to "cuda" if available.
+        init (optional): Whether to initialise model and tokenizer immediately or wait until first call.
+            Defaults to True.
+    """
+    def __init__(self, model_path, init_model, tokenizer_path=None,
                 init_tokenizer=None, device=None, init=True):
         self.initialised = False
         self.init_model = init_model
@@ -48,6 +67,20 @@ class PathModel(BaseModel):
 
 
 class HuggingModel(PathModel):
+    """
+    Class for models which are initialised from a local path or huggingface
+
+    Attributes:
+        model_path: Local or huggingface.co path to the model
+        init_model: Callable to initialise model from path
+            Defaults to AutoModelForPreTraining from huggingface
+        tokenizer_path (optional): Path to the tokenizer
+        init_tokenizer (optional): Callable to initialise tokenizer from path
+            Defaults to AutoTokenizer from huggingface.
+        device (optional): Device for inference. Defaults to "cuda" if available.
+        init (optional): Whether to initialise model and tokenizer immediately or wait until first call.
+            Defaults to True.
+    """
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForPreTraining,
                 tokenizer_class=AutoTokenizer, device=None, init=True):
@@ -73,6 +106,17 @@ class HuggingModel(PathModel):
 
 
 class VectorisationModel(PathModel):
+    """
+    Class for models which are initialised from a local path or Sentence Transformers
+
+    Attributes:
+        model_path: Local, sentence transformers or huggingface.co path to the model
+        init_model: Callable to initialise model from path
+            Defaults to SentenceTransformer
+        device (optional): Device for inference. Defaults to "cuda" if available.
+        init (optional): Whether to initialise model immediately or wait until first call.
+            Defaults to True.
+    """
     def __init__(self, model_path, model_class=SentenceTransformer,
                 device=None, init=True):
         # Object was made with init = False
@@ -98,7 +142,16 @@ class VectorisationModel(PathModel):
 
 
 class GenerationModel(HuggingModel):
+    """
+    Class for models which are initialised from a local path or Sentence Transformers
+
+    Attributes:
+        *args and **kwargs are passed to HuggingModel's __init__
+    """
     def generate(self, text, **kwargs):
+        """
+        Generate according to the model's generate method.
+        """
         self.check_init()
 
         # Get and remove do_sample or set to False
@@ -155,6 +208,20 @@ class GenerationModel(HuggingModel):
 
 
 class ClassificationModel(HuggingModel):
+    """
+    Class for classification models which are initialised from a local path or huggingface
+
+    Attributes:
+        model_path: Local or huggingface.co path to the model
+        tokenizer_path (optional): Path to the tokenizer
+        model_class (optional): Callable to initialise model from path
+            Defaults to AutoModelForSequenceClassification from huggingface
+        tokenizer_class (optional): Callable to initialise tokenizer from path
+            Defaults to AutoTokenizer from huggingface.
+        device (optional): Device for inference. Defaults to "cuda" if available.
+        init (optional): Whether to initialise model and tokenizer immediately or wait until first call.
+            Defaults to True.
+    """
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
                 tokenizer_class=AutoTokenizer, device=None, init=True):
@@ -174,6 +241,9 @@ class ClassificationModel(HuggingModel):
 
 
     def classify(self, text, labels):
+        """
+        Classifies text, given a set of labels.
+        """
         self.check_init()
         if isinstance(text, list):
             # Must have a consistent amount of examples

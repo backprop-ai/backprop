@@ -23,7 +23,7 @@ def get_chunked_docs(chunking_level=1):
 
 def init_elastic_kiri(doc_class=ElasticDocument):
     index_name = "temp_test"
-    elastic_url = "https://localhost:9200"
+    elastic_url = "http://localhost:9200"
     requests.delete(f"{elastic_url}/{index_name}")
     store = ElasticDocStore(elastic_url, index=index_name, doc_class=doc_class)
     kiri = Kiri(store=store, local=True)

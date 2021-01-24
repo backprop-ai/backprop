@@ -16,6 +16,20 @@ DEFAULT_API_MODEL = "english"
 API_MODELS = ["english", "multilingual"]
 
 class Classification(Task):
+    """
+    Task for classification.
+
+    Attributes:
+        model:
+            1. Name of the model on Kiri's classification endpoint (english, multilingual)
+            2. Officially supported local models (english, multilingual) or Huggingface path to the model.
+            3. Kiri's ClassificationModel object
+        local (optional): Run locally. Defaults to True
+        api_key (optional): Kiri API key for non-local inference
+        device (optional): Device to run inference on. Defaults to "cuda" if available.
+        init (optional): Whether to initialise model immediately or wait until first call.
+            Defaults to False
+    """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = "cpu",
                 init: bool = False):
@@ -36,7 +50,10 @@ class Classification(Task):
                 raise ValueError(f"The model {model} cannot be used for classification.\
                                 It does not implement the 'classify' method.")
     
-    def __call__(self, text, labels):
+    def __call__(self, text: str, labels: List[str]):
+        """
+        Calls the classification model with text and labels.
+        """
         if self.local:
             return self.model.classify(text, labels)
         else:

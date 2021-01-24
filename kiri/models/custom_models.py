@@ -2,6 +2,12 @@ from typing import List, Tuple
 from .models import GenerationModel
 
 class T5QASummaryEmotion(GenerationModel):
+    """
+    Custom class for Kiri's T5 model for QA, Summarisation, Emotion tasks.
+
+    *args and **kwargs according to GenerationModel class.
+    model_path defaults to "kiri-ai/t5-base-qa-summary-emotion"
+    """
     def __init__(self, *args, **kwargs):
         return super().__init__("kiri-ai/t5-base-qa-summary-emotion",
                                 *args, **kwargs)

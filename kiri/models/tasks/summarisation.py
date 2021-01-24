@@ -16,6 +16,21 @@ DEFAULT_API_MODEL = "english"
 API_MODELS = ["english"]
 
 class Summarisation(Task):
+    """
+    Task for summarisation.
+
+    Attributes:
+        model:
+            1. Name of the model on Kiri's summarisation endpoint (english)
+            2. Officially supported local models (english) or Huggingface path to the model.
+            3. Kiri's BaseModel object that implements the summarisation method
+        model_class (optional): The model class to use when supplying a path for the model.
+        local (optional): Run locally. Defaults to True
+        api_key (optional): Kiri API key for non-local inference
+        device (optional): Device to run inference on. Defaults to "cuda" if available.
+        init (optional): Whether to initialise model immediately or wait until first call.
+            Defaults to False
+    """
     def __init__(self, model: Union[str, BaseModel] = None, model_class=T5QASummaryEmotion,
                 local: bool = False, api_key: str = None, device: str = "cpu",
                 init: bool = False):
@@ -36,7 +51,10 @@ class Summarisation(Task):
                 raise ValueError(f"The model {model} cannot be used for summarisation.\
                                 It does not implement the 'summarise' method.")
     
-    def __call__(self, text):
+    def __call__(self, text: str):
+        """
+        Calls the summarisation model with text.
+        """
         if self.local:
             return self.model.summarise(text)
         else:
