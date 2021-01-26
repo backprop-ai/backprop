@@ -1,8 +1,16 @@
-# Kiri Natural Language Engine
+<h1 align="center">Kiri Natural Language Engine</h1>
 
-![PyPI](https://img.shields.io/pypi/v/kiri) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kiri) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+<p align="center">
+   <a href="https://pypi.org/project/kiri/"><img src="https://img.shields.io/pypi/v/kiri"/></a> <img src="https://img.shields.io/pypi/pyversions/kiri"/> <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
+</p>
 
-Kiri Natural Language Engine is a high level Python library that makes using state-of-the-art language models easy, accessible and scalable.
+<p align="center">
+Kiri NLE is a high level Python library that makes using state-of-the-art language models easy, accessible and scalable.
+</p>
+
+<p align="center">
+   <img src=".github/kiri-example.svg" width="500"/>
+</p>
 
 With Kiri, no experience in AI is needed to solve valuable real world problems using:
 
