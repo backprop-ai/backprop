@@ -1,4 +1,4 @@
-kiri.models package
+kiri.models
 ===================
 
 Subpackages
@@ -9,10 +9,7 @@ Subpackages
 
    kiri.models.tasks
 
-Submodules
-----------
-
-kiri.models.custom\_models module
+kiri.models.custom\_models
 ---------------------------------
 
 .. automodule:: kiri.models.custom_models
@@ -20,7 +17,7 @@ kiri.models.custom\_models module
    :undoc-members:
    :show-inheritance:
 
-kiri.models.models module
+kiri.models.models
 -------------------------
 
 .. automodule:: kiri.models.models

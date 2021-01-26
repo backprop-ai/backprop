@@ -1,4 +1,4 @@
-kiri package
+kiri
 ============
 
 Subpackages
@@ -14,7 +14,7 @@ Subpackages
 Submodules
 ----------
 
-kiri.core module
+kiri.core
 ----------------
 
 .. automodule:: kiri.core
