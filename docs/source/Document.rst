@@ -1,5 +1,5 @@
-Documents
-=========
+Kiri Core: Documents
+====================
 
 Documents are the base object on which much of Kiri operates.
 

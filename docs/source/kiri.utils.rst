@@ -1,10 +1,7 @@
-kiri.utils package
+kiri.utils
 ==================
 
-Submodules
-----------
-
-kiri.utils.elastic module
+kiri.utils.elastic
 -------------------------
 
 .. automodule:: kiri.utils.elastic
@@ -12,7 +9,7 @@ kiri.utils.elastic module
    :undoc-members:
    :show-inheritance:
 
-kiri.utils.processing module
+kiri.utils.processing
 ----------------------------
 
 .. automodule:: kiri.utils.processing
@@ -20,7 +17,7 @@ kiri.utils.processing module
    :undoc-members:
    :show-inheritance:
 
-kiri.utils.verification module
+kiri.utils.verification
 ------------------------------
 
 .. automodule:: kiri.utils.verification

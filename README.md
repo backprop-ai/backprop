@@ -20,7 +20,7 @@ With Kiri, no experience in AI is needed to solve valuable real world problems u
 - Summarisation in English (TLDRs for long documents)
 - Emotion detection in English (for customer satisfaction, text analysis, etc.)
 
-Run everything locally or take your code to production using our free, optimised inference [API](https://kiri.ai).
+Run everything locally or take your code to production using our optimised inference [API](https://kiri.ai), where you only pay for usage.
 
 | ⚡ [Getting started](#getting-started)                            | Installation, few minute introduction     |
 | :---------------------------------------------------------------- | :---------------------------------------- |

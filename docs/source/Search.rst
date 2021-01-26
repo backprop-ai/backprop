@@ -30,7 +30,7 @@ Elastic uses the BM25 bag-of-words model in combination with our semantic search
 
 
 Why use Elastic with Kiri?
----------------------
+--------------------------
 Elastic provides a production-ready backend for search with very little overhead required.
 
 When used in combination with Kiri, you get all the benefits of Elastic, enhanced with Kiri's
