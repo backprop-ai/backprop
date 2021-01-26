@@ -9,7 +9,7 @@ Kiri NLE is a high level Python library that makes using state-of-the-art langua
 </p>
 
 <p align="center">
-   <img src=".github/kiri-example.svg" width="500"/>
+   <img src=".github/kiri-example.png" width="500"/>
 </p>
 
 With Kiri, no experience in AI is needed to solve valuable real world problems using:
