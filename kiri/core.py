@@ -88,7 +88,7 @@ class Kiri:
             None
 
         """
-
+        logging.warning("Upload functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
         return self._store.upload(documents, self._process_doc_func)
 
     def search(self, query: str, max_results=10, min_score=0.0,
@@ -111,6 +111,7 @@ class Kiri:
             SearchResults object
 
         """
+        logging.warning("Search functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
         search_results, query_vec = self._store.search(query,
                                                        max_results=max_results, min_score=min_score,
                                                        ids=ids, body=body)
@@ -140,6 +141,7 @@ class Kiri:
         if context:
             return self._qa(question, context, prev_qa=prev_qa)
         else:
+            logging.warning("No context (search based) qa is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
             search_results = self.search(question)
             answers = []
             if issubclass(self._store._doc_class, ChunkedDocument):
