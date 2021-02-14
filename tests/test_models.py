@@ -1,6 +1,8 @@
-from kiri.models import Vectorisation, QA, Summarisation, Emotion, Classification
+# TODO: Rename test_models.py to test_tasks.py and name imports better
+from kiri.models import Vectorisation, QA, Summarisation, Emotion, Classification, ImageClassification
 import numpy as np
 import torch
+import os
 
 qa_example = {
     "q1": "Where does Sally live?",
@@ -19,6 +21,11 @@ classify_context = """I am mad because my product broke the first time I used it
 classify_labels = ["product issue", "nature"]
 classify_correct = "product issue"
 
+main_path = os.path.dirname(__file__)
+image_classification_image = os.path.join(main_path, "data/dog.png")
+image_classification_labels = ["cat", "dog"]
+image_classification_correct = "dog"
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 vectorise = Vectorisation(local=True, device=device)
@@ -26,6 +33,7 @@ qa = QA(local=True, device=device)
 emotion = Emotion(local=True, device=device)
 summarise = Summarisation(local=True, device=device)
 classify = Classification(local=True, device=device)
+image_classification = ImageClassification(local=True, device=device)
 
 def test_vectorisation_single():
     out = vectorise("This is a sample thing.")
@@ -126,3 +134,24 @@ def test_emotion_batch():
 
     for out in out:
         assert type(out) == str, "List not made of strings"
+
+
+def test_image_classification_single():
+    out = image_classification(image_classification_image, image_classification_labels)
+    assert isinstance(out, dict), "Output is not a dict"
+    assert len(out.keys()) == len(
+        image_classification_labels), "Incorrect number of labels"
+    assert image_classification_correct == max(
+        out, key=out.get), "Classification is severely wrong"
+
+
+def test_image_classification_batch():
+    out = image_classification([image_classification_image]*2, [image_classification_labels]*2)
+
+    assert isinstance(out, list), "Output is not a list"
+
+    for out in out:
+        assert len(out.keys()) == len(
+            image_classification_labels), "Incorrect number of labels"
+        assert image_classification_correct == max(
+            out, key=out.get), "Classification is severely wrong"

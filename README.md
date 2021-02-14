@@ -16,9 +16,10 @@ With Kiri, no experience in AI is needed to solve valuable real world problems u
 
 - Semantic search in 50+ languages (for ecommerce, documentation, etc.)
 - Conversational question answering in English (for FAQ chatbots, text analysis, etc.)
-- Zero-shot classification in 100+ languages (for email sorting, intent detection, etc.)
+- Zero-shot text classification in 100+ languages (for email sorting, intent detection, etc.)
 - Summarisation in English (TLDRs for long documents)
 - Emotion detection in English (for customer satisfaction, text analysis, etc.)
+- Zero-shot image classification (for object recognition, OCR, etc.)
 
 Run everything locally or take your code to production using our optimised inference [API](https://kiri.ai), where you only pay for usage.
 
@@ -40,51 +41,21 @@ pip install kiri
 ### Basic usage
 
 ```python
-from kiri import Kiri, Document
+from kiri import Kiri
 
-# Unprocessed documents
-documents = [
-    Document("Look at examples to see awesome use cases!"),
-    Document("Check out the docs to see what's possible!")
-]
+context = "Take a look at the examples folder to see use cases!"
 
 # Use our inference API
 kiri = Kiri(api_key="abc")
 # Or run locally
 kiri = Kiri(local=True)
 
-# Process documents
-kiri.upload(documents)
-
 # Start building!
-search_results = kiri.search("What are some cool apps that have been built?")
+answer = kiri.qa("Where can I see what to build?", context)
 
-print(search_results.to_json())
-
+print(answer)
 # Prints
-{
-   "max_score": 0.3804888461635889,
-   "total_results": 2,
-   "results": [
-      {
-         "document": {
-            "id":"LzhtWcpV2eoMk8GJwaw7na",
-            "content":"Look at examples to see awesome use cases!"
-         },
-         "score": 0.3804888461635889,
-         "preview":" Look at examples to see awesome use cases!"
-      },
-      {
-         "document": {
-            "id":"bcLb8xUK585Zm6rZrwj89A",
-            "content":"Check out the docs to see what's possible!"
-         },
-         "score": 0.1742559312454076,
-         "preview":" Check out the docs to see what's possible!"
-      }
-   ]
-}
-
+"the examples folder"
 ```
 
 ## Why Kiri?

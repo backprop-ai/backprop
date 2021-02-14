@@ -2,7 +2,8 @@ from typing import Callable, Dict, List, Tuple
 
 from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
 from .utils import process_documents, process_results
-from .models import Generation, Vectorisation, Summarisation, Emotion, QA, Classification, T5QASummaryEmotion
+from .models import Generation, Vectorisation, Summarisation, \
+    Emotion, QA, Classification, T5QASummaryEmotion, ImageClassification
 
 import logging
 
@@ -24,6 +25,7 @@ class Kiri:
     def __init__(self, store: DocStore = None, local=False, api_key=None,
                  vectorisation_model: str = None,
                  classification_model: str = None,
+                 image_classification_model: str = None,
                  generation_model: str = None,
                  process_doc_func: Callable[[
                      Document, str], List[float]] = None,
@@ -56,6 +58,9 @@ class Kiri:
                                         api_key=api_key, device=device, init=False)
 
         self._classify = Classification(classification_model, local=local,
+                            api_key=api_key, device=device, init=False)
+
+        self._image_classification = ImageClassification(image_classification_model, local=local,
                             api_key=api_key, device=device, init=False)
 
         self._qa = QA(t5_qa_summary_emotion, local=local,
@@ -211,6 +216,27 @@ class Kiri:
 
         """
         return self._classify(input_text, labels)
+
+
+    def image_classification(self, image_path: str, labels: List[str]):
+        # TODO: Implement batching
+        """Classify image according to given labels.
+
+
+        Args:
+            image_path: path to image
+            labels: list of strings
+
+        Returns:
+            dict where each key is a label and value is probability between 0 and 1
+
+        Example:
+            >>> kiri.image_classification("/home/Documents/dog.png", ["cat", "dog"])
+            {"cat": 0.01, "dog": 0.99}
+
+        """
+        return self._image_classification(image_path, labels)
+
 
     def vectorise(self, input_text):
         """Vectorise input text.

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kiri",
-    version="0.4.1",
+    version="0.4.2",
     author="Kiri OÜ",
     author_email="hello@kiri.ai",
     description="Kiri Natural Language Engine",
@@ -20,7 +20,8 @@ setuptools.setup(
         "scipy",
         "shortuuid",
         "elasticsearch",
-        "torch"
+        "torch",
+        "torchvision"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

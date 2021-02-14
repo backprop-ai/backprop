@@ -1,5 +1,8 @@
-from typing import List, Tuple
-from .models import GenerationModel
+from typing import List, Tuple, Union
+from .models import GenerationModel, PathModel
+from .clip import clip
+from PIL import Image
+import torch
 
 class T5QASummaryEmotion(GenerationModel):
     """Custom class for Kiri's T5 model for QA, Summarisation, Emotion tasks.
@@ -69,3 +72,40 @@ class T5QASummaryEmotion(GenerationModel):
             text = self.process_summarisation(text)
 
         return self.generate(text, do_sample=False, max_length=96)
+
+
+class CLIP(PathModel):
+    def __init__(self, model_path="ViT-B/32", init_model=clip.load, device=None, init=True):
+        self.initialised = False
+        self.init_model = init_model
+        self.model_path = model_path
+        self.device = device
+
+        if self.device is None:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        # Initialise
+        if init:
+            self.model, self.transform = self.init_model(model_path, device=self.device)
+            
+            self.initialised = True
+
+    def __call__(self, image_path: str, labels: List[str]):
+        return self.image_classification(image_path=image_path, labels=labels)        
+
+    @torch.no_grad()
+    def image_classification(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
+        self.check_init()
+        # TODO: Implement batching
+        image = self.transform(Image.open(image_path)).unsqueeze(0).to(self.device)
+        text = clip.tokenize(labels).to(self.device)
+
+        image_features = self.model.encode_image(image)
+        text_features = self.model.encode_text(text)
+        
+        logits_per_image, logits_per_text = self.model(image, text)
+        probs = logits_per_image.softmax(dim=-1).cpu().numpy().tolist()[0]
+
+        label_probs = zip(labels, probs)
+        probabilities = {lp[0]: lp[1] for lp in label_probs}
+        return probabilities
