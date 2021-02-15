@@ -9,7 +9,7 @@ Kiri is a Python library that makes using state-of-the-art AI easy, accessible a
 </p>
 
 <p align="center">
-   <img src=".github/kiri-example.png" width="500"/>
+   <img src=".github/kiri-example.png" width="600"/>
 </p>
 
 With Kiri, no experience in AI is needed to solve valuable real world problems using:
