@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from .models import GenerationModel, PathModel
-from .clip import clip
+from .clip import clip, simple_tokenizer
 from PIL import Image
 import torch
 
@@ -75,9 +75,11 @@ class T5QASummaryEmotion(GenerationModel):
 
 
 class CLIP(PathModel):
-    def __init__(self, model_path="ViT-B/32", init_model=clip.load, device=None, init=True):
+    def __init__(self, model_path="ViT-B/32", init_model=clip.load,
+                init_tokenizer=simple_tokenizer.SimpleTokenizer, device=None, init=True):
         self.initialised = False
         self.init_model = init_model
+        self.init_tokenizer = init_tokenizer
         self.model_path = model_path
         self.device = device
 
@@ -87,6 +89,7 @@ class CLIP(PathModel):
         # Initialise
         if init:
             self.model, self.transform = self.init_model(model_path, device=self.device)
+            self.tokenizer = self.init_tokenizer()
             
             self.initialised = True
 
@@ -98,7 +101,7 @@ class CLIP(PathModel):
         self.check_init()
         # TODO: Implement batching
         image = self.transform(Image.open(image_path)).unsqueeze(0).to(self.device)
-        text = clip.tokenize(labels).to(self.device)
+        text = clip.tokenize(self.tokenizer, labels).to(self.device)
 
         image_features = self.model.encode_image(image)
         text_features = self.model.encode_text(text)

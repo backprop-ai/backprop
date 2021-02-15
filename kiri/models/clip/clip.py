@@ -9,11 +9,7 @@ from PIL import Image
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 from tqdm import tqdm
 
-from .simple_tokenizer import SimpleTokenizer as _Tokenizer
-
 __all__ = ["available_models", "load", "tokenize"]
-_tokenizer = _Tokenizer()
-
 
 _MODELS = {
     "ViT-B/32": "https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt",
@@ -50,6 +46,7 @@ def _download(url: str, root: str = os.path.expanduser("~/.cache/kiri/clip")):
         raise RuntimeError(f"Model has been downloaded but the SHA256 checksum does not not match")
 
     return download_target
+
 
 
 def available_models():
@@ -117,13 +114,13 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     return model, transform
 
 
-def tokenize(texts: Union[str, List[str]], context_length: int = 77):
+def tokenize(tokenizer, texts: Union[str, List[str]], context_length: int = 77):
     if isinstance(texts, str):
         texts = [texts]
 
-    sot_token = _tokenizer.encoder["<|startoftext|>"]
-    eot_token = _tokenizer.encoder["<|endoftext|>"]
-    all_tokens = [[sot_token] + _tokenizer.encode(text) + [eot_token] for text in texts]
+    sot_token = tokenizer.encoder["<|startoftext|>"]
+    eot_token = tokenizer.encoder["<|endoftext|>"]
+    all_tokens = [[sot_token] + tokenizer.encode(text) + [eot_token] for text in texts]
     result = torch.zeros(len(all_tokens), context_length, dtype=torch.long)
 
     for i, tokens in enumerate(all_tokens):

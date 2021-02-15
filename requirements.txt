@@ -6,3 +6,5 @@ shortuuid
 elasticsearch
 pydoc-markdown
 torch
+ftfy
+torchvision

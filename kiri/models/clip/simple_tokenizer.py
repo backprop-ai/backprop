@@ -2,14 +2,17 @@ import gzip
 import html
 import os
 from functools import lru_cache
+import hashlib
+import urllib
 
-import ftfy
+from tqdm import tqdm
 import regex as re
 
+CLIP_VOCAB = "https://github.com/kiri-ai/kiri/raw/main/kiri/models/clip/bpe_simple_vocab_16e6.txt.gz"
 
 @lru_cache()
 def default_bpe():
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "bpe_simple_vocab_16e6.txt.gz")
+    return _download_vocab()
 
 
 @lru_cache()
@@ -48,6 +51,7 @@ def get_pairs(word):
 
 
 def basic_clean(text):
+    import ftfy
     text = ftfy.fix_text(text)
     text = html.unescape(html.unescape(text))
     return text.strip()
@@ -59,8 +63,34 @@ def whitespace_clean(text):
     return text
 
 
+def _download_vocab(url: str = CLIP_VOCAB, root: str = os.path.expanduser("~/.cache/kiri/clip")):
+    os.makedirs(root, exist_ok=True)
+    filename = os.path.basename(url)
+    download_target = os.path.join(root, filename)
+
+    if os.path.exists(download_target) and not os.path.isfile(download_target):
+        raise RuntimeError(f"{download_target} exists and is not a regular file")
+
+    if os.path.isfile(download_target):
+        if hashlib.sha256(open(download_target, "rb").read()).hexdigest():
+            return download_target
+
+    with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
+        with tqdm(total=int(source.info().get("Content-Length")), ncols=80) as loop:        
+            while True:
+                buffer = source.read(8192)
+                if not buffer:
+                    break
+
+                output.write(buffer)
+                loop.update(len(buffer))
+
+    return download_target
+
+
 class SimpleTokenizer(object):
-    def __init__(self, bpe_path: str = default_bpe()):
+    def __init__(self):
+        bpe_path = _download_vocab()
         self.byte_encoder = bytes_to_unicode()
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}
         merges = gzip.open(bpe_path).read().decode("utf-8").split('\n')
