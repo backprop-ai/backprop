@@ -1,6 +1,8 @@
 from transformers import AutoModelForPreTraining, AutoTokenizer, \
     AutoModelForSequenceClassification
 from sentence_transformers import SentenceTransformer
+from functools import partial
+
 import torch
 
 class BaseModel:
@@ -83,7 +85,9 @@ class HuggingModel(PathModel):
     """
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForPreTraining,
-                tokenizer_class=AutoTokenizer, device=None, init=True):
+                tokenizer_class=AutoTokenizer,
+                tok_args=None,
+                device=None, init=True):
         # Usually the same
         if not tokenizer_path:
             tokenizer_path = model_path
@@ -94,10 +98,11 @@ class HuggingModel(PathModel):
             tokenizer_path = self.tokenizer_path
             init_model = self.init_model
             init_tokenizer = self.init_tokenizer
+            tok_args = self.tok_args
             device = self.device
         else:
             init_model = model_class.from_pretrained
-            init_tokenizer = tokenizer_class.from_pretrained
+            init_tokenizer = partial(tokenizer_class.from_pretrained, **tok_args)
 
         return super().__init__(model_path, tokenizer_path=tokenizer_path,
                                 init_model=init_model,

@@ -2,6 +2,7 @@ from typing import List, Tuple, Union
 from .models import GenerationModel, PathModel
 from .clip import clip, simple_tokenizer
 from PIL import Image
+from transformers import MBartForConditionalGeneration, MBartTokenizer
 import torch
 
 class T5QASummaryEmotion(GenerationModel):
@@ -112,3 +113,28 @@ class CLIP(PathModel):
         label_probs = zip(labels, probs)
         probabilities = {lp[0]: lp[1] for lp in label_probs}
         return probabilities
+
+
+class MBartForTranslation(GenerationModel):
+    def __init__(self, *args, **kwargs):
+        return super().__init__("facebook/mbart-large-50-many-to-many-mmt",
+                                model_class=MBartForConditionalGeneration,
+                                tokenizer_class=MBartTokenizer,
+                                tok_args={"src_lang": "en_XX"},
+                                *args, **kwargs)
+
+    def __call__(self, src_lang, tgt_lang, text):
+        return self.translation(src_lang, tgt_lang, text)
+
+    @torch.no_grad()
+    def translation(self, src_lang, tgt_lang, text):
+        if getattr(self.tokenizer, "src_lang", None) != src_lang:
+            print(self.model_path)
+            self.tokenizer = MBartTokenizer.from_pretrained(self.model_path, src_lang=src_lang)
+        self.tokenizer.src_lang = src_lang
+        encoded_hi = self.tokenizer(text, return_tensors="pt")
+        generated_tokens = self.model.generate(
+            **encoded_hi,
+            forced_bos_token_id=self.tokenizer.lang_code_to_id[tgt_lang]
+        )
+        return self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)

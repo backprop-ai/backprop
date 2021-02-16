@@ -5,5 +5,5 @@ from .tasks.classification import Classification
 from .tasks.image_classification import ImageClassification
 from .tasks.vectorisation import Vectorisation
 from .tasks.generation import Generation
-from .custom_models import T5QASummaryEmotion, CLIP
+from .custom_models import T5QASummaryEmotion, CLIP, MBartForTranslation
 from .models import BaseModel, PathModel, HuggingModel, GenerationModel, ClassificationModel
