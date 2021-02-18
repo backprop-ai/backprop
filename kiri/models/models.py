@@ -86,7 +86,7 @@ class HuggingModel(PathModel):
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForPreTraining,
                 tokenizer_class=AutoTokenizer,
-                tok_args=None,
+                tok_args={},
                 device=None, init=True):
         # Usually the same
         if not tokenizer_path:
