@@ -1,3 +1,5 @@
+# Code from https://github.com/openai/CLIP
+
 import gzip
 import html
 import os

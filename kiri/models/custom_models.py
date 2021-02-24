@@ -98,6 +98,7 @@ class CLIP(PathModel):
 
     @torch.no_grad()
     def image_classification(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
+        # TODO: Rename image_path to image, as it accepts BytesIO as well
         self.check_init()
         # TODO: Implement batching
         image = self.transform(Image.open(image_path)).unsqueeze(0).to(self.device)

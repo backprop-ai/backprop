@@ -1,3 +1,5 @@
+# Code from https://github.com/openai/CLIP
+
 import hashlib
 import os
 import urllib
@@ -8,6 +10,8 @@ import torch
 from PIL import Image
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 from tqdm import tqdm
+
+from .model import build_model
 
 __all__ = ["available_models", "load", "tokenize"]
 
@@ -52,14 +56,39 @@ def _download(url: str, root: str = os.path.expanduser("~/.cache/kiri/clip")):
 def available_models():
     return list(_MODELS.keys())
 
+def _transform(n_px):
+    return Compose([
+        Resize(n_px, interpolation=Image.BICUBIC),
+        CenterCrop(n_px),
+        lambda image: image.convert("RGB"),
+        ToTensor(),
+        Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
+    ])
 
-def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu"):
-    if name not in _MODELS:
+def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu", jit=False):
+    if name in _MODELS:
+        model_path = _download(_MODELS[name])
+    elif os.path.isfile(name):
+        model_path = name
+    else:
         raise RuntimeError(f"Model {name} not found; available models = {available_models()}")
-    
-    model_path = _download(_MODELS[name])
-    model = torch.jit.load(model_path, map_location=device).eval()
-    n_px = model.input_resolution.item()
+
+    try:
+        # loading JIT archive
+        model = torch.jit.load(model_path, map_location=device if jit else "cpu").eval()
+        state_dict = None
+    except RuntimeError:
+        # loading saved state dict
+        if jit:
+            warnings.warn(f"File {model_path} is not a JIT archive. Loading as a state dict instead")
+            jit = False
+        state_dict = torch.load(model_path, map_location="cpu")
+
+    if not jit:
+        model = build_model(state_dict or model.state_dict()).to(device)
+        if str(device) == "cpu":
+            model.float()
+        return model, _transform(model.visual.input_resolution)
 
     # patch the device names
     device_holder = torch.jit.trace(lambda: torch.ones([]).to(torch.device(device)), example_inputs=[])
@@ -80,7 +109,7 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     patch_device(model.encode_text)
 
     # patch dtype to float32 on CPU
-    if device == "cpu":
+    if str(device) == "cpu":
         float_holder = torch.jit.trace(lambda: torch.ones([]).float(), example_inputs=[])
         float_input = list(float_holder.graph.findNode("aten::to").inputs())[1]
         float_node = float_input.node()
@@ -103,15 +132,7 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
 
         model.float()
 
-    transform = Compose([
-        Resize(n_px, interpolation=Image.BICUBIC),
-        CenterCrop(n_px),
-        lambda image: image.convert("RGB"),
-        ToTensor(),
-        Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711)),
-    ])
-
-    return model, transform
+    return model, _transform(model.input_resolution.item())
 
 
 def tokenize(tokenizer, texts: Union[str, List[str]], context_length: int = 77):
