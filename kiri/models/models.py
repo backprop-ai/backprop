@@ -1,6 +1,8 @@
 from transformers import AutoModelForPreTraining, AutoTokenizer, \
     AutoModelForSequenceClassification
 from sentence_transformers import SentenceTransformer
+from functools import partial
+
 import torch
 
 class BaseModel:
@@ -125,7 +127,7 @@ class VectorisationModel(PathModel):
             init_model = self.init_model
             device = self.device
         else:
-            init_model = model_class
+            init_model = partial(model_class, device=device)
 
         return super().__init__(model_path,
                                 init_model=init_model,
