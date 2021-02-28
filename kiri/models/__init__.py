@@ -7,3 +7,5 @@ from .tasks.vectorisation import Vectorisation
 from .tasks.generation import Generation
 from .custom_models import T5QASummaryEmotion, CLIP
 from .models import BaseModel, PathModel, HuggingModel, GenerationModel, ClassificationModel, VectorisationModel
+from .bart_large_mnli import BartLargeMNLI
+from .xlmr_large_xnli import XLMRLargeXNLI
