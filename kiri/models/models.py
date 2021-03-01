@@ -15,9 +15,15 @@ class BaseModel:
     """
     def __init__(self, model):
         self.model = model
+        self.name = "base-model"
+        self.description = "This is the base description. Change me."
+        self.tasks = [] # Supports no tasks
 
     def __call__(self, *args, **kwargs):
         return self.model(*args, **kwargs)
+
+    # def set_name(self, name: str):
+
 
 
 class PathModel(BaseModel):
@@ -143,7 +149,7 @@ class VectorisationModel(PathModel):
             return self.model.encode(*args, **kwargs)
 
 
-class GenerationModel(HuggingModel):
+class TextGenerationModel(HuggingModel):
     """
     Class for models which are initialised from a local path or Sentence Transformers
 

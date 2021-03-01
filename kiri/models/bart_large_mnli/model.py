@@ -5,9 +5,13 @@ class BartLargeMNLI(HuggingModel):
     def __init__(self, model_path="facebook/bart-large-mnli", tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
                 tokenizer_class=AutoTokenizer, device=None, init=True):
-        return HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
+        HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device, init=init)
+
+        self.tasks = ["text-classification"]
+        self.description = "Facebook's large version of BART, finetuned on the Multi-Genre Natural Language Inference dataset. This training results in a robust zero-shot classification system."
+        self.name = "bart-large-mnli"
 
     def __call__(self, task_input, task="text-classification"):
         if task == "text-classification":
