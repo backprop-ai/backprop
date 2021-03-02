@@ -8,3 +8,4 @@ torch
 ftfy
 torchvision
 Pillow
+pytorch_lightning
