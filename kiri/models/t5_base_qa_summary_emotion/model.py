@@ -5,7 +5,7 @@ from kiri.models import TextGenerationModel
 
 class T5QASummaryEmotion(TextGenerationModel):
     def __init__(self, *args, **kwargs):
-        TextGenerationModel.__init__("kiri-ai/t5-base-qa-summary-emotion",
+        TextGenerationModel.__init__(self, "kiri-ai/t5-base-qa-summary-emotion",
                                 *args, **kwargs)
 
         self.tasks = ["text-generation", "emotion", "summarisation", "qa"]

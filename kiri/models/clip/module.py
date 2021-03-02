@@ -1,6 +1,8 @@
 import torch
 from PIL import Image
-from .clip import clip, simple_tokenizer
+from typing import Union, List
+from . import clip, simple_tokenizer
+from kiri.models import PathModel
 
 class CLIP(PathModel):
     def __init__(self, model_path="ViT-B/32", init_model=clip.load,

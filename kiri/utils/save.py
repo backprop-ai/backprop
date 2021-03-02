@@ -1,4 +1,4 @@
-from ..models import BaseModel
+from kiri.models import BaseModel
 import dill
 import pkg_resources
 import os

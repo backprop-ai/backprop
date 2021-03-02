@@ -1,164 +1,100 @@
-from typing import Callable, Dict, List, Tuple
-
-from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
-from .utils import process_documents, process_results
-from .models import Generation, Vectorisation, Summarisation, \
-    Emotion, QA, Classification, T5QASummaryEmotion, ImageClassification
+from typing import Callable, Dict, List, Tuple, Union
+from kiri import save, load
+from kiri.tasks import QA, TextGeneration, TextVectorisation, Summarisation, Emotion, ImageClassification, TextClassification
+from kiri.models import BaseModel
 
 import logging
 
 
 class Kiri:
-    """Core class of natural language engine
+    """Core class of kiri
 
     Attributes:
-        store (optional): DocStore object to be used as the engine backend
         vectorisation_model (optional): "english" or "multilingual".
             For local inference, the name of a SentenceTransformer model is also supported.
         classification_model (optional): "english" or "multilingual".
             For local inference, the name of a Huggingface transformers model is also supported.
-        process_doc_func (optional): Function to be used when vectorising uploaded documents
-        process_results_func (optional): Function to be used for calculating final scores of results
         device (optional): Pytorch device to run inference on. Detected automatically if not specified.
     """
 
-    def __init__(self, store: DocStore = None, local=False, api_key=None,
-                 vectorisation_model: str = None,
-                 classification_model: str = None,
-                 image_classification_model: str = None,
-                 generation_model: str = None,
-                 process_doc_func: Callable[[
-                     Document, str], List[float]] = None,
-                 process_results_func: Callable[[
-                     SearchResults, str], None] = None,
+    def __init__(self, local=False, api_key=None,
+                 text_vectorisation_model: Union[str, BaseModel] = None,
+                 text_classification_model: Union[str, BaseModel] = None,
+                 image_classification_model: Union[str, BaseModel] = None,
+                 text_generation_model: Union[str, BaseModel] = None,
+                 emotion_model: Union[str, BaseModel] = None,
+                 summarisation_model: Union[str, BaseModel] = None,
+                 qa_model: Union[str, BaseModel] = None,
                  device: str = None):
-
-        if store is None:
-            store = InMemoryDocStore()
-
-        store.kiri = self
 
         if local and not device:
             import torch
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        if process_doc_func is None:
-            # Use default vectoriser
-            process_doc_func = process_documents
-
-        if process_results_func is None:
-            process_results_func = process_results
-
-        t5_qa_summary_emotion = T5QASummaryEmotion(device=device, init=False)
-
-        self._vectorise = Vectorisation(vectorisation_model, local=local,
+        self._vectorise = TextVectorisation(text_vectorisation_model, local=local,
                                         api_key=api_key, device=device, init=False)
         
-        self._generate = Generation(generation_model, local=local,
+        self._generate = TextGeneration(text_generation_model, local=local,
                                         api_key=api_key, device=device, init=False)
 
-        self._classify = Classification(classification_model, local=local,
+        self._classify = TextClassification(text_classification_model, local=local,
                             api_key=api_key, device=device, init=False)
 
         self._image_classification = ImageClassification(image_classification_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._qa = QA(t5_qa_summary_emotion, local=local,
+        self._qa = QA(qa_model, local=local,
                             api_key=api_key, device=device, init=False)
         
-        self._emotion = Emotion(t5_qa_summary_emotion, local=local,
+        self._emotion = Emotion(emotion_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._summarise = Summarisation(t5_qa_summary_emotion, local=local,
+        self._summarise = Summarisation(summarisation_model, local=local,
                             api_key=api_key, device=device, init=False)
         
         self._device = device
         self._local = local
         self._api_key = api_key
-        self._store = store
-        self._process_doc_func = process_doc_func
-        self._process_results_func = process_results
 
-    def upload(self, documents: List[Document]) -> None:
-        """Processes and uploads documents to store
 
-        Args:
-            documents: List of documents for upload
+    # def upload(self, documents: List[Document]) -> None:
+    #     """Processes and uploads documents to store
 
-        Returns:
-            None
+    #     Args:
+    #         documents: List of documents for upload
 
-        Example:
-            >>> kiri.upload([Document("First document"), Document("Second document")])
-            None
+    #     Returns:
+    #         None
 
-        """
-        logging.warning("Upload functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
-        return self._store.upload(documents, self._process_doc_func)
+    #     Example:
+    #         >>> kiri.upload([Document("First document"), Document("Second document")])
+    #         None
+
+    #     """
+    #     logging.warning("Upload functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
+    #     return self._store.upload(documents, self._process_doc_func)
 
     def search(self, query: str, max_results=10, min_score=0.0,
-               preview_length=100, ids: List[str] = [], body=None) -> SearchResults:
-        """Search documents from document store
-
-        Args:
-            query: Search string on which search is performed
-            max_results: Maximum amount of documents to be returned from search
-            min_score: Minimum score required to be included in results
-            preview_length: Number of characters in the preview/metatext of results
-            ids: List of ids to search from
-            body: Elasticsearch request body to be passed to the backend
-
-        Returns:
-            SearchResults object
-
-        Example:
-            >>> kiri.search("RTX 3090")
-            SearchResults object
-
-        """
-        logging.warning("Search functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
-        search_results, query_vec = self._store.search(query,
-                                                       max_results=max_results, min_score=min_score,
-                                                       ids=ids, body=body)
-        self._process_results_func(
-            search_results, query_vec, self._store._doc_class,
-            preview_length, max_results, min_score)
-        return search_results
+               preview_length=100, ids: List[str] = [], body=None):
+        raise Exception("Search functionality is deprecated. Use https://github.com/kiri-ai/kiri-search instead.")
 
     def qa(self, question: str, context: str = None,
-           prev_qa: List[Tuple[str, str]] = [], num_answers: int = 3):
+           prev_qa: List[Tuple[str, str]] = []):
         """Perform QA, either on docstore or on provided context.
 
         Args:
-            question: Question (string or list of strings if using own context) for qa model.
-            context (optional): Context (string or list of strings) to ask question from.
+            question: Question (string or list of strings) for qa model.
+            context: Context (string or list of strings) to ask question from.
             prev_qa (optional): List of previous question, answer tuples or list of prev_qa.
-            num_answers (optional): Number of answers to return
 
         Returns:
-            if context is given: Answer string or list of answer strings
-            if no context: List of num_answers (default 3) answer and SearchResult object pairs.
+            Answer string or list of answer strings
 
         Example:
             >>> kiri.qa("Where does Sally live?", "Sally lives in London.")
             "London"
         """
-        if context:
-            return self._qa(question, context, prev_qa=prev_qa)
-        else:
-            logging.warning("No context (search based) qa is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
-            search_results = self.search(question)
-            answers = []
-            if issubclass(self._store._doc_class, ChunkedDocument):
-                for chunk in search_results.top_chunks[:num_answers]:
-                    answer = self._qa(question, chunk["chunk"], prev_qa=prev_qa)
-                    answers.append((answer, chunk["search_result"]))
-            else:
-                for result in search_results.results[:num_answers]:
-                    c_string = result.document.content
-                    answer = self._qa(question, c_string, prev_qa=prev_qa)
-                    answers.append((answer, result))
-            return answers
+        return self._qa(question, context, prev_qa=prev_qa)
 
 
     def summarise(self, input_text):

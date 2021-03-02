@@ -1,12 +1,4 @@
-from .tasks.qa import QA
-from .tasks.summarisation import Summarisation
-from .tasks.emotion import Emotion
-from .tasks.classification import Classification
-from .tasks.image_classification import ImageClassification
-from .tasks.vectorisation import Vectorisation
-from .tasks.generation import Generation
-from .custom_models import T5QASummaryEmotion
-from .models import BaseModel, PathModel, HuggingModel, TextGenerationModel, ClassificationModel, TextVectorisationModel
+from .generic_models import BaseModel, PathModel, HuggingModel, TextGenerationModel, ClassificationModel, TextVectorisationModel
 from .bart_large_mnli import BartLargeMNLI
 from .xlmr_large_xnli import XLMRLargeXNLI
 from .gpt2_large import GPT2Large

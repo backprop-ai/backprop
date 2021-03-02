@@ -2,7 +2,7 @@ from kiri.models import TextVectorisationModel
 
 class DistiluseBaseMultilingualCasedV2(TextVectorisationModel):
     def __init__(self, *args, **kwargs):
-        TextVectorisationModel.__init__("distiluse-base-multilingual-cased-v2",
+        TextVectorisationModel.__init__(self, "distiluse-base-multilingual-cased-v2",
                                 *args, **kwargs)
 
         self.tasks = ["text-vectorisation"]

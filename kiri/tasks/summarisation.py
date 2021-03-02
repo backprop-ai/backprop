@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from .base import Task
-from kiri.models import T5QASummaryEmotion
+from kiri.models import T5QASummaryEmotion, BaseModel
 
 import requests
 

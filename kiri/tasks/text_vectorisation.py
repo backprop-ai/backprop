@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from .base import Task
-from kiri.models import MSMARCODistilrobertaBaseV2, DistiluseBaseMultilingualCasedV2
+from kiri.models import MSMARCODistilrobertaBaseV2, DistiluseBaseMultilingualCasedV2, BaseModel
 
 import requests
 
