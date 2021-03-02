@@ -22,7 +22,8 @@ setuptools.setup(
         "elasticsearch",
         "torch",
         "torchvision",
-        "ftfy"
+        "ftfy",
+        "pytorch_lightning"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
