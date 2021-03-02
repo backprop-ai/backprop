@@ -5,9 +5,12 @@ class XLMRLargeXNLI(HuggingModel):
     def __init__(self, model_path="joeddav/xlm-roberta-large-xnli", tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
                 tokenizer_class=AutoTokenizer, device=None, init=True):
-        return HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
+        HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device, init=init)
+        self.name = "xlmr-large-xnli"
+        self.description = "XLM-RoBERTa is a multilingual variant of Facebook's RoBERTa model. This has been finetuned on the XNLI dataset, resulting in classification system that is effective on 100 different languages."
+        self.tasks = ["text-classification"]
 
     def __call__(self, task_input, task="text-classification"):
         if task == "text-classification":

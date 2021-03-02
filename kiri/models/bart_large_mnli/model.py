@@ -9,9 +9,9 @@ class BartLargeMNLI(HuggingModel):
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device, init=init)
 
-        self.tasks = ["text-classification"]
-        self.description = "Facebook's large version of BART, finetuned on the Multi-Genre Natural Language Inference dataset. This training results in a robust zero-shot classification system."
         self.name = "bart-large-mnli"
+        self.description = "Facebook's large version of BART, finetuned on the Multi-Genre Natural Language Inference dataset. This training results in a robust zero-shot classification system."
+        self.tasks = ["text-classification"]
 
     def __call__(self, task_input, task="text-classification"):
         if task == "text-classification":

@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union
-from ..models import BaseModel, GenerationModel
+from ..models import BaseModel, TextGenerationModel
 from .base import Task
 
 import requests
@@ -43,7 +43,7 @@ class Generation(Task):
         if self.local:
             # Still needs to be initialised
             if type(self.model) == str:
-                self.model = GenerationModel(self.model, init=init, device=device)
+                self.model = TextGenerationModel(self.model, init=init, device=device)
 
             task = getattr(self.model, "generate", None)
             if not callable(task):

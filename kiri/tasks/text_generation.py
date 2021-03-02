@@ -15,7 +15,7 @@ DEFAULT_API_MODEL = "gpt2-large"
 
 API_MODELS = ["gpt2-large", "t5-base-qa-summary-emotion"]
 
-class TextClassification(Task):
+class TextGeneration(Task):
     """
     Task for text generation.
 
@@ -40,9 +40,9 @@ class TextClassification(Task):
                         default_api_model=DEFAULT_API_MODEL)
 
     
-    def __call__(self, text, min_length=10, max_length=20, temperature=1.0,
-                top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
-                num_beams=1, num_generations=1, do_sample=True):
+    def __call__(self, text, min_length=None, max_length=None, temperature=None,
+                top_k=None, top_p=None, repetition_penalty=None, length_penalty=None,
+                num_beams=None, num_generations=None, do_sample=None):
         """Generates text to continue off the given input.
 
         Args:
@@ -61,25 +61,20 @@ class TextClassification(Task):
             num_generations: How many times to run generation. 
             do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
         """
+        params = [("text", text), ("min_length", min_length), ("max_length", max_length),
+                ("temperature", temperature), ("top_k", top_k), ("top_p", top_p),
+                ("repetition_penalty", repetition_penalty), ("length_penalty", length_penalty),
+                ("num_beams", num_beams), ("num_generations", num_generations),
+                ("do_sample", do_sample)]
+        
+        # Ignore None to let the model decide optimal values
+        task_input = {k: v for k, v in params if v != None}
         if self.local:
-            # task_input = {
-            #     "text": text,
-            # }
-            # TODO: User proper task interface
-            return self.model.generate(text,
-                        min_length=min_length,
-                        max_length=max_length, temperature=temperature,
-                        top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
-                        length_penalty=length_penalty, num_beams=num_beams,
-                        num_return_sequences=num_generations, do_sample=do_sample)
+            return self.model(task_input, task="text-generation")
         else:
-            body = {
-                "text": text,
-                "model": self.model,
-                "min_length": min_length,
-            }
+            task_input["model"] = self.model 
 
-            res = requests.post("https://api.kiri.ai/generation", json=body,
+            res = requests.post("https://api.kiri.ai/generation", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
 
             return res["output"]

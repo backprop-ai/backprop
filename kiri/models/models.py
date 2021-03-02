@@ -113,7 +113,7 @@ class HuggingModel(PathModel):
                                 device=device, init=init)
 
 
-class VectorisationModel(PathModel):
+class TextVectorisationModel(PathModel):
     """
     Class for models which are initialised from a local path or Sentence Transformers
 
@@ -165,13 +165,17 @@ class TextGenerationModel(HuggingModel):
         # Get and remove do_sample or set to False
         do_sample = kwargs.pop("do_sample", None) or False
         params = ["temperature", "top_k", "top_p", "repetition_penalty",
-                    "length_penalty", "num_beams", "num_return_sequences"]
+                    "length_penalty", "num_beams", "num_return_sequences", "num_generations"]
 
         # If params are changed, we want to sample
         for param in params:
             if param in kwargs.keys():
                 do_sample = True
                 break
+
+        # Override, name correctly
+        if "num_generations" in kwargs:
+            kwargs["num_return_sequences"] = kwargs["num_generations"]
 
         is_list = False
         if isinstance(text, list):

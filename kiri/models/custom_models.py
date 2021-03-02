@@ -1,10 +1,10 @@
 from typing import List, Tuple, Union
-from .models import GenerationModel, PathModel
+from .models import TextGenerationModel, PathModel
 from .clip import clip, simple_tokenizer
 from PIL import Image
 import torch
 
-class T5QASummaryEmotion(GenerationModel):
+class T5QASummaryEmotion(TextGenerationModel):
     """Custom class for Kiri's T5 model for QA, Summarisation, Emotion tasks.
 
     \*args and \*\*kwargs according to GenerationModel class.
