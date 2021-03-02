@@ -1,5 +1,6 @@
 from typing import Callable, Dict, List, Tuple, Union
-from kiri import save, load
+from kiri import save as utils_save
+from kiri import load as utils_load
 from kiri.tasks import QA, TextGeneration, TextVectorisation, Summarisation, Emotion, ImageClassification, TextClassification
 from kiri.models import BaseModel
 
@@ -73,6 +74,12 @@ class Kiri:
     #     """
     #     logging.warning("Upload functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
     #     return self._store.upload(documents, self._process_doc_func)
+
+    def save(self, model, path=None):
+        return utils_save(model, path=path)
+
+    def load(self, path):
+        return utils_load(path)
 
     def search(self, query: str, max_results=10, min_score=0.0,
                preview_length=100, ids: List[str] = [], body=None):

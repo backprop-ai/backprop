@@ -11,7 +11,7 @@ class GPT2Large(TextGenerationModel):
         self.name = "gpt2-large"
 
     def __call__(self, task_input, task="text-generation"):
-        if task == "text-generation":
+        if task in ["text-generation", "generation"]:
             text = task_input.pop("text")
 
             return self.generate(text, **task_input)

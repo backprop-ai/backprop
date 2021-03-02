@@ -10,7 +10,7 @@ class DistiluseBaseMultilingualCasedV2(TextVectorisationModel):
         self.name = "distiluse-base-multilingual-cased-v2"
 
     def __call__(self, task_input, task="text-vectorisation"):
-        if task == "text-vectorisation":
+        if task in ["text-vectorisation", "vectorisation"]:
             text = task_input.pop("text")
 
             return self.model.encode(text).tolist()
