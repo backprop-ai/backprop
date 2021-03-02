@@ -36,3 +36,5 @@ def save(model, path=None):
 
     with open(os.path.join(path, "model.bin"), "wb") as f:
         dill.dump(model, f)
+
+    return path

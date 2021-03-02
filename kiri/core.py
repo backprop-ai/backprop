@@ -1,6 +1,7 @@
 from typing import Callable, Dict, List, Tuple, Union
 from kiri import save as utils_save
 from kiri import load as utils_load
+from kiri import upload as utils_upload
 from kiri.tasks import QA, TextGeneration, TextVectorisation, Summarisation, Emotion, ImageClassification, TextClassification
 from kiri.models import BaseModel
 
@@ -80,6 +81,9 @@ class Kiri:
 
     def load(self, path):
         return utils_load(path)
+
+    def upload(self, model: BaseModel = None, path: str = None, save_path: str = None):
+        return utils_upload(model=model, path=path, save_path=save_path, api_key=self._api_key)
 
     def search(self, query: str, max_results=10, min_score=0.0,
                preview_length=100, ids: List[str] = [], body=None):
