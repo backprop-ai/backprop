@@ -1,12 +1,12 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from typing import List, Tuple
 
-from kiri.models import TextGenerationModel
+from kiri.models import T5
 
-class T5QASummaryEmotion(TextGenerationModel):
+class T5QASummaryEmotion(T5):
     def __init__(self, *args, **kwargs):
-        TextGenerationModel.__init__(self, "kiri-ai/t5-base-qa-summary-emotion",
-                                *args, **kwargs)
+        T5.__init__(self, model_path="kiri-ai/t5-base-qa-summary-emotion",
+                    *args, **kwargs)
 
         self.tasks = ["text-generation", "emotion", "summarisation", "qa"]
         self.description = "This is the T5 base model by Google, and has been finetuned further for Q&A, Summarisation, and Sentiment analysis (emotion detection)."

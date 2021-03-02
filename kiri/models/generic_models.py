@@ -46,14 +46,14 @@ class PathModel(BaseModel):
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
         self.tokenizer_path = tokenizer_path
-        self.device = device
+        self._device = device
 
-        if self.device is None:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        if self._device is None:
+            self._device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
         if init:
-            self.model = self.init_model(model_path).eval().to(self.device)
+            self.model = self.init_model(model_path).eval().to(self._device)
 
             # Not all models need tokenizers
             if self.tokenizer_path:
@@ -102,7 +102,7 @@ class HuggingModel(PathModel):
             tokenizer_path = self.tokenizer_path
             init_model = self.init_model
             init_tokenizer = self.init_tokenizer
-            device = self.device
+            device = self._device
         else:
             init_model = model_class.from_pretrained
             init_tokenizer = tokenizer_class.from_pretrained
@@ -131,7 +131,7 @@ class TextVectorisationModel(PathModel):
         if hasattr(self, "initialised"):
             model_path = self.model_path
             init_model = self.init_model
-            device = self.device
+            device = self._device
         else:
             init_model = partial(model_class, device=device)
 
@@ -176,6 +176,7 @@ class TextGenerationModel(HuggingModel):
         # Override, name correctly
         if "num_generations" in kwargs:
             kwargs["num_return_sequences"] = kwargs["num_generations"]
+            del kwargs["num_generations"]
 
         is_list = False
         if isinstance(text, list):
@@ -189,7 +190,7 @@ class TextGenerationModel(HuggingModel):
             features = self.tokenizer(text, return_tensors="pt")
 
             for k, v in features.items():
-                features[k] = v.to(self.device)
+                features[k] = v.to(self._device)
 
             with torch.no_grad():
                 tokens = self.model.generate(do_sample=do_sample,
@@ -244,7 +245,7 @@ class ClassificationModel(HuggingModel):
     def calculate_probability(self, text, label, device):
         hypothesis = f"This example is {label}."
         features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
-                                    truncation=True).to(self.device)
+                                    truncation=True).to(self._device)
         logits = self.model(features)[0]
         entail_contradiction_logits = logits[:, [0, 2]]
         probs = entail_contradiction_logits.softmax(dim=1)
@@ -265,7 +266,7 @@ class ClassificationModel(HuggingModel):
             for text, labels in zip(text, labels):
                 results = {}
                 for label in labels:
-                    results[label] = self.calculate_probability(text, label, self.device)
+                    results[label] = self.calculate_probability(text, label, self._device)
 
                 results_list.append(results)
 
@@ -274,6 +275,6 @@ class ClassificationModel(HuggingModel):
             results = {}
             for label in labels:
                 results[label] = self.calculate_probability(
-                    text, label, self.device)
+                    text, label, self._device)
 
             return results

@@ -24,7 +24,7 @@ class XLMRLargeXNLI(HuggingModel):
     def calculate_probability(self, text, label, device):
         hypothesis = f"This example is {label}."
         features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
-                                    truncation=True).to(self.device)
+                                    truncation=True).to(self._device)
         logits = self.model(features)[0]
         entail_contradiction_logits = logits[:, [0, 2]]
         probs = entail_contradiction_logits.softmax(dim=1)
@@ -44,7 +44,7 @@ class XLMRLargeXNLI(HuggingModel):
             for text, labels in zip(text, labels):
                 results = {}
                 for label in labels:
-                    results[label] = self.calculate_probability(text, label, self.device)
+                    results[label] = self.calculate_probability(text, label, self._device)
 
                 results_list.append(results)
 
@@ -53,6 +53,6 @@ class XLMRLargeXNLI(HuggingModel):
             results = {}
             for label in labels:
                 results[label] = self.calculate_probability(
-                    text, label, self.device)
+                    text, label, self._device)
 
             return results

@@ -10,7 +10,7 @@ class Task:
                 default_api_model: str = None):
         self.local = local
         self.api_key = api_key
-        self.device = device
+        self._device = device
         self.init = init
 
         # Pick the correct model name
@@ -43,3 +43,6 @@ class Task:
 
     def __call__(self):
         raise Exception("The base Task is not callable!")
+
+    def finetune(self, *args, **kwargs):
+        raise NotImplementedError("Finetuning is not implemented for this task")
