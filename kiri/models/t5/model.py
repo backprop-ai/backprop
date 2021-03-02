@@ -105,3 +105,8 @@ class T5(TextGenerationModel, pl.LightningModule):
         self.model.train()
         trainer.fit(self)
 
+        del self.dataset_train
+        del self.dataset_valid
+
+        print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
+
