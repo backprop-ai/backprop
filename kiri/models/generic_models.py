@@ -22,6 +22,9 @@ class BaseModel:
     def __call__(self, *args, **kwargs):
         return self.model(*args, **kwargs)
 
+    def finetune(self, *args, **kwargs):
+        raise NotImplementedError("This model does not support finetuning")
+
     # def set_name(self, name: str):
 
 
