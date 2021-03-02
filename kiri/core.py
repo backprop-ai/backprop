@@ -33,48 +33,30 @@ class Kiri:
             import torch
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        self._vectorise = TextVectorisation(text_vectorisation_model, local=local,
+        self.TextVectorisation = TextVectorisation(text_vectorisation_model, local=local,
                                         api_key=api_key, device=device, init=False)
         
-        self._generate = TextGeneration(text_generation_model, local=local,
+        self.TextGeneration = TextGeneration(text_generation_model, local=local,
                                         api_key=api_key, device=device, init=False)
 
-        self._classify = TextClassification(text_classification_model, local=local,
+        self.TextClassification = TextClassification(text_classification_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._image_classification = ImageClassification(image_classification_model, local=local,
+        self.ImageClassification = ImageClassification(image_classification_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._qa = QA(qa_model, local=local,
+        self.QA = QA(qa_model, local=local,
                             api_key=api_key, device=device, init=False)
         
-        self._emotion = Emotion(emotion_model, local=local,
+        self.Emotion = Emotion(emotion_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._summarise = Summarisation(summarisation_model, local=local,
+        self.Summarisation = Summarisation(summarisation_model, local=local,
                             api_key=api_key, device=device, init=False)
         
         self._device = device
         self._local = local
         self._api_key = api_key
-
-
-    # def upload(self, documents: List[Document]) -> None:
-    #     """Processes and uploads documents to store
-
-    #     Args:
-    #         documents: List of documents for upload
-
-    #     Returns:
-    #         None
-
-    #     Example:
-    #         >>> kiri.upload([Document("First document"), Document("Second document")])
-    #         None
-
-    #     """
-    #     logging.warning("Upload functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
-    #     return self._store.upload(documents, self._process_doc_func)
 
     def save(self, model, path=None):
         return utils_save(model, path=path)
@@ -105,7 +87,7 @@ class Kiri:
             >>> kiri.qa("Where does Sally live?", "Sally lives in London.")
             "London"
         """
-        return self._qa(question, context, prev_qa=prev_qa)
+        return self.QA(question, context, prev_qa=prev_qa)
 
 
     def summarise(self, input_text):
@@ -122,7 +104,7 @@ class Kiri:
             "short summary of document"
 
         """
-        return self._summarise(input_text)
+        return self.Summarisation(input_text)
 
     def emotion(self, input_text):
         """Perform emotion detection on input text.
@@ -144,7 +126,7 @@ class Kiri:
             "approval"
 
         """
-        return self._emotion(input_text)
+        return self.Emotion(input_text)
 
     def classify(self, input_text, labels: List[str]):
         """Classify input text according to given labels.
@@ -162,7 +144,7 @@ class Kiri:
             {"product issue": 0.98, "nature": 0.05}
 
         """
-        return self._classify(input_text, labels)
+        return self.TextClassification(input_text, labels)
 
 
     def image_classification(self, image_path: str, labels: List[str]):
@@ -182,7 +164,7 @@ class Kiri:
             {"cat": 0.01, "dog": 0.99}
 
         """
-        return self._image_classification(image_path, labels)
+        return self.ImageClassification(image_path, labels)
 
 
     def vectorise(self, input_text):
@@ -200,7 +182,7 @@ class Kiri:
             [0.92949192, 0.23123010, ...]
 
         """
-        return self._vectorise(input_text)
+        return self.TextVectorisation(input_text)
 
     def generate(self, input_text, min_length=10, max_length=20, temperature=1.0,
                 top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
@@ -223,7 +205,7 @@ class Kiri:
             num_generations: How many times to run generation. 
             do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
         """
-        return self._generate(input_text,
+        return self.TextGeneration(input_text,
                           min_length=min_length,
                           max_length=max_length, temperature=temperature,
                           top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
