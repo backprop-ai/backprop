@@ -99,7 +99,7 @@ class T5(TextGenerationModel, pl.LightningModule):
         accumulate_grad_batches = max(1, int(OPTIMAL_BATCH_SIZE / self.batch_size))
 
         trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=int(OPTIMAL_BATCH_SIZE / batch_size),
-            max_epochs=3)
+            max_epochs=3, checkpoint_callback=False, logger=False)
 
         print("Starting to train...")
         self.model.train()
