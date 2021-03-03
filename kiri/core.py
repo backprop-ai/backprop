@@ -129,6 +129,27 @@ class Kiri:
         return self.Emotion(input_text)
 
     def classify(self, input_text, labels: List[str]):
+        """Renamed - use classify_text instead
+        Classify input text according to given labels.
+
+
+        Args:
+            input_text: string or list of strings to classify
+            labels: list of strings or list of labels
+
+        Returns:
+            dict where each key is a label and value is probability between 0 and 1, or list of dicts.
+
+        Example:
+            >>> kiri.classify("I am mad because my product broke.", ["product issue", "nature"])
+            {"product issue": 0.98, "nature": 0.05}
+
+        """
+        logging.warning("classify has been renamed to classify_text, it will be removed in a future version")
+
+        return self.TextClassification(input_text, labels)
+
+    def classify_text(self, input_text, labels: List[str]):
         """Classify input text according to given labels.
 
 
@@ -144,10 +165,30 @@ class Kiri:
             {"product issue": 0.98, "nature": 0.05}
 
         """
-        return self.TextClassification(input_text, labels)
 
 
     def image_classification(self, image_path: str, labels: List[str]):
+        # TODO: Implement batching
+        """Renamed - use classify_image instead
+        Classify image according to given labels.
+
+
+        Args:
+            image_path: path to image
+            labels: list of strings
+
+        Returns:
+            dict where each key is a label and value is probability between 0 and 1
+
+        Example:
+            >>> kiri.image_classification("/home/Documents/dog.png", ["cat", "dog"])
+            {"cat": 0.01, "dog": 0.99}
+
+        """
+        logging.warning("image_classification has been renamed to classify_image, it will be removed in a future version")
+        return self.ImageClassification(image_path, labels)
+
+    def classify_image(self, image_path: str, labels: List[str]):
         # TODO: Implement batching
         """Classify image according to given labels.
 
@@ -168,6 +209,25 @@ class Kiri:
 
 
     def vectorise(self, input_text):
+        """Renamed - use vectorise_text instead
+        Vectorise input text.
+
+
+        Args:
+            input_text: string or list of strings to vectorise
+
+        Returns:
+            Vector or list of vectors
+
+        Example:
+            >>> kiri.vectorise("iPhone 12 128GB")
+            [0.92949192, 0.23123010, ...]
+
+        """
+        logging.warning("vectorise has been renamed to vectorise_text, it will be removed in a future version")
+        return self.TextVectorisation(input_text)
+
+    def vectorise_text(self, input_text):
         """Vectorise input text.
 
 
@@ -185,6 +245,37 @@ class Kiri:
         return self.TextVectorisation(input_text)
 
     def generate(self, input_text, min_length=10, max_length=20, temperature=1.0,
+                top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
+                num_beams=1, num_generations=1, do_sample=True):
+        """Renamed - use generate_text instead
+        Generates text to continue off the given input.
+
+        Args:
+            input_text: Text from which model will begin generating.
+            min_length: Minimum length of generation before EOS can be generated.
+            max_length: Maximum length of generated sequence.
+            temperature: Value that alters softmax probabilities.
+            top_k: Sampling strategy in which probabilities are redistributed among top k most-likely words.
+            top_p: Sampling strategy in which probabilities are distributed among 
+                set of words with combined probability greater than p.
+            repetition_penalty: Penalty to be applied to words present in the input_text and
+                words already generated in the sequence.
+            length_penalty: Penalty applied to overall sequence length. Set >1 for longer sequences,
+                or <1 for shorter ones. 
+            num_beams: Number of beams to be used in beam search. (1: no beam search)
+            num_generations: How many times to run generation. 
+            do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
+        """
+        logging.warning("generate has been renamed to generate_text, it will be removed in a future version")
+        return self.TextGeneration(input_text,
+                          min_length=min_length,
+                          max_length=max_length, temperature=temperature,
+                          top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
+                          length_penalty=length_penalty, num_beams=num_beams,
+                          num_generations=num_generations, do_sample=do_sample)
+
+    
+    def generate_text(self, input_text, min_length=10, max_length=20, temperature=1.0,
                 top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
                 num_beams=1, num_generations=1, do_sample=True):
         """Generates text to continue off the given input.
