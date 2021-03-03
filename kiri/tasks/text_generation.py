@@ -22,13 +22,13 @@ class TextGeneration(Task):
     Attributes:
         model:
             1. Name of the model on Kiri's generation endpoint (gpt2-large, t5-base-qa-summary-emotion)
-            2. Officially supported local models (gpt2, t5-base-qa-summary-emotion) or Huggingface path to the model.
-            3. Kiri's GenerationModel object
+            2. Officially supported local models (gpt2, t5-base-qa-summary-emotion).
+            3. Model class of instance Kiri's TextGenerationModel
         local (optional): Run locally. Defaults to True
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
         init (optional): Whether to initialise model immediately or wait until first call.
-            Defaults to False
+            Defaults to True
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = "cpu",

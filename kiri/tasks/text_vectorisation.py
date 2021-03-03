@@ -22,8 +22,8 @@ class TextVectorisation(Task):
     Attributes:
         model:
             1. Name of the model on Kiri's vectorisation endpoint (english, multilingual)
-            2. Officially supported local models (english, multilingual) or Sentence Transformer path to the model.
-            3. Kiri's VectorisationModel object
+            2. Officially supported local models (english, multilingual).
+            3. Model class of instance Kiri's TextVectorisationModel
         local (optional): Run locally. Defaults to True
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -40,8 +40,13 @@ class TextVectorisation(Task):
                         default_api_model=DEFAULT_API_MODEL)
     
     def __call__(self, text):
-        """
-        Calls the vectorisation model with text.
+        """Vectorise input text.
+
+        Args:
+            input_text: string or list of strings to vectorise
+
+        Returns:
+            Vector or list of vectors
         """
         if self.local:
             task_input = {

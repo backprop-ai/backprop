@@ -24,7 +24,7 @@ class ImageClassification(Task):
         model:
             1. Name of the model on Kiri's image classification endpoint (english)
             2. Officially supported local models (english) or Huggingface path to the model.
-            3. Kiri's ClassificationModel object
+            3. Model class of instance Kiri's BaseModel that implements the image-classification task
         local (optional): Run locally. Defaults to True
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -42,8 +42,14 @@ class ImageClassification(Task):
 
     
     def __call__(self, image_path: str, labels: List[str]):
-        """
-        Calls the classification model with text and labels.
+        """Classify image according to given labels.
+
+        Args:
+            image_path: path to image
+            labels: list of strings
+
+        Returns:
+            dict where each key is a label and value is probability between 0 and 1
         """
         if self.local:
             task_input = {

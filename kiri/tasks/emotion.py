@@ -21,8 +21,8 @@ class Emotion(Task):
     Attributes:
         model:
             1. Name of the model on Kiri's emotion endpoint (english)
-            2. Officially supported local models (english) or Huggingface path to the model.
-            3. Kiri's BaseModel object that implements the emotion method
+            2. Officially supported local models (english).
+            3. Model class of instance Kiri's BaseModel that implements the emotion task
         model_class (optional): The model class to use when supplying a path for the model.
         local (optional): Run locally. Defaults to True
         api_key (optional): Kiri API key for non-local inference
@@ -40,8 +40,14 @@ class Emotion(Task):
                         default_api_model=DEFAULT_API_MODEL)
     
     def __call__(self, text: str):
-        """
-        Calls the summarisation model with text.
+        """Perform emotion detection on input text.
+
+        Args:
+            input_text: string or list of strings to detect emotion from
+                keep this under a few sentences for best performance.
+
+        Returns:
+            Emotion string or list of emotion strings.
         """
         task_input = {
             "text": text

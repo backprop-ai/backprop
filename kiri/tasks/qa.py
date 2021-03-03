@@ -21,8 +21,8 @@ class QA(Task):
     Attributes:
         model:
             1. Name of the model on Kiri's qa endpoint (english)
-            2. Officially supported local models (english) or Huggingface path to the model.
-            3. Kiri's BaseModel object that implements the qa method
+            2. Officially supported local models (english).
+            3. Model class of instance Kiri's BaseModel that implements the qa task
         model_class (optional): The model class to use when supplying a path for the model.
         local (optional): Run locally. Defaults to True
         api_key (optional): Kiri API key for non-local inference
@@ -40,8 +40,15 @@ class QA(Task):
                         default_api_model=DEFAULT_API_MODEL)
     
     def __call__(self, question: str, context: str, prev_qa: List[Tuple[str, str]] = []):
-        """
-        Calls the qa model with question, context and list of previous question, answer pairs.
+        """Perform QA, either on docstore or on provided context.
+
+        Args:
+            question: Question (string or list of strings) for qa model.
+            context: Context (string or list of strings) to ask question from.
+            prev_qa (optional): List of previous question, answer tuples or list of prev_qa.
+
+        Returns:
+            Answer string or list of answer strings
         """
         # List of two tuples
         prev_qa = [[q for q, a in prev_qa], [a for q, a in prev_qa]]

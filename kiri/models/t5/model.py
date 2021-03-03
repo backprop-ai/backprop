@@ -66,7 +66,17 @@ class T5(TextGenerationModel, pl.LightningModule):
         return DataLoader(self.dataset_valid,
             batch_size=self.batch_size|self.hparams.batch_size)
     
-    def finetune(self, input_text, output_text, validation_split=0.1, epochs=3):
+    def finetune(self, input_text: List[str], output_text: List[str], validation_split: float = 0.1, epochs: int = 3):
+        """
+        Finetunes T5 for a text generation task.
+        input_text and output_text must be ordered the same way (item 1 of input must match item 1 of output)
+
+        Args:
+            input_text: List of strings that are used to predict and output (must match output ordering)
+            output_text: List of strings that are predicted using input (must match input ordering)
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
+            epochs: Integer that specifies how many iterations of training to do
+        """
         self.check_init()
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")

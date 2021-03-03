@@ -22,8 +22,8 @@ class TextClassification(Task):
     Attributes:
         model:
             1. Name of the model on Kiri's classification endpoint (english, multilingual)
-            2. Officially supported local models (english, multilingual) or Huggingface path to the model.
-            3. Kiri's ClassificationModel object
+            2. Officially supported local models (english, multilingual).
+            3. Model class of instance Kiri's TextClassificationModel
         local (optional): Run locally. Defaults to True
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -41,8 +41,14 @@ class TextClassification(Task):
 
     
     def __call__(self, text: str, labels: List[str]):
-        """
-        Calls the classification model with text and labels.
+        """Classify input text according to given labels.
+
+        Args:
+            input_text: string or list of strings to classify
+            labels: list of strings or list of labels
+
+        Returns:
+            dict where each key is a label and value is probability between 0 and 1, or list of dicts.
         """
         if self.local:
             task = "text-classification"
