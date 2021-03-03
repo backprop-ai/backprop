@@ -12,10 +12,20 @@ class Kiri:
     """Core class of kiri
 
     Attributes:
-        vectorisation_model (optional): "english" or "multilingual".
-            For local inference, the name of a SentenceTransformer model is also supported.
-        classification_model (optional): "english" or "multilingual".
-            For local inference, the name of a Huggingface transformers model is also supported.
+        text_vectorisation_model (optional): "english" or "multilingual".
+            For local inference, a model class of instance TextVectorisationModel is also supported.
+        text_classification_model (optional): "english" or "multilingual".
+            For local inference, a model class of instance TextClassificationModel is also supported.
+        image_classification_model (optional): "english".
+            For local inference, a model class of instance BaseModel is also supported.
+        text_generation_model (optional): "gpt2" or "t5-base-qa-summary-emotion".
+            For local inference, a model class of instance TextGenerationModel is also supported.
+        emotion_model (optional): "english".
+            For local inference, a model class of instance BaseModel is also supported.
+        summarisation_model (optional): "english".
+            For local inference, a model class of instance BaseModel is also supported.
+        qa_model (optional): "english".
+            For local inference, a model class of instance BaseModel is also supported.
         device (optional): Pytorch device to run inference on. Detected automatically if not specified.
     """
 
