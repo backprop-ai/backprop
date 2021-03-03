@@ -9,7 +9,7 @@ import logging
 
 
 class Kiri:
-    """Core class of kiri
+    """Core class of Kiri
 
     Attributes:
         text_vectorisation_model (optional): "english" or "multilingual".
