@@ -17,6 +17,7 @@ def upload(model: BaseModel = None, path: str = None, api_key: str = None, save_
 
     if model:
         print("Saving model...")
+        model.to("cpu")
         path = save(model, path=save_path)
 
     print("Testing that the model can be loaded...")

@@ -14,8 +14,8 @@ setuptools.setup(
     url="https://github.com/kiri-ai/kiri",
     packages=setuptools.find_packages(),
     install_requires=[
-        "transformers>=4.0.0",
-        "sentence_transformers",
+        "transformers>=4.3.2",
+        "sentence_transformers>=0.4.1.2",
         "nltk",
         "scipy",
         "shortuuid",

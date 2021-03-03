@@ -5,7 +5,7 @@ logger = logging.getLogger("info")
 
 class Task:
     def __init__(self, model, local=False, api_key=None,
-                device: str = "cpu", init=False, local_models: Dict = None,
+                device: str = "cpu", init=True, local_models: Dict = None,
                 api_models: List[str] = None, default_local_model: str = None,
                 default_api_model: str = None):
         self.local = local

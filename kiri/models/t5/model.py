@@ -66,7 +66,7 @@ class T5(TextGenerationModel, pl.LightningModule):
         return DataLoader(self.dataset_valid,
             batch_size=self.batch_size|self.hparams.batch_size)
     
-    def finetune(self, input_text, output_text, validation_split=0.1):
+    def finetune(self, input_text, output_text, validation_split=0.1, epochs=3):
         self.check_init()
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
@@ -99,7 +99,7 @@ class T5(TextGenerationModel, pl.LightningModule):
         accumulate_grad_batches = max(1, int(OPTIMAL_BATCH_SIZE / self.batch_size))
 
         trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=int(OPTIMAL_BATCH_SIZE / batch_size),
-            max_epochs=3, checkpoint_callback=False, logger=False)
+            max_epochs=epochs, checkpoint_callback=False, logger=False)
 
         print("Starting to train...")
         self.model.train()

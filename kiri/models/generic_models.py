@@ -25,6 +25,9 @@ class BaseModel:
     def finetune(self, *args, **kwargs):
         raise NotImplementedError("This model does not support finetuning")
 
+    def to(self, device):
+        self.model.to(device)
+
     # def set_name(self, name: str):
 
 

@@ -32,7 +32,7 @@ class QA(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = "cpu",
-                init: bool = False):
+                init: bool = True):
 
         super().__init__(model, local=local, api_key=api_key, device=device,
                         init=init, local_models=LOCAL_MODELS, api_models=API_MODELS,
