@@ -6,6 +6,17 @@ import dill
 import requests
 
 def upload(model: BaseModel = None, path: str = None, api_key: str = None, save_path: str = None):
+    """
+    Deploys a model from object or path to Kiri. 
+    Either the model or path to saved model must be provided.
+
+    Args:
+        model: Model object
+        path: Path to saved model
+        api_key: Kiri API key
+        save_path: Optional path to save model if providing a model object
+    """
+    
     if api_key is None:
         raise ValueError("Please provide your api_key")
 

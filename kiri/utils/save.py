@@ -5,6 +5,12 @@ import os
 import json
 
 def save(model, path=None):
+    """
+    Saves the provided model to the kiri cache folder using model.name or to provided path
+
+    Args:
+        path: Optional path to save model
+    """
     name = model.name
     tasks = model.tasks
     description = model.description

@@ -59,12 +59,33 @@ class Kiri:
         self._api_key = api_key
 
     def save(self, model, path=None):
+        """
+        Saves the provided model to the kiri cache folder using model.name or to provided path
+
+        Args:
+            path: Optional path to save model
+        """
         return utils_save(model, path=path)
 
     def load(self, path):
+        """
+        Loads a saved model and returns it.
+
+        Args:
+            path: Name of the model or full path to model.
+        """
         return utils_load(path)
 
     def upload(self, model: BaseModel = None, path: str = None, save_path: str = None):
+        """
+        Deploys a model from object or path to Kiri. 
+        Either the model or path to saved model must be provided.
+
+        Args:
+            model: Model object
+            path: Path to saved model
+            save_path: Optional path to save model if providing a model object
+        """
         return utils_upload(model=model, path=path, save_path=save_path, api_key=self._api_key)
 
     def search(self, query: str, max_results=10, min_score=0.0,
