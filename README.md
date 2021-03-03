@@ -24,9 +24,9 @@ Out of the box tasks you can solve with Kiri:
 - Emotion detection in English (for customer satisfaction, text analysis, etc.)
 - Text Generation (for idea, story generation and broad task solving)
 
-Some tasks support finetuning, which lets you adapt a task for your specific use case with little data and a couple of lines of code. We are adding finetuning support for all tasks soon.
+For more specific use cases, you can adapt a task with little data and a couple of lines of code using finetuning. We are adding finetuning support for all tasks soon.
 
-You can run all tasks locally or in production with our optimised inference [API](https://kiri.ai), where you only pay for usage. It includes all the models in our library and lets you upload your own finetuned models.
+You can run all tasks locally or in production with our optimised inference [API](https://kiri.ai), where you only pay for usage. It includes all the tasks, models in our library and lets you upload your own finetuned models.
 
 | ⚡ [Getting started](#getting-started)                            | Installation, few minute introduction     |
 | :---------------------------------------------------------------- | :---------------------------------------- |
@@ -115,7 +115,7 @@ kiri.upload(model, api_key="abc")
 
 4. Deploying models cost effectively is hard work
    - If our models suit your use case, no deployment is needed
-   - Adapt and deploy a model with a couple of lines of code
+   - Adapt and deploy your own model with a couple of lines of code
    - Our API scales, is always available, and you only pay for usage
 
 ## Examples
