@@ -3,4 +3,4 @@ sentence_transformers>=0.4.1.2
 torch
 torchvision
 ftfy
-pytorch_lightning
+pytorch_lightning==1.1.0

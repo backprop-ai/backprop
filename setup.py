@@ -19,7 +19,7 @@ setuptools.setup(
         "torch",
         "torchvision",
         "ftfy",
-        "pytorch_lightning"
+        "pytorch_lightning==1.1.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
