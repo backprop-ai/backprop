@@ -95,7 +95,7 @@ class T5(TextGenerationModel, pl.LightningModule):
 
         self.dataset_train = dataset_train
         self.dataset_valid = dataset_valid
-        
+
         # Find batch size
         trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
         print("Finding the optimal batch size...")
@@ -117,6 +117,9 @@ class T5(TextGenerationModel, pl.LightningModule):
 
         del self.dataset_train
         del self.dataset_valid
+        del self.trainer
+
+        self.model.eval()
 
         print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
 

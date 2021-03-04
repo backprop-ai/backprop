@@ -15,6 +15,8 @@ def save(model, path=None):
     tasks = model.tasks
     description = model.description
 
+    model.eval()
+
     if path is None and name is None:
         raise ValueError("please provide a path or give the model a name")
 
@@ -28,7 +30,7 @@ def save(model, path=None):
         "tasks": tasks
     }
 
-    packages = ["kiri", "transformers", "sentence_transformers"]
+    packages = ["kiri", "transformers", "sentence_transformers", "pytorch_lightning"]
     requirements = [f"{package}=={pkg_resources.get_distribution(package).version}"
                     for package in packages]
 

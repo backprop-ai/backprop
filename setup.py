@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kiri",
-    version="0.4.9",
+    version="0.5.0.dev0",
     author="Kiri OÜ",
     author_email="hello@kiri.ai",
     description="Kiri Natural Language Engine",
@@ -16,10 +16,6 @@ setuptools.setup(
     install_requires=[
         "transformers>=4.3.2",
         "sentence_transformers>=0.4.1.2",
-        "nltk",
-        "scipy",
-        "shortuuid",
-        "elasticsearch",
         "torch",
         "torchvision",
         "ftfy",
