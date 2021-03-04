@@ -13,6 +13,6 @@ class MSMARCODistilrobertaBaseV2(TextVectorisationModel):
         if task in ["text-vectorisation", "vectorisation"]:
             text = task_input.pop("text")
 
-            return self.model.encode(text).tolist()
+            return self.vectorise(text).tolist()
         else:
             raise ValueError(f"Unsupported task: {task}")
