@@ -10,7 +10,7 @@ class MSMARCODistilrobertaBaseV2(TextVectorisationModel):
         self.name = "msmarco-distilroberta-base-v2"
 
     def __call__(self, task_input, task="text-vectorisation"):
-        if task == ["text-vectorisation", "vectorisation"]:
+        if task in ["text-vectorisation", "vectorisation"]:
             text = task_input.pop("text")
 
             return self.model.encode(text).tolist()

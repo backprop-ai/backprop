@@ -39,7 +39,7 @@ class TextVectorisation(Task):
                         default_local_model=DEFAULT_LOCAL_MODEL,
                         default_api_model=DEFAULT_API_MODEL)
     
-    def __call__(self, text):
+    def __call__(self, text: Union[str, List[str]]):
         """Vectorise input text.
 
         Args:

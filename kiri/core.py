@@ -102,8 +102,8 @@ class Kiri:
                preview_length=100, ids: List[str] = [], body=None):
         raise Exception("Search functionality is deprecated. Use https://github.com/kiri-ai/kiri-search instead.")
 
-    def qa(self, question: str, context: str = None,
-           prev_qa: List[Tuple[str, str]] = []):
+    def qa(self, question: Union[str, List[str]], context: Union[str, List[str]],
+            prev_qa: Union[List[Tuple[str, str]], List[List[Tuple[str, str]]]] = []):
         """Perform QA, either on docstore or on provided context.
 
         Args:
@@ -121,7 +121,7 @@ class Kiri:
         return self.QA(question, context, prev_qa=prev_qa)
 
 
-    def summarise(self, input_text):
+    def summarise(self, text: Union[str, List[str]]):
         """Perform summarisation on input text.
 
         Args:
@@ -135,9 +135,9 @@ class Kiri:
             "short summary of document"
 
         """
-        return self.Summarisation(input_text)
+        return self.Summarisation(text)
 
-    def emotion(self, input_text):
+    def emotion(self, text: Union[str, List[str]]):
         """Perform emotion detection on input text.
 
         Args:
@@ -157,9 +157,9 @@ class Kiri:
             "approval"
 
         """
-        return self.Emotion(input_text)
+        return self.Emotion(text)
 
-    def classify(self, input_text, labels: List[str]):
+    def classify(self, text: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Renamed - use classify_text instead
         Classify input text according to given labels.
 
@@ -178,9 +178,9 @@ class Kiri:
         """
         logging.warning("classify has been renamed to classify_text, it will be removed in a future version")
 
-        return self.TextClassification(input_text, labels)
+        return self.TextClassification(text, labels)
 
-    def classify_text(self, input_text, labels: List[str]):
+    def classify_text(self, text: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Classify input text according to given labels.
 
 
@@ -196,6 +196,7 @@ class Kiri:
             {"product issue": 0.98, "nature": 0.05}
 
         """
+        return self.TextClassification(text, labels)
 
 
     def image_classification(self, image_path: str, labels: List[str]):
@@ -239,7 +240,7 @@ class Kiri:
         return self.ImageClassification(image_path, labels)
 
 
-    def vectorise(self, input_text):
+    def vectorise(self, text: Union[str, List[str]]):
         """Renamed - use vectorise_text instead
         Vectorise input text.
 
@@ -256,9 +257,9 @@ class Kiri:
 
         """
         logging.warning("vectorise has been renamed to vectorise_text, it will be removed in a future version")
-        return self.TextVectorisation(input_text)
+        return self.TextVectorisation(text)
 
-    def vectorise_text(self, input_text):
+    def vectorise_text(self, text: Union[str, List[str]]):
         """Vectorise input text.
 
 
@@ -273,9 +274,9 @@ class Kiri:
             [0.92949192, 0.23123010, ...]
 
         """
-        return self.TextVectorisation(input_text)
+        return self.TextVectorisation(text)
 
-    def generate(self, input_text, min_length=10, max_length=20, temperature=1.0,
+    def generate(self, text: Union[str, List[str]], min_length=10, max_length=20, temperature=1.0,
                 top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
                 num_beams=1, num_generations=1, do_sample=True):
         """Renamed - use generate_text instead
@@ -298,7 +299,7 @@ class Kiri:
             do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
         """
         logging.warning("generate has been renamed to generate_text, it will be removed in a future version")
-        return self.TextGeneration(input_text,
+        return self.TextGeneration(text,
                           min_length=min_length,
                           max_length=max_length, temperature=temperature,
                           top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
@@ -306,7 +307,7 @@ class Kiri:
                           num_generations=num_generations, do_sample=do_sample)
 
     
-    def generate_text(self, input_text, min_length=10, max_length=20, temperature=1.0,
+    def generate_text(self, text: Union[str, List[str]], min_length=10, max_length=20, temperature=1.0,
                 top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
                 num_beams=1, num_generations=1, do_sample=True):
         """Generates text to continue off the given input.
@@ -327,7 +328,7 @@ class Kiri:
             num_generations: How many times to run generation. 
             do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
         """
-        return self.TextGeneration(input_text,
+        return self.TextGeneration(text,
                           min_length=min_length,
                           max_length=max_length, temperature=temperature,
                           top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,

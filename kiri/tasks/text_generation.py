@@ -40,7 +40,7 @@ class TextGeneration(Task):
                         default_api_model=DEFAULT_API_MODEL)
 
     
-    def __call__(self, text, min_length=None, max_length=None, temperature=None,
+    def __call__(self, text: Union[str, List[str]], min_length=None, max_length=None, temperature=None,
                 top_k=None, top_p=None, repetition_penalty=None, length_penalty=None,
                 num_beams=None, num_generations=None, do_sample=None):
         """Generates text to continue off the given input.

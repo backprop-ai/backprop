@@ -40,7 +40,7 @@ class TextClassification(Task):
                         default_api_model=DEFAULT_API_MODEL)
 
     
-    def __call__(self, text: str, labels: List[str]):
+    def __call__(self, text: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Classify input text according to given labels.
 
         Args:

@@ -39,7 +39,7 @@ class Emotion(Task):
                         default_local_model=DEFAULT_LOCAL_MODEL,
                         default_api_model=DEFAULT_API_MODEL)
     
-    def __call__(self, text: str):
+    def __call__(self, text: Union[str, List[str]]):
         """Perform emotion detection on input text.
 
         Args:

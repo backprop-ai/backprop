@@ -39,7 +39,8 @@ class QA(Task):
                         default_local_model=DEFAULT_LOCAL_MODEL,
                         default_api_model=DEFAULT_API_MODEL)
     
-    def __call__(self, question: str, context: str, prev_qa: List[Tuple[str, str]] = []):
+    def __call__(self, question: Union[str, List[str]], context: Union[str, List[str]],
+                prev_qa: Union[List[Tuple[str, str]], List[List[Tuple[str, str]]]] = []):
         """Perform QA, either on docstore or on provided context.
 
         Args:
@@ -50,14 +51,22 @@ class QA(Task):
         Returns:
             Answer string or list of answer strings
         """
-        # List of two tuples
-        prev_qa = [[q for q, a in prev_qa], [a for q, a in prev_qa]]
+
+        prev_q = []
+        prev_a = []
+        if prev_qa != [] and type(prev_qa[0]) == list:
+            for prev_qa in prev_qa:
+                prev_q += [q for q, a in prev_qa]
+                prev_a += [a for q, a in prev_qa]
+        else:
+            prev_q = [q for q, a in prev_qa]
+            prev_a = [a for q, a in prev_qa]
 
         task_input = {
             "question": question,
             "context": context,
-            "prev_q": prev_qa[0],
-            "prev_a": prev_qa[1],
+            "prev_q": prev_q,
+            "prev_a": prev_q,
         }
         if self.local:
             return self.model(task_input, task="qa")
