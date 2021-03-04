@@ -4,6 +4,7 @@ from transformers.optimization import Adafactor
 import torch
 from torch.utils.data import DataLoader
 from random import shuffle
+import os
 
 from kiri.models import TextGenerationModel
 
@@ -14,7 +15,7 @@ class T5(TextGenerationModel, pl.LightningModule):
         TextGenerationModel.__init__(self, model_path,
                                 *args, **kwargs)
 
-        self.tasks = ["text-generation"]
+        self.tasks = ["text-generation", "generation"]
         self.description = "This is the T5 model by Google."
         self.name = "t5"
         self.batch_size = 1
@@ -43,7 +44,7 @@ class T5(TextGenerationModel, pl.LightningModule):
     def configure_optimizers(self):
         return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
 
-    def encode(self, row):
+    def encode(self, row, max_input_length, max_output_length):
         inp = self.encode_input(row[0])
         out = self.encode_output(row[1])
 
@@ -60,13 +61,17 @@ class T5(TextGenerationModel, pl.LightningModule):
     
     def train_dataloader(self):
         return DataLoader(self.dataset_train,
-            batch_size=self.batch_size|self.hparams.batch_size)
+            batch_size=self.batch_size|self.hparams.batch_size,
+            num_workers=os.cpu_count()|0)
 
     def val_dataloader(self):
         return DataLoader(self.dataset_valid,
-            batch_size=self.batch_size|self.hparams.batch_size)
+            batch_size=self.batch_size|self.hparams.batch_size,
+            num_workers=os.cpu_count()|0)
     
-    def finetune(self, input_text: List[str], output_text: List[str], validation_split: float = 0.1, epochs: int = 3):
+    def finetune(self, input_text: List[str], output_text: List[str],
+                max_input_length=128, max_output_length=32,
+                validation_split: float = 0.1, epochs: int = 3):
         """
         Finetunes T5 for a text generation task.
         input_text and output_text must be ordered the same way (item 1 of input must match item 1 of output)
@@ -86,7 +91,7 @@ class T5(TextGenerationModel, pl.LightningModule):
 
         print("Processing data...")
         dataset = zip(input_text, output_text)
-        dataset = list(map(self.encode, dataset))
+        dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
         
         shuffle(dataset)
 
