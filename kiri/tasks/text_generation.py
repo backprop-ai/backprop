@@ -23,7 +23,7 @@ class TextGeneration(Task):
         model:
             1. Name of the model on Kiri's generation endpoint (gpt2-large, t5-base-qa-summary-emotion)
             2. Officially supported local models (gpt2, t5-base-qa-summary-emotion).
-            3. Model class of instance Kiri's TextGenerationModel
+            3. Model object/class that inherits from Kiri's TextGenerationModel
         local (optional): Run locally. Defaults to True
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.

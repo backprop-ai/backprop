@@ -25,6 +25,8 @@ class Task:
             if type(model) == str:
                 # TODO: self.model = kiri.load(model)
                 pass
+            elif hasattr(model, "model"):
+                self.model = model
             else:
                 self.model = model(init=init, device=device)
         else:

@@ -175,13 +175,15 @@ class TextGenerationModel(HuggingModel):
 
         # If params are changed, we want to sample
         for param in params:
-            if param in kwargs.keys():
+            if param in kwargs.keys() and kwargs[param] != None:
                 do_sample = True
                 break
 
         # Override, name correctly
         if "num_generations" in kwargs:
-            kwargs["num_return_sequences"] = kwargs["num_generations"]
+            if kwargs["num_generations"] != None:
+                kwargs["num_return_sequences"] = kwargs["num_generations"]
+                
             del kwargs["num_generations"]
 
         is_list = False
