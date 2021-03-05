@@ -17,14 +17,14 @@ labels = ["Returns", "Promotional", "Technical Issues", "Product Inquiries", "Sh
 # Negative sentiment, give special attention to these.
 negative_sentiments = ["annoyance", "disapproval", "disappointment", "anger", "disgust"]
 
-kiri = Kiri()
-kiri.classify("This is just to get rid of the example message before printing", ["test"])
+kiri = Kiri(local=True)
+kiri.classify_text("This is just to get rid of the example message before printing", ["test"])
 
 # Print example, just to display local results
 print("Inbox")
 print("==================")
 for email in emails:
-    classification_results = kiri.classify(email, labels)
+    classification_results = kiri.classify_text(email, labels)
     label = max(classification_results, key=classification_results.get)
     
     emote = kiri.emotion(email)
