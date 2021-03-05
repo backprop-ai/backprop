@@ -8,6 +8,12 @@ def save(model, path=None):
     """
     Saves the provided model to the kiri cache folder using model.name or to provided path
 
+    The resulting folder has three files:
+
+        * model.bin (dill pickled model instance)
+        * config.json (description and task keys)
+        * requirements.txt (exact python runtime requirements)
+
     Args:
         path: Optional path to save model
     """

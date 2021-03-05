@@ -1,3 +1,5 @@
+.. _kiri-utils:
+
 kiri.utils
 ==================
 

@@ -1,3 +1,5 @@
+.. _kiri-tasks:
+
 kiri.tasks
 ==================
 

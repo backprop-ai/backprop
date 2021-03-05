@@ -1,3 +1,5 @@
+.. _kiri-core:
+
 kiri.core
 ============
 

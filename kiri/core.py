@@ -100,6 +100,9 @@ class Kiri:
 
     def search(self, query: str, max_results=10, min_score=0.0,
                preview_length=100, ids: List[str] = [], body=None):
+        """
+        Search functionality is deprecated. Use https://github.com/kiri-ai/kiri-search instead.
+        """
         raise Exception("Search functionality is deprecated. Use https://github.com/kiri-ai/kiri-search instead.")
 
     def qa(self, question: Union[str, List[str]], context: Union[str, List[str]],
@@ -160,21 +163,7 @@ class Kiri:
         return self.Emotion(text)
 
     def classify(self, text: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
-        """Renamed - use classify_text instead
-        Classify input text according to given labels.
-
-
-        Args:
-            input_text: string or list of strings to classify
-            labels: list of strings or list of labels
-
-        Returns:
-            dict where each key is a label and value is probability between 0 and 1, or list of dicts.
-
-        Example:
-            >>> kiri.classify("I am mad because my product broke.", ["product issue", "nature"])
-            {"product issue": 0.98, "nature": 0.05}
-
+        """Renamed - use `classify_text` instead
         """
         logging.warning("classify has been renamed to classify_text, it will be removed in a future version")
 
@@ -201,21 +190,7 @@ class Kiri:
 
     def image_classification(self, image_path: str, labels: List[str]):
         # TODO: Implement batching
-        """Renamed - use classify_image instead
-        Classify image according to given labels.
-
-
-        Args:
-            image_path: path to image
-            labels: list of strings
-
-        Returns:
-            dict where each key is a label and value is probability between 0 and 1
-
-        Example:
-            >>> kiri.image_classification("/home/Documents/dog.png", ["cat", "dog"])
-            {"cat": 0.01, "dog": 0.99}
-
+        """Renamed - use `classify_image` instead
         """
         logging.warning("image_classification has been renamed to classify_image, it will be removed in a future version")
         return self.ImageClassification(image_path, labels)
@@ -233,7 +208,7 @@ class Kiri:
             dict where each key is a label and value is probability between 0 and 1
 
         Example:
-            >>> kiri.image_classification("/home/Documents/dog.png", ["cat", "dog"])
+            >>> kiri.classify_image("/home/Documents/dog.png", ["cat", "dog"])
             {"cat": 0.01, "dog": 0.99}
 
         """
@@ -241,20 +216,7 @@ class Kiri:
 
 
     def vectorise(self, text: Union[str, List[str]]):
-        """Renamed - use vectorise_text instead
-        Vectorise input text.
-
-
-        Args:
-            input_text: string or list of strings to vectorise
-
-        Returns:
-            Vector or list of vectors
-
-        Example:
-            >>> kiri.vectorise("iPhone 12 128GB")
-            [0.92949192, 0.23123010, ...]
-
+        """Renamed - use `vectorise_text` instead
         """
         logging.warning("vectorise has been renamed to vectorise_text, it will be removed in a future version")
         return self.TextVectorisation(text)
@@ -270,7 +232,7 @@ class Kiri:
             Vector or list of vectors
 
         Example:
-            >>> kiri.vectorise("iPhone 12 128GB")
+            >>> kiri.vectorise_text("iPhone 12 128GB")
             [0.92949192, 0.23123010, ...]
 
         """
@@ -279,24 +241,7 @@ class Kiri:
     def generate(self, text: Union[str, List[str]], min_length=10, max_length=20, temperature=1.0,
                 top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
                 num_beams=1, num_generations=1, do_sample=True):
-        """Renamed - use generate_text instead
-        Generates text to continue off the given input.
-
-        Args:
-            input_text: Text from which model will begin generating.
-            min_length: Minimum length of generation before EOS can be generated.
-            max_length: Maximum length of generated sequence.
-            temperature: Value that alters softmax probabilities.
-            top_k: Sampling strategy in which probabilities are redistributed among top k most-likely words.
-            top_p: Sampling strategy in which probabilities are distributed among 
-                set of words with combined probability greater than p.
-            repetition_penalty: Penalty to be applied to words present in the input_text and
-                words already generated in the sequence.
-            length_penalty: Penalty applied to overall sequence length. Set >1 for longer sequences,
-                or <1 for shorter ones. 
-            num_beams: Number of beams to be used in beam search. (1: no beam search)
-            num_generations: How many times to run generation. 
-            do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
+        """Renamed - use `generate_text` instead
         """
         logging.warning("generate has been renamed to generate_text, it will be removed in a future version")
         return self.TextGeneration(text,
@@ -313,14 +258,14 @@ class Kiri:
         """Generates text to continue off the given input.
 
         Args:
-            input_text: Text from which model will begin generating.
+            text: Text from which model will begin generating.
             min_length: Minimum length of generation before EOS can be generated.
             max_length: Maximum length of generated sequence.
             temperature: Value that alters softmax probabilities.
             top_k: Sampling strategy in which probabilities are redistributed among top k most-likely words.
             top_p: Sampling strategy in which probabilities are distributed among 
                 set of words with combined probability greater than p.
-            repetition_penalty: Penalty to be applied to words present in the input_text and
+            repetition_penalty: Penalty to be applied to words present in the text and
                 words already generated in the sequence.
             length_penalty: Penalty applied to overall sequence length. Set >1 for longer sequences,
                 or <1 for shorter ones. 

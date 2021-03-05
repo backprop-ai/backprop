@@ -22,13 +22,13 @@ Kiri is a Python library that makes it simple to solve AI tasks without requirin
    Core
    Tasks
    Models
-   Other
+   Utils
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Model Info
+.. .. toctree::
+..    :maxdepth: 2
+..    :caption: Model Info
 
-   T5-summary-qa-sentiment
+..    T5-summary-qa-sentiment
 
 .. toctree::
    :maxdepth: 2

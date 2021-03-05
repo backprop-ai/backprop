@@ -1,3 +1,4 @@
+from typing import List
 from transformers import AutoModelForPreTraining, AutoTokenizer, \
     AutoModelForSequenceClassification
 from sentence_transformers import SentenceTransformer
@@ -13,11 +14,11 @@ class BaseModel:
         model: Your model that takes some args, kwargs and returns an output.
             Must be callable.
     """
-    def __init__(self, model):
+    def __init__(self, model, name: str = None, description: str = None, tasks: List[str] = None):
         self.model = model
-        self.name = "base-model"
-        self.description = "This is the base description. Change me."
-        self.tasks = [] # Supports no tasks
+        self.name = name|"base-model"
+        self.description = description|"This is the base description. Change me."
+        self.tasks = tasks|[] # Supports no tasks
 
     def __call__(self, *args, **kwargs):
         return self.model(*args, **kwargs)

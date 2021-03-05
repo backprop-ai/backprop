@@ -16,6 +16,8 @@ The created instance can solve tasks locally or via the API.
 
 You can also specify models to be used for the tasks. See the core reference for the options.
 
+See the full reference in :ref:`kiri-core`.
+
 Supported Tasks
 ---------------
 
