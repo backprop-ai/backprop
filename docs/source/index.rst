@@ -6,15 +6,7 @@
 Kiri Home
 ==========
 
-Kiri Natural Language Engine is a high level Python library that makes using state-of-the-art language models easy, accessible and scalable.
-
-With Kiri, no experience in AI is needed to solve valuable real world problems using:
-
-- Semantic search in 50+ languages (for ecommerce, documentation, etc.)
-- Conversational question answering in English (for FAQ chatbots, text analysis, etc.)
-- Zero-shot classification in 100+ languages (for email sorting, intent detection, etc.)
-- Summarisation in English (TLDRs for long documents)
-- Emotion detection in English (for customer satisfaction, text analysis, etc.)
+Kiri is a Python library that makes it simple to solve AI tasks without requiring any data.
 
 .. toctree::
    :maxdepth: 2
@@ -27,9 +19,10 @@ With Kiri, no experience in AI is needed to solve valuable real world problems u
    :maxdepth: 2
    :caption: Overview
 
-   Search
+   Core
+   Tasks
+   Models
    Other
-   Document
 
 .. toctree::
    :maxdepth: 2

@@ -192,7 +192,7 @@ class Kiri:
             dict where each key is a label and value is probability between 0 and 1, or list of dicts.
 
         Example:
-            >>> kiri.classify("I am mad because my product broke.", ["product issue", "nature"])
+            >>> kiri.classify_text("I am mad because my product broke.", ["product issue", "nature"])
             {"product issue": 0.98, "nature": 0.05}
 
         """
