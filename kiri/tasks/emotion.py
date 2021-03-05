@@ -43,7 +43,7 @@ class Emotion(Task):
         """Perform emotion detection on input text.
 
         Args:
-            input_text: string or list of strings to detect emotion from
+            text: string or list of strings to detect emotion from
                 keep this under a few sentences for best performance.
 
         Returns:
