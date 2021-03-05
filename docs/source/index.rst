@@ -27,9 +27,7 @@ With Kiri, no experience in AI is needed to solve valuable real world problems u
    :maxdepth: 2
    :caption: Overview
 
-   Search
    Other
-   Document
 
 .. toctree::
    :maxdepth: 2
@@ -43,6 +41,6 @@ With Kiri, no experience in AI is needed to solve valuable real world problems u
    
    kiri.core
    kiri.models
-   kiri.search
+   kiri.tasks
    kiri.utils
    
