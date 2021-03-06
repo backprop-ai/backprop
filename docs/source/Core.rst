@@ -1,3 +1,5 @@
+.. _core:
+
 Core Functionality
 ==================
 

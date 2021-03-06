@@ -44,7 +44,7 @@ class TextClassification(Task):
         """Classify input text according to given labels.
 
         Args:
-            input_text: string or list of strings to classify
+            text: string or list of strings to classify
             labels: list of strings or list of labels
 
         Returns:

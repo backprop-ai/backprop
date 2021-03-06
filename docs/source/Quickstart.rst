@@ -46,6 +46,8 @@ Basic Task Solving
     # Prints
     "the examples folder"
 
+See examples for all available tasks in :ref:`core`.
+
 Basic Finetuning and Uploading
 -----------
 
@@ -79,6 +81,8 @@ Basic Finetuning and Uploading
     model.description = "Predicts positive and negative sentiment"
 
     kiri.upload(model, api_key="abc")
+
+Learn more about finetuning in :ref:`ft`.
 
 Why Kiri?
 ---------

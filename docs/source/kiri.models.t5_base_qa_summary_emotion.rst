@@ -1,3 +1,5 @@
+.. _t5baseqasummaryemotion:
+
 kiri.models.t5\_base\_qa\_summary\_emotion
 ==================================================
 

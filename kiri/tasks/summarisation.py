@@ -43,7 +43,7 @@ class Summarisation(Task):
         """Perform summarisation on input text.
 
         Args:
-            input_text: string or list of strings to be summarised - keep each string below 500 words.
+            text: string or list of strings to be summarised - keep each string below 500 words.
 
         Returns:
             Summary string or list of summary strings.

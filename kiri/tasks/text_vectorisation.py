@@ -43,7 +43,7 @@ class TextVectorisation(Task):
         """Vectorise input text.
 
         Args:
-            input_text: string or list of strings to vectorise
+            text: string or list of strings to vectorise
 
         Returns:
             Vector or list of vectors
