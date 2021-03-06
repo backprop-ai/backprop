@@ -52,8 +52,10 @@ class ImageClassification(Task):
             dict where each key is a label and value is probability between 0 and 1
         """
         if self.local:
+            with open(image_path, "rb") as image_file:
+                image = base64.b64encode(image_file.read())
             task_input = {
-                "image": image_path,
+                "image": image,
                 "labels": labels
             }
             return self.model(task_input, task="image-classification")

@@ -4,6 +4,9 @@ from typing import Union, List
 from . import clip, simple_tokenizer
 from kiri.models import PathModel
 
+from io import BytesIO
+import base64
+
 class CLIP(PathModel):
     def __init__(self, model_path="ViT-B/32", init_model=clip.load,
                 init_tokenizer=simple_tokenizer.SimpleTokenizer, device=None, init=True):
@@ -29,7 +32,12 @@ class CLIP(PathModel):
 
     def __call__(self, task_input, task="image-classification"):
         if task == "image-classification":
-            image = task_input.get("image")
+            image_base64 = task_input.get("image")
+
+            if type(image_base64) == str:
+                image_base64 = image_base64.split(",")[-1]
+            image = BytesIO(base64.b64decode(image_base64))
+
             labels = task_input.get("labels")
             return self.image_classification(image_path=image, labels=labels)        
 
