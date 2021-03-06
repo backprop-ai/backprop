@@ -13,7 +13,7 @@ class XLMRLargeXNLI(HuggingModel):
         self.tasks = ["text-classification"]
 
     def __call__(self, task_input, task="text-classification"):
-        if task == ["text-classification", "classification"]:
+        if task in ["text-classification", "classification"]:
             text = task_input.get("text")
             labels = task_input.get("labels")
             return self.classify(text, labels)
