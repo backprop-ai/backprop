@@ -74,7 +74,7 @@ This is an ever-growing list, so check out the full reference in :ref:`kiri-mode
 Supporting Tasks with Models
 ----------------------------
 
-In order for a model to support a task, it must follow the tasks input schema.
+In order for a model to support a task, it must follow the task's input schema.
 
 For each task, the input consists of an argument and a keyword argument.
 
