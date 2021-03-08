@@ -33,28 +33,49 @@ class CLIP(PathModel):
     def __call__(self, task_input, task="image-classification"):
         if task == "image-classification":
             image_base64 = task_input.get("image")
-
-            if type(image_base64) == str:
-                image_base64 = image_base64.split(",")[-1]
-            image = BytesIO(base64.b64decode(image_base64))
-
             labels = task_input.get("labels")
-            return self.image_classification(image_path=image, labels=labels)        
+
+            return self.image_classification(image_base64=image_base64, labels=labels)        
 
     @torch.no_grad()
-    def image_classification(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
-        # TODO: Rename image_path to image, as it accepts BytesIO as well
+    def image_classification(self, image_base64: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
+        # TODO: Proper batching
         self.check_init()
-        # TODO: Implement batching
-        image = self.transform(Image.open(image_path)).unsqueeze(0).to(self._device)
-        text = clip.tokenize(self.tokenizer, labels).to(self._device)
+        is_list = False
 
-        image_features = self.model.encode_image(image)
-        text_features = self.model.encode_text(text)
+        if type(image_base64) == list:
+            is_list = True
+
+        if not is_list:
+            image_base64 = [image_base64]
+            labels = [labels]
+
+        assert len(image_base64) == len(labels), "images and labels lists must be the same size"
         
-        logits_per_image, logits_per_text = self.model(image, text)
-        probs = logits_per_image.softmax(dim=-1).cpu().numpy().tolist()[0]
+        inputs = zip(image_base64, labels)
+        probabilities = []
 
-        label_probs = zip(labels, probs)
-        probabilities = {lp[0]: lp[1] for lp in label_probs}
+        for image_base64, labels in inputs:
+
+            # Not bytes
+            if type(image_base64) == str:
+                image_base64 = image_base64.split(",")[-1]
+
+            image = BytesIO(base64.b64decode(image_base64))
+
+            image = self.transform(Image.open(image)).unsqueeze(0).to(self._device)
+            text = clip.tokenize(self.tokenizer, labels).to(self._device)
+
+            image_features = self.model.encode_image(image)
+            text_features = self.model.encode_text(text)
+            
+            logits_per_image, logits_per_text = self.model(image, text)
+            probs = logits_per_image.softmax(dim=-1).cpu().numpy().tolist()[0]
+
+            label_probs = zip(labels, probs)
+            probabilities.append({lp[0]: lp[1] for lp in label_probs})
+
+        if is_list == False:
+            probabilities = probabilities[0]
+
         return probabilities

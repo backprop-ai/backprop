@@ -41,28 +41,41 @@ class ImageClassification(Task):
                         default_api_model=DEFAULT_API_MODEL)
 
     
-    def __call__(self, image_path: str, labels: List[str]):
+    def __call__(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Classify image according to given labels.
 
         Args:
-            image_path: path to image
-            labels: list of strings
+            image_path: path to image or list of paths to image
+            labels: list of strings or list of labels
 
         Returns:
-            dict where each key is a label and value is probability between 0 and 1
+            dict where each key is a label and value is probability between 0 and 1 or list of dicts
         """
+
+        is_list = False
+
+        if type(image_path) == list:
+            is_list = True
+
+        if not is_list:
+            image_path = [image_path]
+
+        image = []
+        for img in image_path:
+            with open(img, "rb") as image_file:
+                img = base64.b64encode(image_file.read())
+                image.append(img)
+
+        if not is_list:
+            image = image[0]
+            
         if self.local:
-            with open(image_path, "rb") as image_file:
-                image = base64.b64encode(image_file.read())
             task_input = {
                 "image": image,
                 "labels": labels
             }
             return self.model(task_input, task="image-classification")
         else:
-            # Base64 encode
-            with open(image_path, "rb") as image_file:
-                image = base64.b64encode(image_file.read())
             body = {
                 "image": image,
                 "labels": labels,
