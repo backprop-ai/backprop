@@ -5,9 +5,14 @@ logger = logging.getLogger("info")
 
 class Task:
     def __init__(self, model, local=False, api_key=None,
-                device: str = "cpu", init=True, local_models: Dict = None,
+                device: str = None, init=True, local_models: Dict = None,
                 api_models: List[str] = None, default_local_model: str = None,
                 default_api_model: str = None):
+                    
+        if device == None:
+            import torch
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        
         self.local = local
         self.api_key = api_key
         self._device = device
@@ -36,9 +41,6 @@ class Task:
             if api_key is None:
                 raise ValueError(
                     "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
-            
-            if model not in api_models:
-                raise ValueError(f"Model '{model}' is not supported for this task. Please use one of: {', '.join(api_models)}")
     
             # All checks passed
             self.model = model

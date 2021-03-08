@@ -22,7 +22,7 @@ class ImageClassification(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's image classification endpoint (english)
+            1. Name of the model on Kiri's image classification endpoint (english or your own uploaded model)
             2. Officially supported local models (english) or Huggingface path to the model.
             3. Model class of instance Kiri's BaseModel that implements the image-classification task
         local (optional): Run locally. Defaults to False

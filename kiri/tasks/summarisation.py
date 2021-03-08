@@ -20,7 +20,7 @@ class Summarisation(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's summarisation endpoint (english)
+            1. Name of the model on Kiri's summarisation endpoint (english or your own uploaded model)
             2. Officially supported local models (english).
             3. Model class of instance Kiri's BaseModel that implements the summarisation task
         model_class (optional): The model class to use when supplying a path for the model.

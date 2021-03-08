@@ -21,7 +21,7 @@ class TextClassification(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's classification endpoint (english, multilingual)
+            1. Name of the model on Kiri's classification endpoint (english, multilingual or your own uploaded model)
             2. Officially supported local models (english, multilingual).
             3. Model class of instance Kiri's TextClassificationModel
         local (optional): Run locally. Defaults to False

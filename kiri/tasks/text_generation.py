@@ -21,7 +21,7 @@ class TextGeneration(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's generation endpoint (gpt2-large, t5-base-qa-summary-emotion)
+            1. Name of the model on Kiri's generation endpoint (gpt2-large, t5-base-qa-summary-emotion or your own uploaded model)
             2. Officially supported local models (gpt2, t5-base-qa-summary-emotion).
             3. Model object/class that inherits from Kiri's TextGenerationModel
         local (optional): Run locally. Defaults to False
