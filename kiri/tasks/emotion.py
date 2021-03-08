@@ -24,11 +24,11 @@ class Emotion(Task):
             2. Officially supported local models (english).
             3. Model class of instance Kiri's BaseModel that implements the emotion task
         model_class (optional): The model class to use when supplying a path for the model.
-        local (optional): Run locally. Defaults to True
+        local (optional): Run locally. Defaults to False
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
         init (optional): Whether to initialise model immediately or wait until first call.
-            Defaults to False
+            Defaults to True
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = "cpu",
