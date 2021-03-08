@@ -59,7 +59,7 @@ class TextVectorisation(Task):
                 "model": self.model
             }
 
-            res = requests.post("https://api.kiri.ai/vectorisation", json=body,
+            res = requests.post("https://api.kiri.ai/text-vectorisation", json=body,
                                 headers={"x-api-key": self.api_key}).json()
 
             return res["vector"]

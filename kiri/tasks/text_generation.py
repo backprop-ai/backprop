@@ -74,7 +74,7 @@ class TextGeneration(Task):
         else:
             task_input["model"] = self.model 
 
-            res = requests.post("https://api.kiri.ai/generation", json=task_input,
+            res = requests.post("https://api.kiri.ai/text-generation", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
 
             return res["output"]
