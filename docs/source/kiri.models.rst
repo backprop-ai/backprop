@@ -1,26 +1,28 @@
+.. _kiri-models:
+
 kiri.models
 ===================
 
-Subpackages
------------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
-   kiri.models.tasks
+   kiri.models.bart_large_mnli
+   kiri.models.clip
+   kiri.models.distiluse_base_multilingual_cased_v2
+   kiri.models.gpt2_large
+   kiri.models.msmarco_distilroberta_base_v2
+   kiri.models.t5
+   kiri.models.t5_base_qa_summary_emotion
+   kiri.models.xlmr_large_xnli
 
-kiri.models.custom\_models
----------------------------------
+Submodules
+----------
 
-.. automodule:: kiri.models.custom_models
-   :members:
-   :undoc-members:
-   :show-inheritance:
+kiri.models.generic\_models
+----------------------------------
 
-kiri.models.models
--------------------------
-
-.. automodule:: kiri.models.models
+.. automodule:: kiri.models.generic_models
    :members:
    :undoc-members:
    :show-inheritance:

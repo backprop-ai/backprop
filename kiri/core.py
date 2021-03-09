@@ -1,167 +1,133 @@
-from typing import Callable, Dict, List, Tuple
-
-from .search import DocStore, SearchResults, Document, InMemoryDocStore, ChunkedDocument
-from .utils import process_documents, process_results
-from .models import Generation, Vectorisation, Summarisation, \
-    Emotion, QA, Classification, T5QASummaryEmotion, ImageClassification
+from typing import Callable, Dict, List, Tuple, Union
+from kiri import save as utils_save
+from kiri import load as utils_load
+from kiri import upload as utils_upload
+from kiri.tasks import QA, TextGeneration, TextVectorisation, Summarisation, Emotion, ImageClassification, TextClassification
+from kiri.models import BaseModel
 
 import logging
 
 
 class Kiri:
-    """Core class of natural language engine
+    """Core class of Kiri
 
     Attributes:
-        store (optional): DocStore object to be used as the engine backend
-        vectorisation_model (optional): "english" or "multilingual".
-            For local inference, the name of a SentenceTransformer model is also supported.
-        classification_model (optional): "english" or "multilingual".
-            For local inference, the name of a Huggingface transformers model is also supported.
-        process_doc_func (optional): Function to be used when vectorising uploaded documents
-        process_results_func (optional): Function to be used for calculating final scores of results
+        text_vectorisation_model (optional): "english", "multilingual" or your own uploaded model.
+            For local inference, a model class of instance TextVectorisationModel is also supported.
+        text_classification_model (optional): "english", "multilingual" or your own uploaded model.
+            For local inference, a model class of instance TextClassificationModel is also supported.
+        image_classification_model (optional): "english" or your own uploaded model.
+            For local inference, a model class of instance BaseModel is also supported.
+        text_generation_model (optional): "gpt2", "t5-base-qa-summary-emotion" or your own uploaded model.
+            For local inference, a model class of instance TextGenerationModel is also supported.
+        emotion_model (optional): "english" or your own uploaded model.
+            For local inference, a model class of instance BaseModel is also supported.
+        summarisation_model (optional): "english" or your own uploaded model.
+            For local inference, a model class of instance BaseModel is also supported.
+        qa_model (optional): "english" or your own uploaded model.
+            For local inference, a model class of instance BaseModel is also supported.
         device (optional): Pytorch device to run inference on. Detected automatically if not specified.
     """
 
-    def __init__(self, store: DocStore = None, local=False, api_key=None,
-                 vectorisation_model: str = None,
-                 classification_model: str = None,
-                 image_classification_model: str = None,
-                 generation_model: str = None,
-                 process_doc_func: Callable[[
-                     Document, str], List[float]] = None,
-                 process_results_func: Callable[[
-                     SearchResults, str], None] = None,
+    def __init__(self, local=False, api_key=None,
+                 text_vectorisation_model: Union[str, BaseModel] = None,
+                 text_classification_model: Union[str, BaseModel] = None,
+                 image_classification_model: Union[str, BaseModel] = None,
+                 text_generation_model: Union[str, BaseModel] = None,
+                 emotion_model: Union[str, BaseModel] = None,
+                 summarisation_model: Union[str, BaseModel] = None,
+                 qa_model: Union[str, BaseModel] = None,
                  device: str = None):
 
-        if store is None:
-            store = InMemoryDocStore()
-
-        store.kiri = self
+        if api_key == None:
+            local = True
 
         if local and not device:
             import torch
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        if process_doc_func is None:
-            # Use default vectoriser
-            process_doc_func = process_documents
-
-        if process_results_func is None:
-            process_results_func = process_results
-
-        t5_qa_summary_emotion = T5QASummaryEmotion(device=device, init=False)
-
-        self._vectorise = Vectorisation(vectorisation_model, local=local,
+        self.TextVectorisation = TextVectorisation(text_vectorisation_model, local=local,
                                         api_key=api_key, device=device, init=False)
         
-        self._generate = Generation(generation_model, local=local,
+        self.TextGeneration = TextGeneration(text_generation_model, local=local,
                                         api_key=api_key, device=device, init=False)
 
-        self._classify = Classification(classification_model, local=local,
+        self.TextClassification = TextClassification(text_classification_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._image_classification = ImageClassification(image_classification_model, local=local,
+        self.ImageClassification = ImageClassification(image_classification_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._qa = QA(t5_qa_summary_emotion, local=local,
+        self.QA = QA(qa_model, local=local,
                             api_key=api_key, device=device, init=False)
         
-        self._emotion = Emotion(t5_qa_summary_emotion, local=local,
+        self.Emotion = Emotion(emotion_model, local=local,
                             api_key=api_key, device=device, init=False)
 
-        self._summarise = Summarisation(t5_qa_summary_emotion, local=local,
+        self.Summarisation = Summarisation(summarisation_model, local=local,
                             api_key=api_key, device=device, init=False)
         
         self._device = device
         self._local = local
         self._api_key = api_key
-        self._store = store
-        self._process_doc_func = process_doc_func
-        self._process_results_func = process_results
 
-    def upload(self, documents: List[Document]) -> None:
-        """Processes and uploads documents to store
+    def save(self, model, path=None):
+        """
+        Saves the provided model to the kiri cache folder using model.name or to provided path
 
         Args:
-            documents: List of documents for upload
-
-        Returns:
-            None
-
-        Example:
-            >>> kiri.upload([Document("First document"), Document("Second document")])
-            None
-
+            path: Optional path to save model
         """
-        logging.warning("Upload functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
-        return self._store.upload(documents, self._process_doc_func)
+        return utils_save(model, path=path)
+
+    def load(self, path):
+        """
+        Loads a saved model and returns it.
+
+        Args:
+            path: Name of the model or full path to model.
+        """
+        return utils_load(path)
+
+    def upload(self, model: BaseModel = None, path: str = None, save_path: str = None):
+        """
+        Deploys a model from object or path to Kiri. 
+        Either the model or path to saved model must be provided.
+
+        Args:
+            model: Model object
+            path: Path to saved model
+            save_path: Optional path to save model if providing a model object
+        """
+        return utils_upload(model=model, path=path, save_path=save_path, api_key=self._api_key)
 
     def search(self, query: str, max_results=10, min_score=0.0,
-               preview_length=100, ids: List[str] = [], body=None) -> SearchResults:
-        """Search documents from document store
-
-        Args:
-            query: Search string on which search is performed
-            max_results: Maximum amount of documents to be returned from search
-            min_score: Minimum score required to be included in results
-            preview_length: Number of characters in the preview/metatext of results
-            ids: List of ids to search from
-            body: Elasticsearch request body to be passed to the backend
-
-        Returns:
-            SearchResults object
-
-        Example:
-            >>> kiri.search("RTX 3090")
-            SearchResults object
-
+               preview_length=100, ids: List[str] = [], body=None):
         """
-        logging.warning("Search functionality is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
-        search_results, query_vec = self._store.search(query,
-                                                       max_results=max_results, min_score=min_score,
-                                                       ids=ids, body=body)
-        self._process_results_func(
-            search_results, query_vec, self._store._doc_class,
-            preview_length, max_results, min_score)
-        return search_results
+        Search functionality is deprecated. Use https://github.com/kiri-ai/kiri-search instead.
+        """
+        raise Exception("Search functionality is deprecated. Use https://github.com/kiri-ai/kiri-search instead.")
 
-    def qa(self, question: str, context: str = None,
-           prev_qa: List[Tuple[str, str]] = [], num_answers: int = 3):
+    def qa(self, question: Union[str, List[str]], context: Union[str, List[str]],
+            prev_qa: Union[List[Tuple[str, str]], List[List[Tuple[str, str]]]] = []):
         """Perform QA, either on docstore or on provided context.
 
         Args:
-            question: Question (string or list of strings if using own context) for qa model.
-            context (optional): Context (string or list of strings) to ask question from.
+            question: Question (string or list of strings) for qa model.
+            context: Context (string or list of strings) to ask question from.
             prev_qa (optional): List of previous question, answer tuples or list of prev_qa.
-            num_answers (optional): Number of answers to return
 
         Returns:
-            if context is given: Answer string or list of answer strings
-            if no context: List of num_answers (default 3) answer and SearchResult object pairs.
+            Answer string or list of answer strings
 
         Example:
             >>> kiri.qa("Where does Sally live?", "Sally lives in London.")
             "London"
         """
-        if context:
-            return self._qa(question, context, prev_qa=prev_qa)
-        else:
-            logging.warning("No context (search based) qa is deprecated and will be removed in a future version. Use https://github.com/kiri-ai/kiri-search instead.")
-            search_results = self.search(question)
-            answers = []
-            if issubclass(self._store._doc_class, ChunkedDocument):
-                for chunk in search_results.top_chunks[:num_answers]:
-                    answer = self._qa(question, chunk["chunk"], prev_qa=prev_qa)
-                    answers.append((answer, chunk["search_result"]))
-            else:
-                for result in search_results.results[:num_answers]:
-                    c_string = result.document.content
-                    answer = self._qa(question, c_string, prev_qa=prev_qa)
-                    answers.append((answer, result))
-            return answers
+        return self.QA(question, context, prev_qa=prev_qa)
 
 
-    def summarise(self, input_text):
+    def summarise(self, text: Union[str, List[str]]):
         """Perform summarisation on input text.
 
         Args:
@@ -175,9 +141,9 @@ class Kiri:
             "short summary of document"
 
         """
-        return self._summarise(input_text)
+        return self.Summarisation(text)
 
-    def emotion(self, input_text):
+    def emotion(self, text: Union[str, List[str]]):
         """Perform emotion detection on input text.
 
         Args:
@@ -197,9 +163,16 @@ class Kiri:
             "approval"
 
         """
-        return self._emotion(input_text)
+        return self.Emotion(text)
 
-    def classify(self, input_text, labels: List[str]):
+    def classify(self, text: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
+        """Renamed - use `classify_text` instead
+        """
+        logging.warning("classify has been renamed to classify_text, it will be removed in a future version")
+
+        return self.TextClassification(text, labels)
+
+    def classify_text(self, text: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Classify input text according to given labels.
 
 
@@ -211,34 +184,44 @@ class Kiri:
             dict where each key is a label and value is probability between 0 and 1, or list of dicts.
 
         Example:
-            >>> kiri.classify("I am mad because my product broke.", ["product issue", "nature"])
+            >>> kiri.classify_text("I am mad because my product broke.", ["product issue", "nature"])
             {"product issue": 0.98, "nature": 0.05}
 
         """
-        return self._classify(input_text, labels)
+        return self.TextClassification(text, labels)
 
 
-    def image_classification(self, image_path: str, labels: List[str]):
-        # TODO: Implement batching
+    def image_classification(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
+        """Renamed - use `classify_image` instead
+        """
+        logging.warning("image_classification has been renamed to classify_image, it will be removed in a future version")
+        return self.ImageClassification(image_path, labels)
+
+    def classify_image(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Classify image according to given labels.
 
-
         Args:
-            image_path: path to image
-            labels: list of strings
+            image_path: path to image or list of paths to image
+            labels: list of strings or list of labels
 
         Returns:
-            dict where each key is a label and value is probability between 0 and 1
+            dict where each key is a label and value is probability between 0 and 1 or list of dicts
 
         Example:
-            >>> kiri.image_classification("/home/Documents/dog.png", ["cat", "dog"])
+            >>> kiri.classify_image("/home/Documents/dog.png", ["cat", "dog"])
             {"cat": 0.01, "dog": 0.99}
 
         """
-        return self._image_classification(image_path, labels)
+        return self.ImageClassification(image_path, labels)
 
 
-    def vectorise(self, input_text):
+    def vectorise(self, text: Union[str, List[str]]):
+        """Renamed - use `vectorise_text` instead
+        """
+        logging.warning("vectorise has been renamed to vectorise_text, it will be removed in a future version")
+        return self.TextVectorisation(text)
+
+    def vectorise_text(self, text: Union[str, List[str]]):
         """Vectorise input text.
 
 
@@ -249,26 +232,40 @@ class Kiri:
             Vector or list of vectors
 
         Example:
-            >>> kiri.vectorise("iPhone 12 128GB")
+            >>> kiri.vectorise_text("iPhone 12 128GB")
             [0.92949192, 0.23123010, ...]
 
         """
-        return self._vectorise(input_text)
+        return self.TextVectorisation(text)
 
-    def generate(self, input_text, min_length=10, max_length=20, temperature=1.0,
+    def generate(self, text: Union[str, List[str]], min_length=10, max_length=20, temperature=1.0,
+                top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
+                num_beams=1, num_generations=1, do_sample=True):
+        """Renamed - use `generate_text` instead
+        """
+        logging.warning("generate has been renamed to generate_text, it will be removed in a future version")
+        return self.TextGeneration(text,
+                          min_length=min_length,
+                          max_length=max_length, temperature=temperature,
+                          top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
+                          length_penalty=length_penalty, num_beams=num_beams,
+                          num_generations=num_generations, do_sample=do_sample)
+
+    
+    def generate_text(self, text: Union[str, List[str]], min_length=10, max_length=20, temperature=1.0,
                 top_k=0.0, top_p=1.0, repetition_penalty=1.0, length_penalty=1.0,
                 num_beams=1, num_generations=1, do_sample=True):
         """Generates text to continue off the given input.
 
         Args:
-            input_text: Text from which model will begin generating.
+            text: Text from which model will begin generating.
             min_length: Minimum length of generation before EOS can be generated.
             max_length: Maximum length of generated sequence.
             temperature: Value that alters softmax probabilities.
             top_k: Sampling strategy in which probabilities are redistributed among top k most-likely words.
             top_p: Sampling strategy in which probabilities are distributed among 
                 set of words with combined probability greater than p.
-            repetition_penalty: Penalty to be applied to words present in the input_text and
+            repetition_penalty: Penalty to be applied to words present in the text and
                 words already generated in the sequence.
             length_penalty: Penalty applied to overall sequence length. Set >1 for longer sequences,
                 or <1 for shorter ones. 
@@ -276,9 +273,9 @@ class Kiri:
             num_generations: How many times to run generation. 
             do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
         """
-        return self._generate(input_text,
+        return self.TextGeneration(text,
                           min_length=min_length,
                           max_length=max_length, temperature=temperature,
                           top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty,
                           length_penalty=length_penalty, num_beams=num_beams,
-                          num_return_sequences=num_generations, do_sample=do_sample)
+                          num_generations=num_generations, do_sample=do_sample)
