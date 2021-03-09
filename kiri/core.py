@@ -188,24 +188,21 @@ class Kiri:
         return self.TextClassification(text, labels)
 
 
-    def image_classification(self, image_path: str, labels: List[str]):
-        # TODO: Implement batching
+    def image_classification(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Renamed - use `classify_image` instead
         """
         logging.warning("image_classification has been renamed to classify_image, it will be removed in a future version")
         return self.ImageClassification(image_path, labels)
 
-    def classify_image(self, image_path: str, labels: List[str]):
-        # TODO: Implement batching
+    def classify_image(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         """Classify image according to given labels.
 
-
         Args:
-            image_path: path to image
-            labels: list of strings
+            image_path: path to image or list of paths to image
+            labels: list of strings or list of labels
 
         Returns:
-            dict where each key is a label and value is probability between 0 and 1
+            dict where each key is a label and value is probability between 0 and 1 or list of dicts
 
         Example:
             >>> kiri.classify_image("/home/Documents/dog.png", ["cat", "dog"])
