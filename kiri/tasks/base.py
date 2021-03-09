@@ -1,5 +1,6 @@
 from typing import Dict, List
 import logging
+from kiri import load
 
 logger = logging.getLogger("info")
 
@@ -8,6 +9,9 @@ class Task:
                 device: str = None, init=True, local_models: Dict = None,
                 api_models: List[str] = None, default_local_model: str = None,
                 default_api_model: str = None):
+
+        if api_key == None:
+            local=True
                     
         if device == None:
             import torch
@@ -28,8 +32,7 @@ class Task:
                 model = local_models.get(model) or model
 
             if type(model) == str:
-                # TODO: self.model = kiri.load(model)
-                pass
+                self.model = load(model)
             elif hasattr(model, "model"):
                 self.model = model
             else:

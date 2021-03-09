@@ -24,6 +24,7 @@ class TextClassification(Task):
             1. Name of the model on Kiri's classification endpoint (english, multilingual or your own uploaded model)
             2. Officially supported local models (english, multilingual).
             3. Model class of instance Kiri's TextClassificationModel
+            4. Path/name of saved Kiri model
         local (optional): Run locally. Defaults to False
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -66,5 +67,8 @@ class TextClassification(Task):
 
             res = requests.post("https://api.kiri.ai/text-classification", json=body,
                                 headers={"x-api-key": self.api_key}).json()
+
+            if res.get("message"):
+                raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["probabilities"]

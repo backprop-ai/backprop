@@ -25,6 +25,7 @@ class ImageClassification(Task):
             1. Name of the model on Kiri's image classification endpoint (english or your own uploaded model)
             2. Officially supported local models (english) or Huggingface path to the model.
             3. Model class of instance Kiri's BaseModel that implements the image-classification task
+            4. Path/name of saved Kiri model
         local (optional): Run locally. Defaults to False
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -84,5 +85,8 @@ class ImageClassification(Task):
 
             res = requests.post("https://api.kiri.ai/image-classification", json=body,
                                 headers={"x-api-key": self.api_key}).json()
+
+            if res.get("message"):
+                raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["probabilities"]

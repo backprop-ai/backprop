@@ -39,6 +39,9 @@ class Kiri:
                  qa_model: Union[str, BaseModel] = None,
                  device: str = None):
 
+        if api_key == None:
+            local = True
+
         if local and not device:
             import torch
             device = "cuda" if torch.cuda.is_available() else "cpu"

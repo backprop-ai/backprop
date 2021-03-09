@@ -24,6 +24,7 @@ class TextGeneration(Task):
             1. Name of the model on Kiri's generation endpoint (gpt2-large, t5-base-qa-summary-emotion or your own uploaded model)
             2. Officially supported local models (gpt2, t5-base-qa-summary-emotion).
             3. Model object/class that inherits from Kiri's TextGenerationModel
+            4. Path/name of saved Kiri model
         local (optional): Run locally. Defaults to False
         api_key (optional): Kiri API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -76,6 +77,9 @@ class TextGeneration(Task):
 
             res = requests.post("https://api.kiri.ai/text-generation", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
+
+            if res.get("message"):
+                raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["output"]
 

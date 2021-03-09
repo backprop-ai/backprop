@@ -23,6 +23,7 @@ class QA(Task):
             1. Name of the model on Kiri's qa endpoint (english or your own uploaded model)
             2. Officially supported local models (english).
             3. Model class of instance Kiri's BaseModel that implements the qa task
+            4. Path/name of saved Kiri model
         model_class (optional): The model class to use when supplying a path for the model.
         local (optional): Run locally. Defaults to False
         api_key (optional): Kiri API key for non-local inference
@@ -75,5 +76,8 @@ class QA(Task):
 
             res = requests.post("https://api.kiri.ai/qa", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
+
+            if res.get("message"):
+                raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["answer"]
