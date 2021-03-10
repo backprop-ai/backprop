@@ -1,5 +1,6 @@
 from typing import List, Tuple
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from transformers.optimization import Adafactor
 import torch
 from torch.utils.data import DataLoader
@@ -38,7 +39,7 @@ class T5(TextGenerationModel, pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         outputs = self.model(**batch)
         loss = outputs.loss
-        self.log("val_loss", loss)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
         return loss
     
     def configure_optimizers(self):
@@ -71,7 +72,7 @@ class T5(TextGenerationModel, pl.LightningModule):
     
     def finetune(self, input_text: List[str], output_text: List[str],
                 max_input_length=128, max_output_length=32,
-                validation_split: float = 0.1, epochs: int = 3):
+                validation_split: float = 0.15, epochs: int = 20):
         """
         Finetunes T5 for a text generation task.
         input_text and output_text must be ordered the same way (item 1 of input must match item 1 of output)
@@ -101,6 +102,9 @@ class T5(TextGenerationModel, pl.LightningModule):
         self.dataset_train = dataset_train
         self.dataset_valid = dataset_valid
 
+        # Stop when val loss stops improving
+        early_stopping = EarlyStopping(monitor="val_loss", patience=1)
+
         # Find batch size
         trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
         print("Finding the optimal batch size...")
@@ -113,8 +117,8 @@ class T5(TextGenerationModel, pl.LightningModule):
 
         accumulate_grad_batches = max(1, int(OPTIMAL_BATCH_SIZE / self.batch_size))
 
-        trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=int(OPTIMAL_BATCH_SIZE / batch_size),
-            max_epochs=epochs, checkpoint_callback=False, logger=False)
+        trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=accumulate_grad_batches,
+            max_epochs=epochs, checkpoint_callback=False, logger=False, callbacks=[early_stopping])
 
         print("Starting to train...")
         self.model.train()
