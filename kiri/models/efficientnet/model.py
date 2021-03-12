@@ -8,6 +8,7 @@ from random import shuffle
 from kiri.models import PathModel
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.utils.data import DataLoader
+from functools import partial
 import torch.nn.functional as F
 import pytorch_lightning as pl
 import json
@@ -17,7 +18,7 @@ from io import BytesIO
 import base64
 
 class EfficientNet(PathModel, pl.LightningModule):
-    def __init__(self, model_path="efficientnet-b0", init_model=EfficientNet_pt.from_pretrained,
+    def __init__(self, model_path="efficientnet-b0", init_model=None,
                 init_tokenizer=None, device=None, init=True):
         pl.LightningModule.__init__(self)
         
@@ -27,6 +28,10 @@ class EfficientNet(PathModel, pl.LightningModule):
         self.batch_size = 1
         self.hparams.batch_size = 1
         self.image_size = EfficientNet_pt.get_image_size(model_path)
+        self.num_classes = 1000
+
+        if init_model is None:
+            init_model = partial(EfficientNet_pt.from_pretrained, num_classes=self.num_classes)
         
         with open(os.path.join(os.path.dirname(__file__), "imagenet_labels.txt"), "r") as f:
             self.labels = json.load(f)
@@ -125,7 +130,9 @@ class EfficientNet(PathModel, pl.LightningModule):
         self.labels = dataset.class_to_idx
         num_classes = len(dataset.classes)
 
-        self.model = EfficientNet_pt.from_pretrained(self.model_path, num_classes=num_classes)
+        if (self.num_classes != num_classes):
+            self.num_classes = num_classes
+            self.model = EfficientNet_pt.from_pretrained(self.model_path, num_classes=num_classes)
 
         len_train = int(len(dataset) * (1 - validation_split))
         len_valid = len(dataset) - len_train
