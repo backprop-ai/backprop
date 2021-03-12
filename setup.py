@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kiri",
-    version="0.5.0",
+    version="0.5.1",
     author="Kiri OÜ",
     author_email="hello@kiri.ai",
-    description="Kiri Natural Language Engine",
+    description="Kiri",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/kiri-ai/kiri",
