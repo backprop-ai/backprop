@@ -127,10 +127,10 @@ class EfficientNet(PathModel, pl.LightningModule):
         
         self.check_init()
         dataset = ImageFolder(image_dir, transform=self.tfms)
-        self.labels = dataset.class_to_idx
+        self.labels = {str(v): k for k, v in dataset.class_to_idx.items()}
         num_classes = len(dataset.classes)
 
-        if (self.num_classes != num_classes):
+        if self.num_classes != num_classes:
             self.num_classes = num_classes
             self.model = EfficientNet_pt.from_pretrained(self.model_path, num_classes=num_classes)
 
