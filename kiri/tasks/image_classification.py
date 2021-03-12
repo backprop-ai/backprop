@@ -42,7 +42,7 @@ class ImageClassification(Task):
                         default_api_model=DEFAULT_API_MODEL)
 
     
-    def __call__(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
+    def __call__(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None):
         """Classify image according to given labels.
 
         Args:

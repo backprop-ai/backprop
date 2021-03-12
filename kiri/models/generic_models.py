@@ -16,9 +16,9 @@ class BaseModel:
     """
     def __init__(self, model, name: str = None, description: str = None, tasks: List[str] = None):
         self.model = model
-        self.name = name|"base-model"
-        self.description = description|"This is the base description. Change me."
-        self.tasks = tasks|[] # Supports no tasks
+        self.name = name or "base-model"
+        self.description = description or "This is the base description. Change me."
+        self.tasks = tasks or [] # Supports no tasks
 
     def __call__(self, *args, **kwargs):
         return self.model(*args, **kwargs)
@@ -46,8 +46,11 @@ class PathModel(BaseModel):
         init (optional): Whether to initialise model and tokenizer immediately or wait until first call.
             Defaults to True.
     """
-    def __init__(self, model_path, init_model, tokenizer_path=None,
-                init_tokenizer=None, device=None, init=True):
+    def __init__(self, model_path, init_model, name: str = None,
+                description: str = None, tasks: List[str] = None,
+                tokenizer_path=None, init_tokenizer=None, device=None, init=True):
+
+        BaseModel.__init__(self, None, name=name, description=description, tasks=tasks)
         self.initialised = False
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
@@ -98,7 +101,7 @@ class HuggingModel(PathModel):
     """
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForPreTraining,
-                tokenizer_class=AutoTokenizer, device=None, init=True):
+                tokenizer_class=AutoTokenizer, device=None, init=True, **kwargs):
         # Usually the same
         if not tokenizer_path:
             tokenizer_path = model_path
@@ -133,7 +136,7 @@ class TextVectorisationModel(PathModel):
             Defaults to True.
     """
     def __init__(self, model_path, model_class=SentenceTransformer,
-                device=None, init=True):
+                device=None, init=True, **kwargs):
         # Object was made with init = False
         if hasattr(self, "initialised"):
             model_path = self.model_path
@@ -246,7 +249,7 @@ class ClassificationModel(HuggingModel):
     """
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
-                tokenizer_class=AutoTokenizer, device=None, init=True):
+                tokenizer_class=AutoTokenizer, device=None, init=True, **kwargs):
         return super().__init__(model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device, init=init)

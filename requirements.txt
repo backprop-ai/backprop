@@ -4,3 +4,4 @@ torch
 torchvision
 ftfy
 pytorch_lightning==1.1.0
+dill
