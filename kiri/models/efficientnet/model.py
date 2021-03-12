@@ -167,3 +167,6 @@ class EfficientNet(PathModel, pl.LightningModule):
         del self.dataset_train
         del self.dataset_valid
         del self.trainer
+
+        self.model.eval()
+        print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
