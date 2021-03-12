@@ -26,6 +26,7 @@ Save
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:
 
 .. code-block:: python
 
@@ -42,6 +43,7 @@ Load
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:
 
 .. code-block:: python
 
@@ -60,6 +62,7 @@ For a successful upload, ensure that the model is valid by following the check l
    :members:
    :undoc-members:
    :show-inheritance:
+   :noindex:
 
 .. code-block:: python
 

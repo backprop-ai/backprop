@@ -26,7 +26,7 @@ Out of the box tasks you can solve with Kiri:
 For more specific use cases, you can adapt a task with little data and a couple of lines of code using finetuning. We are adding finetuning support for all tasks soon.
 
 Basic Task Solving
------------
+------------------
 
 .. code-block:: python
 
@@ -49,7 +49,7 @@ Basic Task Solving
 See examples for all available tasks in :ref:`core`.
 
 Basic Finetuning and Uploading
------------
+------------------------------
 
 .. code-block:: python
 
