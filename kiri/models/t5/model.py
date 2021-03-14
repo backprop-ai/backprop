@@ -7,11 +7,12 @@ from torch.utils.data import DataLoader
 from random import shuffle
 import os
 
-from kiri.models import TextGenerationModel
+from kiri.models import TextGenerationModel, Finetunable
 
-class T5(TextGenerationModel, pl.LightningModule):
+class T5(TextGenerationModel, Finetunable):
     def __init__(self, *args, model_path="t5-small", **kwargs):
-        pl.LightningModule.__init__(self)
+        Finetunable.__init__(self)
+
 
         TextGenerationModel.__init__(self, model_path,
                                 *args, **kwargs)
@@ -19,8 +20,6 @@ class T5(TextGenerationModel, pl.LightningModule):
         self.tasks = ["text-generation", "generation"]
         self.description = "This is the T5 model by Google."
         self.name = "t5"
-        self.batch_size = 1
-        self.hparams.batch_size = 1
 
     def __call__(self, task_input, task="text-generation"):
         if task in ["text-generation", "generation"]:
@@ -60,16 +59,6 @@ class T5(TextGenerationModel, pl.LightningModule):
         tokens =  self.tokenizer(text, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")
         return {"labels": tokens.input_ids[0], "decoder_attention_mask": tokens.attention_mask[0]}
     
-    def train_dataloader(self):
-        return DataLoader(self.dataset_train,
-            batch_size=self.batch_size|self.hparams.batch_size,
-            num_workers=os.cpu_count()|0)
-
-    def val_dataloader(self):
-        return DataLoader(self.dataset_valid,
-            batch_size=self.batch_size|self.hparams.batch_size,
-            num_workers=os.cpu_count()|0)
-    
     def finetune(self, input_text: List[str], output_text: List[str],
                 max_input_length=128, max_output_length=32,
                 validation_split: float = 0.15, epochs: int = 20):
@@ -84,8 +73,6 @@ class T5(TextGenerationModel, pl.LightningModule):
             epochs: Integer that specifies how many iterations of training to do
         """
         self.check_init()
-        if not torch.cuda.is_available():
-            raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
 
         assert len(input_text) == len(output_text)
         OPTIMAL_BATCH_SIZE = 128
@@ -93,42 +80,5 @@ class T5(TextGenerationModel, pl.LightningModule):
         print("Processing data...")
         dataset = zip(input_text, output_text)
         dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
-        
-        shuffle(dataset)
-
-        dataset_train = dataset[:int(len(dataset) * (1 - validation_split))]
-        dataset_valid = dataset[int(len(dataset) * (1 - validation_split)):]
-
-        self.dataset_train = dataset_train
-        self.dataset_valid = dataset_valid
-
-        # Stop when val loss stops improving
-        early_stopping = EarlyStopping(monitor="val_loss", patience=1)
-
-        # Find batch size
-        trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
-        print("Finding the optimal batch size...")
-        trainer.tune(self)
-
-        batch_size = self.batch_size|self.hparams.batch_size
-
-        # Don't go over
-        batch_size = min(batch_size, OPTIMAL_BATCH_SIZE)
-
-        accumulate_grad_batches = max(1, int(OPTIMAL_BATCH_SIZE / self.batch_size))
-
-        trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=accumulate_grad_batches,
-            max_epochs=epochs, checkpoint_callback=False, logger=False, callbacks=[early_stopping])
-
-        print("Starting to train...")
-        self.model.train()
-        trainer.fit(self)
-
-        del self.dataset_train
-        del self.dataset_valid
-        del self.trainer
-
-        self.model.eval()
-
-        print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
-
+    
+        Finetunable.finetune(self, dataset, validation_split, epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE)

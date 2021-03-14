@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from ..models import BaseModel, ClassificationModel
-from kiri.models import CLIP
+from kiri.models import CLIP, EfficientNet
 from .base import Task
 import base64
 
@@ -9,10 +9,12 @@ import requests
 DEFAULT_LOCAL_MODEL = CLIP
 
 LOCAL_MODELS = {
-    "english": CLIP
+    "english": CLIP,
+    "efficientnet": EfficientNet
 }
 
 DEFAULT_API_MODEL = "english"
+FINETUNABLE_MODELS = ["efficientnet"]
 
 API_MODELS = ["english"]
 
@@ -22,8 +24,8 @@ class ImageClassification(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's image classification endpoint (english or your own uploaded model)
-            2. Officially supported local models (english) or Huggingface path to the model.
+            1. Name of the model on Kiri's image classification endpoint (english, efficientnet or your own uploaded model)
+            2. Officially supported local models (english, efficientnet)
             3. Model class of instance Kiri's BaseModel that implements the image-classification task
             4. Path/name of saved Kiri model
         local (optional): Run locally. Defaults to False
@@ -47,7 +49,7 @@ class ImageClassification(Task):
 
         Args:
             image_path: path to image or list of paths to image
-            labels: list of strings or list of labels
+            labels: list of strings or list of labels (for zero shot classification)
 
         Returns:
             dict where each key is a label and value is probability between 0 and 1 or list of dicts
@@ -90,3 +92,9 @@ class ImageClassification(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["probabilities"]
+
+    def finetune(self, *args, **kwargs):
+        try:
+            return self.model.finetune(*args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")

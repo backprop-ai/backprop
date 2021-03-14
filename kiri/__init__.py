@@ -1,2 +1,2 @@
-from .utils import save, load, upload
+from .utils import save, load, upload, download
 from .core import Kiri

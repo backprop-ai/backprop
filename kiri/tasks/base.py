@@ -11,7 +11,7 @@ class Task:
                 default_api_model: str = None):
 
         if api_key == None:
-            local=True
+            local = True
                     
         if device == None:
             import torch

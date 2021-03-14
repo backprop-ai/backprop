@@ -6,6 +6,7 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from random import shuffle
 from kiri.models import PathModel, Finetunable
+from kiri.utils.download import download
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.utils.data import DataLoader
 from functools import partial
@@ -16,6 +17,8 @@ import os
 
 from io import BytesIO
 import base64
+
+IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/kiri-ai/kiri/ic-finetuning/kiri/models/efficientnet/imagenet_labels.txt"
 
 class EfficientNet(PathModel, Finetunable):
     def __init__(self, model_path="efficientnet-b0", init_model=None,
@@ -31,7 +34,7 @@ class EfficientNet(PathModel, Finetunable):
         if init_model is None:
             init_model = partial(EfficientNet_pt.from_pretrained, num_classes=self.num_classes)
         
-        with open(os.path.join(os.path.dirname(__file__), "imagenet_labels.txt"), "r") as f:
+        with open(download(IMAGENET_LABELS_URL, "efficientnet"), "r") as f:
             self.labels = json.load(f)
 
         self.tfms = transforms.Compose([
@@ -100,14 +103,14 @@ class EfficientNet(PathModel, Finetunable):
         inputs, targets = batch
         outputs = self.model(inputs)
         loss = F.cross_entropy(outputs, targets)
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=False)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
     
     def validation_step(self, batch, batch_idx):
         inputs, targets = batch
         outputs = self.model(inputs)
         loss = F.cross_entropy(outputs, targets)
-        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=False)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
         return loss
 
     def finetune(self, image_dir: str, validation_split: float = 0.15, epochs: int = 20):

@@ -48,6 +48,9 @@ class Finetunable(pl.LightningModule):
 
     def finetune(self, dataset, validation_split: float = 0.15, epochs: int = 20,
                 optimal_batch_size: int = None, early_stopping: bool = True, trainer = None):
+        if not torch.cuda.is_available():
+            raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
+        
         len_train = int(len(dataset) * (1 - validation_split))
         len_valid = len(dataset) - len_train
         dataset_train, dataset_valid = torch.utils.data.random_split(dataset, [len_train, len_valid])
