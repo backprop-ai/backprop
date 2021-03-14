@@ -1,10 +1,14 @@
 from typing import List
 from transformers import AutoModelForPreTraining, AutoTokenizer, \
     AutoModelForSequenceClassification
+from torch.utils.data import DataLoader
 from sentence_transformers import SentenceTransformer
 from functools import partial
+import os
 
 import torch
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 class BaseModel:
     """
@@ -30,6 +34,80 @@ class BaseModel:
         self.model.to(device)
 
     # def set_name(self, name: str):
+
+
+class Finetunable(pl.LightningModule):
+    """
+    Makes a model easily finetunable.
+    """
+    def __init__(self):
+        pl.LightningModule.__init__(self)
+
+        self.batch_size = 1
+        self.hparams.batch_size = 1
+
+    def finetune(self, dataset, validation_split: float = 0.15, epochs: int = 20,
+                optimal_batch_size: int = None, early_stopping: bool = True, trainer = None):
+        len_train = int(len(dataset) * (1 - validation_split))
+        len_valid = len(dataset) - len_train
+        dataset_train, dataset_valid = torch.utils.data.random_split(dataset, [len_train, len_valid])
+
+        self.dataset_train = dataset_train
+        self.dataset_valid = dataset_valid
+
+        # Find batch size
+        temp_trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
+        print("Finding the optimal batch size...")
+        temp_trainer.tune(self)
+
+        batch_size = self.batch_size or self.hparams.batch_size
+
+        trainer_kwargs = {}
+        
+        if optimal_batch_size:
+            # Don't go over
+            batch_size = min(batch_size, optimal_batch_size)
+            accumulate_grad_batches = max(1, int(optimal_batch_size / batch_size))
+            trainer_kwargs["accumulate_grad_batches"] = accumulate_grad_batches
+        
+        if early_stopping:
+            # Stop when val loss stops improving
+            early_stopping = EarlyStopping(monitor="val_loss", patience=1)
+            trainer_kwargs["callbacks"] = [early_stopping]
+
+        self.model.train()
+        
+        if not trainer:
+            trainer = pl.Trainer(gpus=-1, max_epochs=epochs, checkpoint_callback=False,
+                logger=False, **trainer_kwargs)
+
+        trainer.fit(self)
+
+        del self.dataset_train
+        del self.dataset_valid
+        del self.trainer
+
+        self.model.eval()
+        print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
+
+    def train_dataloader(self):
+        return DataLoader(self.dataset_train,
+            batch_size=self.batch_size or self.hparams.batch_size,
+            num_workers=os.cpu_count() or 0)
+
+    def val_dataloader(self):
+        return DataLoader(self.dataset_valid,
+            batch_size=self.batch_size or self.hparams.batch_size,
+            num_workers=os.cpu_count() or 0)
+    
+    def configure_optimizers(self):
+        raise NotImplementedError("configure_optimizers must be implemented")
+
+    def training_step(self, batch, batch_idx):
+        raise NotImplementedError("training_step must be implemented")
+
+    def validation_step(self, batch, batch_idx):
+        raise NotImplementedError("validation_step must be implemented")
 
 
 

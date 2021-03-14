@@ -5,7 +5,7 @@ from efficientnet_pytorch import EfficientNet as EfficientNet_pt
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from random import shuffle
-from kiri.models import PathModel
+from kiri.models import PathModel, Finetunable
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.utils.data import DataLoader
 from functools import partial
@@ -17,16 +17,14 @@ import os
 from io import BytesIO
 import base64
 
-class EfficientNet(PathModel, pl.LightningModule):
+class EfficientNet(PathModel, Finetunable):
     def __init__(self, model_path="efficientnet-b0", init_model=None,
                 init_tokenizer=None, device=None, init=True):
-        pl.LightningModule.__init__(self)
+        Finetunable.__init__(self)
         
         name = model_path
         description = "EfficientNet is an image classification model that achieves state-of-the-art accuracy while being an order-of-magnitude smaller and faster than previous models. Trained on ImageNet's 1000 categories."
         tasks = ["image-classification"]
-        self.batch_size = 1
-        self.hparams.batch_size = 1
         self.image_size = EfficientNet_pt.get_image_size(model_path)
         self.num_classes = 1000
 
@@ -102,25 +100,15 @@ class EfficientNet(PathModel, pl.LightningModule):
         inputs, targets = batch
         outputs = self.model(inputs)
         loss = F.cross_entropy(outputs, targets)
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=False)
         return loss
     
     def validation_step(self, batch, batch_idx):
         inputs, targets = batch
         outputs = self.model(inputs)
         loss = F.cross_entropy(outputs, targets)
-        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=False)
         return loss
-
-    def train_dataloader(self):
-        return DataLoader(self.dataset_train,
-            batch_size=self.batch_size or self.hparams.batch_size,
-            num_workers=os.cpu_count() or 0)
-
-    def val_dataloader(self):
-        return DataLoader(self.dataset_valid,
-            batch_size=self.batch_size or self.hparams.batch_size,
-            num_workers=os.cpu_count() or 0)
 
     def finetune(self, image_dir: str, validation_split: float = 0.15, epochs: int = 20):
         OPTIMAL_BATCH_SIZE = 128
@@ -134,39 +122,5 @@ class EfficientNet(PathModel, pl.LightningModule):
             self.num_classes = num_classes
             self.model = EfficientNet_pt.from_pretrained(self.model_path, num_classes=num_classes)
 
-        len_train = int(len(dataset) * (1 - validation_split))
-        len_valid = len(dataset) - len_train
-
-        dataset_train, dataset_valid = torch.utils.data.random_split(dataset, [len_train, len_valid])
-
-        self.dataset_train = dataset_train
-        self.dataset_valid = dataset_valid
-
-        # Stop when val loss stops improving
-        early_stopping = EarlyStopping(monitor="val_loss", patience=1)
-
-        # Find batch size
-        trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
-        print("Finding the optimal batch size...")
-        trainer.tune(self)
-
-        batch_size = self.batch_size|self.hparams.batch_size
-
-        # Don't go over
-        batch_size = min(batch_size, OPTIMAL_BATCH_SIZE)
-
-        accumulate_grad_batches = max(1, int(OPTIMAL_BATCH_SIZE / self.batch_size))
-
-        trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=accumulate_grad_batches,
-            max_epochs=epochs, checkpoint_callback=False, logger=False, callbacks=[early_stopping])
-
-        print("Starting to train...")
-        self.model.train()
-        trainer.fit(self)
-
-        del self.dataset_train
-        del self.dataset_valid
-        del self.trainer
-
-        self.model.eval()
-        print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
+        Finetunable.finetune(self, dataset, validation_split=validation_split,
+            epochs=epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE)

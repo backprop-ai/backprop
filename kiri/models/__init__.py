@@ -1,4 +1,4 @@
-from .generic_models import BaseModel, PathModel, HuggingModel, TextGenerationModel, ClassificationModel, TextVectorisationModel
+from .generic_models import BaseModel, PathModel, HuggingModel, TextGenerationModel, ClassificationModel, TextVectorisationModel, Finetunable
 from .bart_large_mnli import BartLargeMNLI
 from .xlmr_large_xnli import XLMRLargeXNLI
 from .gpt2_large import GPT2Large
