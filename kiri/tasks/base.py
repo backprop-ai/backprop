@@ -19,7 +19,7 @@ class Task:
         
         self.local = local
         self.api_key = api_key
-        self._device = device
+        self._model_device = device
         self.init = init
 
         # Pick the correct model name

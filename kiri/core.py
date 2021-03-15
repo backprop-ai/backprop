@@ -67,7 +67,7 @@ class Kiri:
         self.Summarisation = Summarisation(summarisation_model, local=local,
                             api_key=api_key, device=device, init=False)
         
-        self._device = device
+        self._model_device = device
         self._local = local
         self._api_key = api_key
 

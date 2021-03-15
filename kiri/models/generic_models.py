@@ -44,10 +44,11 @@ class Finetunable(pl.LightningModule):
         pl.LightningModule.__init__(self)
 
         self.batch_size = 1
-        self.hparams.batch_size = 1
 
     def finetune(self, dataset, validation_split: float = 0.15, epochs: int = 20,
                 optimal_batch_size: int = None, early_stopping: bool = True, trainer = None):
+        self.batch_size = 1
+
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
         
@@ -63,13 +64,11 @@ class Finetunable(pl.LightningModule):
         print("Finding the optimal batch size...")
         temp_trainer.tune(self)
 
-        batch_size = self.batch_size or self.hparams.batch_size
-
         trainer_kwargs = {}
         
         if optimal_batch_size:
             # Don't go over
-            batch_size = min(batch_size, optimal_batch_size)
+            batch_size = min(self.batch_size, optimal_batch_size)
             accumulate_grad_batches = max(1, int(optimal_batch_size / batch_size))
             trainer_kwargs["accumulate_grad_batches"] = accumulate_grad_batches
         
@@ -78,12 +77,12 @@ class Finetunable(pl.LightningModule):
             early_stopping = EarlyStopping(monitor="val_loss", patience=1)
             trainer_kwargs["callbacks"] = [early_stopping]
 
-        self.model.train()
-        
         if not trainer:
             trainer = pl.Trainer(gpus=-1, max_epochs=epochs, checkpoint_callback=False,
                 logger=False, **trainer_kwargs)
 
+        self.device
+        self.model.train()
         trainer.fit(self)
 
         del self.dataset_train
@@ -137,14 +136,14 @@ class PathModel(BaseModel):
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
         self.tokenizer_path = tokenizer_path
-        self._device = device
+        self._model_device = device
 
-        if self._device is None:
-            self._device = "cuda" if torch.cuda.is_available() else "cpu"
+        if self._model_device is None:
+            self._model_device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
         if init:
-            self.model = self.init_model(model_path).eval().to(self._device)
+            self.model = self.init_model(model_path).eval().to(self._model_device)
 
             # Not all models need tokenizers
             if self.tokenizer_path:
@@ -193,12 +192,12 @@ class HuggingModel(PathModel):
             tokenizer_path = self.tokenizer_path
             init_model = self.init_model
             init_tokenizer = self.init_tokenizer
-            device = self._device
+            device = self._model_device
         else:
             init_model = model_class.from_pretrained
             init_tokenizer = tokenizer_class.from_pretrained
 
-        return super().__init__(model_path, tokenizer_path=tokenizer_path,
+        return PathModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                                 init_model=init_model,
                                 init_tokenizer=init_tokenizer,
                                 device=device, init=init)
@@ -222,11 +221,11 @@ class TextVectorisationModel(PathModel):
         if hasattr(self, "initialised"):
             model_path = self.model_path
             init_model = self.init_model
-            device = self._device
+            device = self._model_device
         else:
             init_model = partial(model_class, device=device)
 
-        return super().__init__(model_path,
+        return PathModel.__init__(self, model_path,
                                 init_model=init_model,
                                 device=device, init=init)
 
@@ -283,7 +282,7 @@ class TextGenerationModel(HuggingModel):
             features = self.tokenizer(text, return_tensors="pt")
 
             for k, v in features.items():
-                features[k] = v.to(self._device)
+                features[k] = v.to(self._model_device)
 
             with torch.no_grad():
                 tokens = self.model.generate(do_sample=do_sample,
@@ -331,14 +330,14 @@ class ClassificationModel(HuggingModel):
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
                 tokenizer_class=AutoTokenizer, device=None, init=True, **kwargs):
-        return super().__init__(model_path, tokenizer_path=tokenizer_path,
+        return HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device, init=init)
 
     def calculate_probability(self, text, label, device):
         hypothesis = f"This example is {label}."
         features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
-                                    truncation=True).to(self._device)
+                                    truncation=True).to(self._model_device)
         logits = self.model(features)[0]
         entail_contradiction_logits = logits[:, [0, 2]]
         probs = entail_contradiction_logits.softmax(dim=1)
@@ -359,7 +358,7 @@ class ClassificationModel(HuggingModel):
             for text, labels in zip(text, labels):
                 results = {}
                 for label in labels:
-                    results[label] = self.calculate_probability(text, label, self._device)
+                    results[label] = self.calculate_probability(text, label, self._model_device)
 
                 results_list.append(results)
 
@@ -368,6 +367,6 @@ class ClassificationModel(HuggingModel):
             results = {}
             for label in labels:
                 results[label] = self.calculate_probability(
-                    text, label, self._device)
+                    text, label, self._model_device)
 
             return results

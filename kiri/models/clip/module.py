@@ -14,18 +14,18 @@ class CLIP(PathModel):
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
-        self._device = device
+        self._model_device = device
 
         self.name = "clip"
         self.description = "OpenAI's recently released CLIP model — when supplied with a list of labels and an image, CLIP can accurately predict which labels best fit the provided image."
         self.tasks = ["image-classification"]
 
-        if self._device is None:
-            self._device = "cuda" if torch.cuda.is_available() else "cpu"
+        if self._model_device is None:
+            self._model_device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
         if init:
-            self.model, self.transform = self.init_model(model_path, device=self._device)
+            self.model, self.transform = self.init_model(model_path, device=self._model_device)
             self.tokenizer = self.init_tokenizer()
             
             self.initialised = True
@@ -63,8 +63,8 @@ class CLIP(PathModel):
 
             image = BytesIO(base64.b64decode(image_base64))
 
-            image = self.transform(Image.open(image)).unsqueeze(0).to(self._device)
-            text = clip.tokenize(self.tokenizer, labels).to(self._device)
+            image = self.transform(Image.open(image)).unsqueeze(0).to(self._model_device)
+            text = clip.tokenize(self.tokenizer, labels).to(self._model_device)
 
             image_features = self.model.encode_image(image)
             text_features = self.model.encode_text(text)

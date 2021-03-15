@@ -12,11 +12,10 @@ from kiri.models import TextGenerationModel, Finetunable
 class T5(TextGenerationModel, Finetunable):
     def __init__(self, *args, model_path="t5-small", **kwargs):
         Finetunable.__init__(self)
-
-
         TextGenerationModel.__init__(self, model_path,
                                 *args, **kwargs)
 
+        self.batch_size = 1
         self.tasks = ["text-generation", "generation"]
         self.description = "This is the T5 model by Google."
         self.name = "t5"
@@ -73,6 +72,8 @@ class T5(TextGenerationModel, Finetunable):
             epochs: Integer that specifies how many iterations of training to do
         """
         self.check_init()
+        if not torch.cuda.is_available():
+            raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
 
         assert len(input_text) == len(output_text)
         OPTIMAL_BATCH_SIZE = 128
@@ -80,5 +81,6 @@ class T5(TextGenerationModel, Finetunable):
         print("Processing data...")
         dataset = zip(input_text, output_text)
         dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
-    
-        Finetunable.finetune(self, dataset, validation_split, epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE)
+        
+        Finetunable.finetune(self, dataset, validation_split=validation_split,
+            epochs=epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE)

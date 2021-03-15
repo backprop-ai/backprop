@@ -77,7 +77,7 @@ class EfficientNet(PathModel, Finetunable):
             image = BytesIO(base64.b64decode(image_base64))
             image = Image.open(image)
 
-            image = self.tfms(image).unsqueeze(0).to(self._device)
+            image = self.tfms(image).unsqueeze(0).to(self._model_device)
 
             logits = self.model(image)
             preds = torch.topk(logits, k=top_k).indices.squeeze(0).tolist()
