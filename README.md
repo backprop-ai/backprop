@@ -1,4 +1,4 @@
-<h1 align="center">Kiri</h1>
+<h1 align="center">Backprop</h1>
 
 <p align="center">
    <a href="https://pypi.org/project/kiri/"><img src="https://img.shields.io/pypi/v/kiri"/></a> <img src="https://img.shields.io/pypi/pyversions/kiri"/> <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>

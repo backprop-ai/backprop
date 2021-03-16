@@ -4,11 +4,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="kiri",
-    version="0.5.1",
-    author="Kiri OÜ",
+    name="backprop",
+    version="0.0.1",
+    author="Backprop",
     author_email="hello@kiri.ai",
-    description="Kiri",
+    description="Backprop",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/kiri-ai/kiri",
