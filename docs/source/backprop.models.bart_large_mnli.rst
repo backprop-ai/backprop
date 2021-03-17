@@ -1,11 +1,11 @@
-kiri.models.bart\_large\_mnli
+backprop.models.bart\_large\_mnli
 =====================================
 
 
-kiri.models.bart\_large\_mnli.model
+backprop.models.bart\_large\_mnli.model
 ------------------------------------------
 
-.. automodule:: kiri.models.bart_large_mnli.model
+.. automodule:: backprop.models.bart_large_mnli.model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -13,7 +13,7 @@ kiri.models.bart\_large\_mnli.model
 Module contents
 ---------------
 
-.. automodule:: kiri.models.bart_large_mnli
+.. automodule:: backprop.models.bart_large_mnli
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,13 +1,13 @@
 .. _t5:
 
-kiri.models.t5
+backprop.models.t5
 ======================
 
 
-kiri.models.t5.model
+backprop.models.t5.model
 ---------------------------
 
-.. automodule:: kiri.models.t5.model
+.. automodule:: backprop.models.t5.model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ kiri.models.t5.model
 Module contents
 ---------------
 
-.. automodule:: kiri.models.t5
+.. automodule:: backprop.models.t5
    :members:
    :undoc-members:
    :show-inheritance:

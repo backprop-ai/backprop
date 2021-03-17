@@ -1,29 +1,29 @@
-.. _kiri-utils:
+.. _backprop-utils:
 
-kiri.utils
+backprop.utils
 ==================
 
 
-kiri.utils.load
+backprop.utils.load
 ----------------------
 
-.. automodule:: kiri.utils.load
+.. automodule:: backprop.utils.load
    :members:
    :undoc-members:
    :show-inheritance:
 
-kiri.utils.save
+backprop.utils.save
 ----------------------
 
-.. automodule:: kiri.utils.save
+.. automodule:: backprop.utils.save
    :members:
    :undoc-members:
    :show-inheritance:
 
-kiri.utils.upload
+backprop.utils.upload
 ------------------------
 
-.. automodule:: kiri.utils.upload
+.. automodule:: backprop.utils.upload
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +31,7 @@ kiri.utils.upload
 Module contents
 ---------------
 
-.. automodule:: kiri.utils
+.. automodule:: backprop.utils
    :members:
    :undoc-members:
    :show-inheritance:
