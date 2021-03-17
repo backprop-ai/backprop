@@ -13,7 +13,7 @@ This makes them very versatile for many tasks.
 .. code-block:: python
 
     from backprop.models import T5
-    from backprop.tasks import TextGeneration
+    from backprop import TextGeneration
 
     tg = TextGeneration(T5, local=True)
 
