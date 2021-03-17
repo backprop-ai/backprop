@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.abspath('../../kiri'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Kiri'
-copyright = '2021, Kiri OÜ'
-author = 'Kiri OÜ'
+project = 'Backprop'
+copyright = '2021, Backprop'
+author = 'Backprop'
 
 # The full version, including alpha/beta/rc tags
 release = '1.0.0'
@@ -57,8 +57,11 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_logo = '_static/kiri-logo.svg'
+html_logo = '_static/icon-gradient.svg'
 
+html_css_files = [
+    'custom.css'
+]
 
 html_theme_options = {
     'logo_only': True,

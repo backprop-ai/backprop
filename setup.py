@@ -4,19 +4,19 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="kiri",
-    version="0.5.1",
-    author="Kiri OÜ",
-    author_email="hello@kiri.ai",
-    description="Kiri",
+    name="backprop",
+    version="0.0.1",
+    author="Backprop",
+    author_email="hello@backprop.co",
+    description="Backprop",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/kiri-ai/kiri",
+    url="https://github.com/backprop-ai/backprop",
     packages=setuptools.find_packages(),
     install_requires=[
         "transformers>=4.3.2",
         "sentence_transformers>=0.4.1.2",
-        "torch",
+        "torch<1.8.0",
         "torchvision",
         "ftfy",
         "pytorch_lightning==1.1.0",

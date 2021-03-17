@@ -3,7 +3,7 @@
 Models
 ======
 
-Models are classes that power tasks. You can import models from ``kiri.models``.
+Models are classes that power tasks. You can import models from ``backprop.models``.
 
 A valid model must: 
 
@@ -27,19 +27,19 @@ For example, you can vectorise text with both ``"some text"`` and ``["first text
 
 We are still working on adding finetuning support to at least one model for each task.
 
-See the full model reference in :ref:`kiri-models`.
+See the full model reference in :ref:`backprop-models`.
 
 Generic Models
 --------------
 
 Generic models are used to implement more specific models. Generic models don't support any tasks out of the box.
-When implementing a model, it is useful to inherit from a generic model to ensure it fits in with other Kiri modules.
+When implementing a model, it is useful to inherit from a generic model to ensure it fits in with other Backprop modules.
 
 Example usage:
 
 .. code-block:: python
 
-    from kiri.models import PathModel
+    from backprop.models import PathModel
 
     from transformers import AutoModelForPreTraining, AutoTokenizer
 
@@ -50,7 +50,7 @@ Example usage:
 
 See an example how to implement a generic model for a task.
 
-See the generic models reference in :ref:`kiri-models`.
+See the generic models reference in :ref:`backprop-models`.
 
 Custom Models
 -------------
@@ -61,7 +61,7 @@ Example usage:
 
 .. code-block:: python
 
-    from kiri.models import T5QASummaryEmotion
+    from backprop.models import T5QASummaryEmotion
 
     model = T5QASummaryEmotion()
 
@@ -69,7 +69,7 @@ Example usage:
     model({"text": "This is pretty cool!"}, task="emotion")
     "admiration"
 
-This is an ever-growing list, so check out the full reference in :ref:`kiri-models`.
+This is an ever-growing list, so check out the full reference in :ref:`backprop-models`.
 
 Supporting Tasks with Models
 ----------------------------
@@ -82,7 +82,7 @@ This is passed by calling the model object directly.
 
 .. code-block:: python
 
-    from kiri.models import BaseModel
+    from backprop.models import BaseModel
 
     class MyModel(BaseModel):
         def __call__(self, task_input, task="emotion"):
