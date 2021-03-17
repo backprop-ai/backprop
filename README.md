@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-Backprop is a Python library that makes it simple to solve AI tasks without requiring any data.
+Backprop is a Python library that makes it simple to solve AI tasks with state-of-the-art machine learning models.
 </p>
 
-Backprop is built around solving tasks with transfer learning. It implements state-of-the-art AI models that are general enough to solve real world tasks with no data required from the user.
+Backprop is built around solving tasks with transfer learning. It implements advanced models that are general enough to solve real world tasks with minimal data required from the user.
 
 <p align="center">
    <img src=".github/kiri-example.png" width="600"/>
@@ -24,9 +24,9 @@ Out of the box tasks you can solve with Backprop:
 - Emotion detection in English (for customer satisfaction, text analysis, etc.)
 - Text Generation (for idea, story generation and broad task solving)
 
-For more specific use cases, you can adapt a task with little data and a couple of lines of code using finetuning. We are adding finetuning support for all tasks soon.
+For more specific use cases, you can adapt a task with little data and a few lines of code via finetuning. We are working to add finetuning to all our available tasks.
 
-You can run all tasks locally or in production with our optimised inference [API](https://backprop.co), where you only pay for usage. It includes all the tasks, models in our library and lets you upload your own finetuned models.
+You can run all tasks on your own machine, or in production with our optimised inference [API](https://backprop.co), where you only pay for usage. It includes all the tasks & models in our library, and allows you to upload your own finetuned models.
 
 | ⚡ [Getting started](#getting-started)                            | Installation, few minute introduction     |
 | :---------------------------------------------------------------- | :---------------------------------------- |
@@ -46,17 +46,14 @@ pip install backprop
 ### Basic task solving
 
 ```python
-from backprop import Backprop
+from backprop import QA
 
 context = "Take a look at the examples folder to see use cases!"
 
-# Use our inference API
-k = Backprop(api_key="abc")
-# Or run locally
-k = Backprop(local=True)
+qa = QA()
 
 # Start building!
-answer = k.qa("Where can I see what to build?", context)
+answer = qa("Where can I see what to build?", context)
 
 print(answer)
 # Prints
@@ -69,7 +66,7 @@ print(answer)
 from backprop.models import T5
 from backprop import TextGeneration
 
-tg = TextGeneration(T5, local=True)
+tg = TextGeneration(T5)
 
 # Any text works as training data
 inp = ["I really liked the service I received!", "Meh, it was not impressive."]
@@ -105,16 +102,16 @@ backprop.upload(model, api_key="abc")
 2. Data is a bottleneck
 
    - Use AI without needing access to "big data"
-   - With transfer learning, no data is required, but even a small amount can adapt a task to your niche.
+   - With transfer learning, even a small amount of data can adapt a task to your niche requirements
 
-3. There is an overwhelming amount of models
+3. There are an overwhelming amount of models
 
-   - We implement the best ones for various tasks
+   - We implement the best ones and make them simple to use
    - A few general models can accomplish more with less optimisation
 
 4. Deploying models cost effectively is hard work
-   - If our models suit your use case, no deployment is needed
-   - Adapt and deploy your own model with a couple of lines of code
+   - If our models suit your use case, no deployment is needed: just call our API
+   - Adapt and deploy your own model with just a few lines of code
    - Our API scales, is always available, and you only pay for usage
 
 ## Examples
