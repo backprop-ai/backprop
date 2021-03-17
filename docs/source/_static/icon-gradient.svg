@@ -1,0 +1,35 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1600 1600">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        fill: none;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: 73.39px;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="234.31" y1="236.31" x2="1365.69" y2="1367.69" gradientTransform="matrix(1, 0, 0, -1, 0, 1602)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f86731"/>
+      <stop offset="0.13" stop-color="#f36438"/>
+      <stop offset="0.32" stop-color="#e55b4a"/>
+      <stop offset="0.54" stop-color="#ce4d68"/>
+      <stop offset="0.78" stop-color="#ae3991"/>
+      <stop offset="1" stop-color="#8d24bd"/>
+    </linearGradient>
+  </defs>
+  <title>BigIcon</title>
+  <circle class="cls-1" cx="800" cy="800" r="800"/>
+  <circle class="cls-2" cx="1007.32" cy="351.34" r="115.95"/>
+  <circle class="cls-2" cx="1007.32" cy="1248.76" r="115.95"/>
+  <circle class="cls-2" cx="360.78" cy="800" r="115.95"/>
+  <line class="cls-3" x1="1007.32" y1="351.34" x2="360.78" y2="800"/>
+  <line class="cls-3" x1="1007.32" y1="1248.76" x2="360.78" y2="800"/>
+</svg>

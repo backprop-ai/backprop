@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Backprop Home
-==========
+=============
 
 Backprop is a Python library that makes it simple to solve AI tasks without requiring any data.
 
@@ -19,7 +19,6 @@ Backprop is a Python library that makes it simple to solve AI tasks without requ
    :maxdepth: 2
    :caption: Overview
 
-   Core
    Tasks
    Models
    Finetuning
@@ -35,7 +34,6 @@ Backprop is a Python library that makes it simple to solve AI tasks without requ
    :maxdepth: 2
    :caption: Package Reference
    
-   backprop.core
    backprop.models
    backprop.tasks
    backprop.utils

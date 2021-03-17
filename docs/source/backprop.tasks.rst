@@ -1,75 +1,75 @@
-.. _kiri-tasks:
+.. _backprop-tasks:
 
-kiri.tasks
+backprop.tasks
 ==================
 
 
-kiri.tasks.base
+backprop.tasks.base
 ----------------------
 
-.. automodule:: kiri.tasks.base
+.. automodule:: backprop.tasks.base
    :members:
    :undoc-members:
    :show-inheritance:
 
-kiri.tasks.emotion
+backprop.tasks.emotion
 -------------------------
 
-.. automodule:: kiri.tasks.emotion
+.. automodule:: backprop.tasks.emotion
    :members:
    :undoc-members:
    :special-members: __call__
    :show-inheritance:
 
-kiri.tasks.image\_classification
+backprop.tasks.image\_classification
 ---------------------------------------
 
-.. automodule:: kiri.tasks.image_classification
+.. automodule:: backprop.tasks.image_classification
    :members:
    :undoc-members:
    :special-members: __call__
    :show-inheritance:
 
-kiri.tasks.qa
+backprop.tasks.qa
 --------------------
 
-.. automodule:: kiri.tasks.qa
+.. automodule:: backprop.tasks.qa
    :members:
    :undoc-members:
    :special-members: __call__
    :show-inheritance:
 
-kiri.tasks.summarisation
+backprop.tasks.summarisation
 -------------------------------
 
-.. automodule:: kiri.tasks.summarisation
+.. automodule:: backprop.tasks.summarisation
    :members:
    :undoc-members:
    :special-members: __call__
    :show-inheritance:
 
-kiri.tasks.text\_classification
+backprop.tasks.text\_classification
 --------------------------------------
 
-.. automodule:: kiri.tasks.text_classification
+.. automodule:: backprop.tasks.text_classification
    :members:
    :undoc-members:
    :special-members: __call__
    :show-inheritance:
 
-kiri.tasks.text\_generation
+backprop.tasks.text\_generation
 ----------------------------------
 
-.. automodule:: kiri.tasks.text_generation
+.. automodule:: backprop.tasks.text_generation
    :members:
    :undoc-members:
    :special-members: __call__
    :show-inheritance:
 
-kiri.tasks.text\_vectorisation
+backprop.tasks.text\_vectorisation
 -------------------------------------
 
-.. automodule:: kiri.tasks.text_vectorisation
+.. automodule:: backprop.tasks.text_vectorisation
    :members:
    :undoc-members:
    :special-members: __call__
@@ -78,7 +78,7 @@ kiri.tasks.text\_vectorisation
 Module contents
 ---------------
 
-.. automodule:: kiri.tasks
+.. automodule:: backprop.tasks
    :members:
    :undoc-members:
    :show-inheritance:

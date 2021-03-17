@@ -1,35 +1,35 @@
-kiri.models.clip
+backprop.models.clip
 ========================
 
 
-kiri.models.clip.clip
+backprop.models.clip.clip
 ----------------------------
 
-.. automodule:: kiri.models.clip.clip
+.. automodule:: backprop.models.clip.clip
    :members:
    :undoc-members:
    :show-inheritance:
 
-kiri.models.clip.model
+backprop.models.clip.model
 -----------------------------
 
-.. automodule:: kiri.models.clip.model
+.. automodule:: backprop.models.clip.model
    :members:
    :undoc-members:
    :show-inheritance:
 
-kiri.models.clip.module
+backprop.models.clip.module
 ------------------------------
 
-.. automodule:: kiri.models.clip.module
+.. automodule:: backprop.models.clip.module
    :members:
    :undoc-members:
    :show-inheritance:
 
-kiri.models.clip.simple\_tokenizer
+backprop.models.clip.simple\_tokenizer
 -----------------------------------------
 
-.. automodule:: kiri.models.clip.simple_tokenizer
+.. automodule:: backprop.models.clip.simple_tokenizer
    :members:
    :undoc-members:
    :show-inheritance:
@@ -37,7 +37,7 @@ kiri.models.clip.simple\_tokenizer
 Module contents
 ---------------
 
-.. automodule:: kiri.models.clip
+.. automodule:: backprop.models.clip
    :members:
    :undoc-members:
    :show-inheritance:

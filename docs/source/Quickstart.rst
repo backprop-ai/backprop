@@ -30,23 +30,20 @@ Basic Task Solving
 
 .. code-block:: python
 
-    from backprop import Backprop
+    from backprop import QA
 
     context = "Take a look at the examples folder to see use cases!"
 
-    # Use our inference API
-    b = Backprop(api_key="abc")
-    # Or run locally
-    b = Backprop(local=True)
+    qa = backprop.QA()
 
     # Start building!
-    answer = b.qa("Where can I see what to build?", context)
+    answer = qa("Where can I see what to build?", context)
 
     print(answer)
     # Prints
     "the examples folder"
 
-See examples for all available tasks in :ref:`core`.
+See examples for all available tasks in :ref:`tasks`.
 
 Basic Finetuning and Uploading
 ------------------------------
@@ -54,7 +51,7 @@ Basic Finetuning and Uploading
 .. code-block:: python
 
     from backprop.models import T5
-    from backprop.tasks import TextGeneration
+    from backprop import TextGeneration
 
     tg = TextGeneration(T5, local=True)
 
@@ -73,7 +70,6 @@ Basic Finetuning and Uploading
     "positive"
 
     # Upload to Backprop for production ready inference
-    import backprop
 
     model = tg.model
     # Describe your model
@@ -85,7 +81,7 @@ Basic Finetuning and Uploading
 Learn more about finetuning in :ref:`ft`.
 
 Why Backprop?
----------
+-------------
 
 1. No experience needed
 

@@ -1,7 +1,7 @@
-kiri
-====
+backprop
+========
 
 .. toctree::
    :maxdepth: 4
 
-   kiri
+   backprop

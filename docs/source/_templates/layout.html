@@ -1,9 +1,15 @@
 {% extends "!layout.html" %}
-  {% block footer %} {{ super() }}
-  <style>
-    /* Sidebar header (and topbar for mobile) */
-    .wy-side-nav-search, .wy-nav-top {
-      background: #2b7be5;
-    }
-  </style>
+{% block footer %} {{ super() }}
+<style>
+  /* Sidebar header (and topbar for mobile) */
+  .wy-side-nav-search,
+  .wy-nav-top {
+    background: #000000;
+  }
+
+
+  .caption-text {
+    color: white;
+  }
+</style>
 {% endblock %}

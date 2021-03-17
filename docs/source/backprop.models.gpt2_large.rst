@@ -1,10 +1,10 @@
-kiri.models.gpt2\_large
+backprop.models.gpt2\_large
 ===============================
 
-kiri.models.gpt2\_large.model
+backprop.models.gpt2\_large.model
 ------------------------------------
 
-.. automodule:: kiri.models.gpt2_large.model
+.. automodule:: backprop.models.gpt2_large.model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ kiri.models.gpt2\_large.model
 Module contents
 ---------------
 
-.. automodule:: kiri.models.gpt2_large
+.. automodule:: backprop.models.gpt2_large
    :members:
    :undoc-members:
    :show-inheritance:

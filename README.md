@@ -1,20 +1,20 @@
 <h1 align="center">Backprop</h1>
 
 <p align="center">
-   <a href="https://pypi.org/project/kiri/"><img src="https://img.shields.io/pypi/v/kiri"/></a> <img src="https://img.shields.io/pypi/pyversions/kiri"/> <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
+   <a href="https://pypi.org/project/backprop/"><img src="https://img.shields.io/pypi/v/backprop"/></a> <img src="https://img.shields.io/pypi/pyversions/backprop"/> <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
 </p>
 
 <p align="center">
-Kiri is a Python library that makes it simple to solve AI tasks without requiring any data.
+Backprop is a Python library that makes it simple to solve AI tasks with state-of-the-art machine learning models.
 </p>
 
-Kiri is built around solving tasks with transfer learning. It implements state-of-the-art AI models that are general enough to solve real world tasks with no data required from the user.
+Backprop is built around solving tasks with transfer learning. It implements advanced models that are general enough to solve real world tasks with minimal data required from the user.
 
 <p align="center">
    <img src=".github/kiri-example.png" width="600"/>
 </p>
 
-Out of the box tasks you can solve with Kiri:
+Out of the box tasks you can solve with Backprop:
 
 - Conversational question answering in English (for FAQ chatbots, text analysis, etc.)
 - Text Classification in 100+ languages (for email sorting, intent detection, etc.)
@@ -24,39 +24,36 @@ Out of the box tasks you can solve with Kiri:
 - Emotion detection in English (for customer satisfaction, text analysis, etc.)
 - Text Generation (for idea, story generation and broad task solving)
 
-For more specific use cases, you can adapt a task with little data and a couple of lines of code using finetuning. We are adding finetuning support for all tasks soon.
+For more specific use cases, you can adapt a task with little data and a few lines of code via finetuning. We are working to add finetuning to all our available tasks.
 
-You can run all tasks locally or in production with our optimised inference [API](https://kiri.ai), where you only pay for usage. It includes all the tasks, models in our library and lets you upload your own finetuned models.
+You can run all tasks on your own machine, or in production with our optimised inference [API](https://backprop.co), where you only pay for usage. It includes all the tasks & models in our library, and allows you to upload your own finetuned models.
 
 | ⚡ [Getting started](#getting-started)                            | Installation, few minute introduction     |
 | :---------------------------------------------------------------- | :---------------------------------------- |
-| 💡 [Examples](https://github.com/kiri-ai/kiri/tree/main/examples) | Sample problems solved using Kiri         |
-| 📙 [Docs](https://kiri.readthedocs.io/en/latest/)                 | In-depth documentation for advanced usage |
+| 💡 [Examples](https://github.com/backprop-ai/backprop/tree/main/examples) | Sample problems solved using Backprop         |
+| 📙 [Docs](https://backprop.readthedocs.io/en/latest/)                 | In-depth documentation for advanced usage |
 
 ## Getting started
 
 ### Installation
 
-Install Kiri via PyPi:
+Install Backprop via PyPi:
 
 ```bash
-pip install kiri
+pip install backprop
 ```
 
 ### Basic task solving
 
 ```python
-from backprop import Kiri
+from backprop import QA
 
 context = "Take a look at the examples folder to see use cases!"
 
-# Use our inference API
-k = Kiri(api_key="abc")
-# Or run locally
-k = Kiri(local=True)
+qa = QA()
 
 # Start building!
-answer = k.qa("Where can I see what to build?", context)
+answer = qa("Where can I see what to build?", context)
 
 print(answer)
 # Prints
@@ -67,9 +64,9 @@ print(answer)
 
 ```python
 from backprop.models import T5
-from backprop.tasks import TextGeneration
+from backprop import TextGeneration
 
-tg = TextGeneration(T5, local=True)
+tg = TextGeneration(T5)
 
 # Any text works as training data
 inp = ["I really liked the service I received!", "Meh, it was not impressive."]
@@ -85,18 +82,17 @@ print(prediction)
 # Prints
 "positive"
 
-# Upload to Kiri for production ready inference
-import kiri
+# Upload to Backprop for production ready inference
 
 model = tg.model
 # Describe your model
 model.name = "t5-sentiment"
 model.description = "Predicts positive and negative sentiment"
 
-kiri.upload(model, api_key="abc")
+backprop.upload(model, api_key="abc")
 ```
 
-## Why Kiri?
+## Why Backprop?
 
 1. No experience needed
 
@@ -106,22 +102,22 @@ kiri.upload(model, api_key="abc")
 2. Data is a bottleneck
 
    - Use AI without needing access to "big data"
-   - With transfer learning, no data is required, but even a small amount can adapt a task to your niche.
+   - With transfer learning, even a small amount of data can adapt a task to your niche requirements
 
-3. There is an overwhelming amount of models
+3. There are an overwhelming amount of models
 
-   - We implement the best ones for various tasks
+   - We implement the best ones and make them simple to use
    - A few general models can accomplish more with less optimisation
 
 4. Deploying models cost effectively is hard work
-   - If our models suit your use case, no deployment is needed
-   - Adapt and deploy your own model with a couple of lines of code
+   - If our models suit your use case, no deployment is needed: just call our API
+   - Adapt and deploy your own model with just a few lines of code
    - Our API scales, is always available, and you only pay for usage
 
 ## Examples
 
-Take a look at the [examples folder](https://github.com/kiri-ai/kiri/tree/main/examples).
+Take a look at the [examples folder](https://github.com/backprop-ai/backprop/tree/main/examples).
 
 ## Documentation
 
-Check out our [docs](https://kiri.readthedocs.io/en/latest/).
+Check out our [docs](https://backprop.readthedocs.io/en/latest/).

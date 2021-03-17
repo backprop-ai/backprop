@@ -1,11 +1,11 @@
-kiri.models.distiluse\_base\_multilingual\_cased\_v2
+backprop.models.distiluse\_base\_multilingual\_cased\_v2
 ============================================================
 
 
-kiri.models.distiluse\_base\_multilingual\_cased\_v2.model
+backprop.models.distiluse\_base\_multilingual\_cased\_v2.model
 -----------------------------------------------------------------
 
-.. automodule:: kiri.models.distiluse_base_multilingual_cased_v2.model
+.. automodule:: backprop.models.distiluse_base_multilingual_cased_v2.model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -13,7 +13,7 @@ kiri.models.distiluse\_base\_multilingual\_cased\_v2.model
 Module contents
 ---------------
 
-.. automodule:: kiri.models.distiluse_base_multilingual_cased_v2
+.. automodule:: backprop.models.distiluse_base_multilingual_cased_v2
    :members:
    :undoc-members:
    :show-inheritance:
