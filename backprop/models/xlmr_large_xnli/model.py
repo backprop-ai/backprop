@@ -4,10 +4,10 @@ from backprop.models import HuggingModel
 class XLMRLargeXNLI(HuggingModel):
     def __init__(self, model_path="joeddav/xlm-roberta-large-xnli", tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
-                tokenizer_class=AutoTokenizer, device=None, init=True):
+                tokenizer_class=AutoTokenizer, device=None):
         HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
-                    device=device, init=init)
+                    device=device)
         self.name = "xlmr-large-xnli"
         self.description = "XLM-RoBERTa is a multilingual variant of Facebook's RoBERTa model. This has been finetuned on the XNLI dataset, resulting in classification system that is effective on 100 different languages."
         self.tasks = ["text-classification"]
@@ -35,7 +35,6 @@ class XLMRLargeXNLI(HuggingModel):
         """
         Classifies text, given a set of labels.
         """
-        self.check_init()
         if isinstance(text, list):
             # Must have a consistent amount of examples
             assert(len(text) == len(labels))

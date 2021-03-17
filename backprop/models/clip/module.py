@@ -9,8 +9,7 @@ import base64
 
 class CLIP(PathModel):
     def __init__(self, model_path="ViT-B/32", init_model=clip.load,
-                init_tokenizer=simple_tokenizer.SimpleTokenizer, device=None, init=True):
-        self.initialised = False
+                init_tokenizer=simple_tokenizer.SimpleTokenizer, device=None):
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
@@ -24,12 +23,9 @@ class CLIP(PathModel):
             self._device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
-        if init:
-            self.model, self.transform = self.init_model(model_path, device=self._device)
-            self.tokenizer = self.init_tokenizer()
+        self.model, self.transform = self.init_model(model_path, device=self._device)
+        self.tokenizer = self.init_tokenizer()
             
-            self.initialised = True
-
     def __call__(self, task_input, task="image-classification"):
         if task == "image-classification":
             image_base64 = task_input.get("image")
@@ -40,7 +36,6 @@ class CLIP(PathModel):
     @torch.no_grad()
     def image_classification(self, image_base64: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
         # TODO: Proper batching
-        self.check_init()
         is_list = False
 
         if type(image_base64) == list:

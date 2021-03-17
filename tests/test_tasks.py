@@ -27,13 +27,13 @@ image_classification_correct = "dog"
 
 device = "cpu"
 
-text_vectorisation = TextVectorisation(local=True, device=device)
-qa = QA(local=True, device=device)
-emotion = Emotion(local=True, device=device)
-summarisation = Summarisation(local=True, device=device)
-text_classification = TextClassification(local=True, device=device)
-image_classification = ImageClassification(local=True, device=device)
-text_generation = TextGeneration(local=True, device=device)
+text_vectorisation = TextVectorisation(device=device)
+qa = QA(device=device)
+emotion = Emotion(device=device)
+summarisation = Summarisation(device=device)
+text_classification = TextClassification(device=device)
+image_classification = ImageClassification(device=device)
+text_generation = TextGeneration(device=device)
 
 def test_vectorisation_single():
     out = text_vectorisation("This is a sample thing.")

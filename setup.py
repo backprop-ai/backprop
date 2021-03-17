@@ -7,11 +7,11 @@ setuptools.setup(
     name="backprop",
     version="0.0.1",
     author="Backprop",
-    author_email="hello@kiri.ai",
+    author_email="hello@backprop.co",
     description="Backprop",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/kiri-ai/kiri",
+    url="https://github.com/backprop-ai/backprop",
     packages=setuptools.find_packages(),
     install_requires=[
         "transformers>=4.3.2",
