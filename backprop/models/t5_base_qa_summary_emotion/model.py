@@ -1,7 +1,7 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from typing import List, Tuple
 
-from kiri.models import T5
+from backprop.models import T5
 
 class T5QASummaryEmotion(T5):
     def __init__(self, *args, **kwargs):

@@ -46,7 +46,7 @@ pip install kiri
 ### Basic task solving
 
 ```python
-from kiri import Kiri
+from backprop import Kiri
 
 context = "Take a look at the examples folder to see use cases!"
 
@@ -66,8 +66,8 @@ print(answer)
 ### Basic finetuning and uploading
 
 ```python
-from kiri.models import T5
-from kiri.tasks import TextGeneration
+from backprop.models import T5
+from backprop.tasks import TextGeneration
 
 tg = TextGeneration(T5, local=True)
 

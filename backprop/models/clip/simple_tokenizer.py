@@ -10,7 +10,8 @@ import urllib
 from tqdm import tqdm
 import regex as re
 
-CLIP_VOCAB = "https://github.com/kiri-ai/kiri/raw/main/kiri/models/clip/bpe_simple_vocab_16e6.txt.gz"
+# TODO: Correct URL
+CLIP_VOCAB = "https://github.com/backprop-ai/kiri/raw/main/kiri/models/clip/bpe_simple_vocab_16e6.txt.gz"
 
 @lru_cache()
 def default_bpe():
@@ -65,7 +66,7 @@ def whitespace_clean(text):
     return text
 
 
-def _download_vocab(url: str = CLIP_VOCAB, root: str = os.path.expanduser("~/.cache/kiri/clip")):
+def _download_vocab(url: str = CLIP_VOCAB, root: str = os.path.expanduser("~/.cache/backprop/clip")):
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
     download_target = os.path.join(root, filename)

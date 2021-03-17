@@ -1,4 +1,4 @@
-from kiri.tasks import Emotion, ImageClassification, QA, Summarisation, TextClassification, TextGeneration, TextVectorisation
+from backprop import Emotion, ImageClassification, QA, Summarisation, TextClassification, TextGeneration, TextVectorisation
 import numpy as np
 import torch
 import os

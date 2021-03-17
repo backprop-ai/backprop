@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union
-from kiri.models import GPT2Large, T5QASummaryEmotion, BaseModel
+from backprop.models import GPT2Large, T5QASummaryEmotion, BaseModel
 from .base import Task
 
 import requests
@@ -21,12 +21,12 @@ class TextGeneration(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's generation endpoint (gpt2-large, t5-base-qa-summary-emotion or your own uploaded model)
+            1. Name of the model on Backprop's generation endpoint (gpt2-large, t5-base-qa-summary-emotion or your own uploaded model)
             2. Officially supported local models (gpt2, t5-base-qa-summary-emotion).
-            3. Model object/class that inherits from Kiri's TextGenerationModel
-            4. Path/name of saved Kiri model
+            3. Model object/class that inherits from backprop's TextGenerationModel
+            4. Path/name of saved Backprop model
         local (optional): Run locally. Defaults to False
-        api_key (optional): Kiri API key for non-local inference
+        api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
         init (optional): Whether to initialise model immediately or wait until first call.
             Defaults to True
@@ -75,7 +75,7 @@ class TextGeneration(Task):
         else:
             task_input["model"] = self.model 
 
-            res = requests.post("https://api.kiri.ai/text-generation", json=task_input,
+            res = requests.post("https://api.backprop.co/text-generation", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):

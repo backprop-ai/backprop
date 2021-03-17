@@ -1,6 +1,6 @@
 from typing import Dict, List
 import logging
-from kiri import load
+from backprop import load
 
 logger = logging.getLogger("info")
 

@@ -1,4 +1,4 @@
-from kiri.models import TextVectorisationModel
+from backprop.models import TextVectorisationModel
 
 class MSMARCODistilrobertaBaseV2(TextVectorisationModel):
     def __init__(self, *args, **kwargs):
