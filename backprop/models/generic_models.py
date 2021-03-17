@@ -43,12 +43,9 @@ class PathModel(BaseModel):
         tokenizer_path (optional): Path to the tokenizer
         init_tokenizer (optional): Callable to initialise tokenizer from path
         device (optional): Device for inference. Defaults to "cuda" if available.
-        init (optional): Whether to initialise model and tokenizer immediately or wait until first call.
-            Defaults to True.
     """
     def __init__(self, model_path, init_model, tokenizer_path=None,
-                init_tokenizer=None, device=None, init=True):
-        self.initialised = False
+                init_tokenizer=None, device=None):
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
@@ -59,25 +56,14 @@ class PathModel(BaseModel):
             self._device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
-        if init:
-            self.model = self.init_model(model_path).eval().to(self._device)
+        self.model = self.init_model(model_path).eval().to(self._device)
 
-            # Not all models need tokenizers
-            if self.tokenizer_path:
-                self.tokenizer = self.init_tokenizer(self.tokenizer_path)
-            
-            self.initialised = True
-
-
-    def check_init(self):
-        # Initialise on call time
-        if not self.initialised:
-            self.__init__(self.model_path, init=True)
-
+        # Not all models need tokenizers
+        if self.tokenizer_path:
+            self.tokenizer = self.init_tokenizer(self.tokenizer_path)
+        
 
     def __call__(self, *args, **kwargs):
-        self.check_init()
-
         return self.model(*args, **kwargs)
 
 
@@ -93,12 +79,10 @@ class HuggingModel(PathModel):
         init_tokenizer (optional): Callable to initialise tokenizer from path
             Defaults to AutoTokenizer from huggingface.
         device (optional): Device for inference. Defaults to "cuda" if available.
-        init (optional): Whether to initialise model and tokenizer immediately or wait until first call.
-            Defaults to True.
     """
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForPreTraining,
-                tokenizer_class=AutoTokenizer, device=None, init=True):
+                tokenizer_class=AutoTokenizer, device=None):
         # Usually the same
         if not tokenizer_path:
             tokenizer_path = model_path
@@ -117,7 +101,7 @@ class HuggingModel(PathModel):
         return super().__init__(model_path, tokenizer_path=tokenizer_path,
                                 init_model=init_model,
                                 init_tokenizer=init_tokenizer,
-                                device=device, init=init)
+                                device=device)
 
 
 class TextVectorisationModel(PathModel):
@@ -129,11 +113,9 @@ class TextVectorisationModel(PathModel):
         init_model: Callable to initialise model from path
             Defaults to SentenceTransformer
         device (optional): Device for inference. Defaults to "cuda" if available.
-        init (optional): Whether to initialise model immediately or wait until first call.
-            Defaults to True.
     """
     def __init__(self, model_path, model_class=SentenceTransformer,
-                device=None, init=True):
+                device=None):
         # Object was made with init = False
         if hasattr(self, "initialised"):
             model_path = self.model_path
@@ -144,14 +126,13 @@ class TextVectorisationModel(PathModel):
 
         return super().__init__(model_path,
                                 init_model=init_model,
-                                device=device, init=init)
+                                device=device)
 
 
     def __call__(self, *args, **kwargs):
         return self.vectorise(*args, **kwargs)
 
     def vectorise(self, *args, **kwargs):
-        self.check_init()
         with torch.no_grad():
             return self.model.encode(*args, **kwargs)
 
@@ -167,8 +148,6 @@ class TextGenerationModel(HuggingModel):
         """
         Generate according to the model's generate method.
         """
-        self.check_init()
-
         # Get and remove do_sample or set to False
         do_sample = kwargs.pop("do_sample", None) or False
         params = ["temperature", "top_k", "top_p", "repetition_penalty",
@@ -241,15 +220,13 @@ class ClassificationModel(HuggingModel):
         tokenizer_class (optional): Callable to initialise tokenizer from path
             Defaults to AutoTokenizer from huggingface.
         device (optional): Device for inference. Defaults to "cuda" if available.
-        init (optional): Whether to initialise model and tokenizer immediately or wait until first call.
-            Defaults to True.
     """
     def __init__(self, model_path, tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
-                tokenizer_class=AutoTokenizer, device=None, init=True):
+                tokenizer_class=AutoTokenizer, device=None):
         return super().__init__(model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
-                    device=device, init=init)
+                    device=device)
 
     def calculate_probability(self, text, label, device):
         hypothesis = f"This example is {label}."
@@ -266,7 +243,6 @@ class ClassificationModel(HuggingModel):
         """
         Classifies text, given a set of labels.
         """
-        self.check_init()
         if isinstance(text, list):
             # Must have a consistent amount of examples
             assert(len(text) == len(labels))

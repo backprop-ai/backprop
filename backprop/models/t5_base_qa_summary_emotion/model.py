@@ -42,7 +42,6 @@ class T5QASummaryEmotion(T5):
 
 
     def qa(self, question, context, prev_qa: List[Tuple[str, str]] = []):
-        self.check_init()
         if isinstance(question, list):
             # Must have a consistent amount of examples
             assert(len(question) == len(context))
@@ -65,7 +64,6 @@ class T5QASummaryEmotion(T5):
 
     
     def emotion(self, text):
-        self.check_init()
         if isinstance(text, list):
             # Process according to the model used
             text = [self.process_emotion(item) for item in text]
@@ -80,7 +78,6 @@ class T5QASummaryEmotion(T5):
 
     
     def summarise(self, text):
-        self.check_init()
         if isinstance(text, list):
             # Process according to the model used
             text = [self.process_summarisation(item) for item in text]

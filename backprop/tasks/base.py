@@ -6,12 +6,12 @@ logger = logging.getLogger("info")
 
 class Task:
     def __init__(self, model, local=False, api_key=None,
-                device: str = None, init=True, local_models: Dict = None,
+                device: str = None, local_models: Dict = None,
                 api_models: List[str] = None, default_local_model: str = None,
                 default_api_model: str = None):
 
         if api_key == None:
-            local=True
+            local = True
                     
         if device == None:
             import torch
@@ -20,7 +20,6 @@ class Task:
         self.local = local
         self.api_key = api_key
         self._device = device
-        self.init = init
 
         # Pick the correct model name
         if local:
@@ -36,14 +35,10 @@ class Task:
             elif hasattr(model, "model"):
                 self.model = model
             else:
-                self.model = model(init=init, device=device)
+                self.model = model(device=device)
         else:
             if model is None or type(model) != str:
                 model = default_api_model
-
-            if api_key is None:
-                raise ValueError(
-                    "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
     
             # All checks passed
             self.model = model

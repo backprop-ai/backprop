@@ -7,7 +7,7 @@ import requests
 
 def upload(model: BaseModel = None, path: str = None, api_key: str = None, save_path: str = None):
     """
-    Deploys a model from object or path to Kiri. 
+    Deploys a model from object or path to Backprop. 
     Either the model or path to saved model must be provided.
 
     Args:
@@ -68,14 +68,14 @@ def upload(model: BaseModel = None, path: str = None, api_key: str = None, save_
     
     upload_url = res.json()
 
-    print("Uploading to Kiri, this may take a few minutes...")
+    print("Uploading to Backprop, this may take a few minutes...")
     with open(f"{model_name}.zip", "rb") as f:
         res = requests.put(upload_url, f)
 
     if res.status_code != 200:
         raise Exception(f"Failed to upload. Please try again.")
 
-    print("Successfully uploaded the model to Kiri. See the build process at https://dashboard.kiri.ai")
+    print("Successfully uploaded the model to Backprop. See the build process at https://dashboard.backprop.co")
 
     # Move back to working directory
     os.chdir(cwd)

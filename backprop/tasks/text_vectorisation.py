@@ -28,15 +28,12 @@ class TextVectorisation(Task):
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
-        init (optional): Whether to initialise model immediately or wait until first call.
-            Defaults to True
     """
     def __init__(self, model: Union[str, BaseModel] = None,
-                local: bool = False, api_key: str = None, device: str = "cpu",
-                init: bool = True):
+                local: bool = False, api_key: str = None, device: str = "cpu"):
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        init=init, local_models=LOCAL_MODELS, api_models=API_MODELS,
+                        local_models=LOCAL_MODELS, api_models=API_MODELS,
                         default_local_model=DEFAULT_LOCAL_MODEL,
                         default_api_model=DEFAULT_API_MODEL)
     

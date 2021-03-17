@@ -6,7 +6,7 @@ import json
 
 def save(model, path=None):
     """
-    Saves the provided model to the kiri cache folder using model.name or to provided path
+    Saves the provided model to the backprop cache folder using model.name or to provided path
 
     The resulting folder has three files:
 
@@ -37,7 +37,7 @@ def save(model, path=None):
         "tasks": tasks
     }
 
-    packages = ["kiri", "transformers", "sentence_transformers", "pytorch_lightning"]
+    packages = ["backprop", "transformers", "sentence_transformers", "pytorch_lightning"]
     requirements = [f"{package}=={pkg_resources.get_distribution(package).version}"
                     for package in packages]
 

@@ -83,7 +83,6 @@ class T5(TextGenerationModel, pl.LightningModule):
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
         """
-        self.check_init()
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
 

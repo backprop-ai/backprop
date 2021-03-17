@@ -4,10 +4,10 @@ from backprop.models import HuggingModel
 class BartLargeMNLI(HuggingModel):
     def __init__(self, model_path="facebook/bart-large-mnli", tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
-                tokenizer_class=AutoTokenizer, device=None, init=True):
+                tokenizer_class=AutoTokenizer, device=None):
         HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
-                    device=device, init=init)
+                    device=device)
 
         self.name = "bart-large-mnli"
         self.description = "Facebook's large version of BART, finetuned on the Multi-Genre Natural Language Inference dataset. This training results in a robust zero-shot classification system."
@@ -36,7 +36,6 @@ class BartLargeMNLI(HuggingModel):
         """
         Classifies text, given a set of labels.
         """
-        self.check_init()
         if isinstance(text, list):
             # Must have a consistent amount of examples
             assert(len(text) == len(labels))
