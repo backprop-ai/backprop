@@ -1,5 +1,5 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from kiri.models import HuggingModel
+from backprop.models import HuggingModel
 
 class BartLargeMNLI(HuggingModel):
     def __init__(self, model_path="facebook/bart-large-mnli", tokenizer_path=None,

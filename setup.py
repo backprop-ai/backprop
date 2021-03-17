@@ -16,7 +16,7 @@ setuptools.setup(
     install_requires=[
         "transformers>=4.3.2",
         "sentence_transformers>=0.4.1.2",
-        "torch",
+        "torch<1.8.0",
         "torchvision",
         "ftfy",
         "pytorch_lightning==1.1.0",

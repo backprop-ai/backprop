@@ -1,4 +1,4 @@
-from kiri.models import BaseModel
+from backprop.models import BaseModel
 import dill
 import pkg_resources
 import os
@@ -28,7 +28,7 @@ def save(model, path=None):
         raise ValueError("please provide a path or give the model a name")
 
     if path is None:
-        path = os.path.expanduser(f"~/.cache/kiri/{name}")
+        path = os.path.expanduser(f"~/.cache/backprop/{name}")
 
     os.makedirs(path, exist_ok=True)
 

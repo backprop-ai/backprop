@@ -1,2 +1,2 @@
 from .utils import save, load, upload
-from .core import Kiri
+from .tasks import Task, Emotion, ImageClassification, QA, Summarisation, TextClassification, TextGeneration, TextVectorisation

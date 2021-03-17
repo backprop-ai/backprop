@@ -2,7 +2,7 @@ import torch
 from PIL import Image
 from typing import Union, List
 from . import clip, simple_tokenizer
-from kiri.models import PathModel
+from backprop.models import PathModel
 
 from io import BytesIO
 import base64

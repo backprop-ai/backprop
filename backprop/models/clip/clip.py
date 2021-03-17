@@ -20,7 +20,7 @@ _MODELS = {
 }
 
 
-def _download(url: str, root: str = os.path.expanduser("~/.cache/kiri/clip")):
+def _download(url: str, root: str = os.path.expanduser("~/.cache/backprop/clip")):
     os.makedirs(root, exist_ok=True)
     filename = os.path.basename(url)
     

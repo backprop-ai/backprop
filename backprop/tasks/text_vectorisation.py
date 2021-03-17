@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from .base import Task
-from kiri.models import MSMARCODistilrobertaBaseV2, DistiluseBaseMultilingualCasedV2, BaseModel
+from backprop.models import MSMARCODistilrobertaBaseV2, DistiluseBaseMultilingualCasedV2, BaseModel
 
 import requests
 
@@ -21,12 +21,12 @@ class TextVectorisation(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's vectorisation endpoint (english, multilingual or your own uploaded model)
+            1. Name of the model on Backprop's vectorisation endpoint (english, multilingual or your own uploaded model)
             2. Officially supported local models (english, multilingual).
-            3. Model class of instance Kiri's TextVectorisationModel
-            4. Path/name of saved Kiri model
+            3. Model class of instance Backprop's TextVectorisationModel
+            4. Path/name of saved Backprop model
         local (optional): Run locally. Defaults to False
-        api_key (optional): Kiri API key for non-local inference
+        api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
         init (optional): Whether to initialise model immediately or wait until first call.
             Defaults to True
@@ -60,7 +60,7 @@ class TextVectorisation(Task):
                 "model": self.model
             }
 
-            res = requests.post("https://api.kiri.ai/text-vectorisation", json=body,
+            res = requests.post("https://api.backprop.co/text-vectorisation", json=body,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):

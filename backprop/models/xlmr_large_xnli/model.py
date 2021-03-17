@@ -1,5 +1,5 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from kiri.models import HuggingModel
+from backprop.models import HuggingModel
 
 class XLMRLargeXNLI(HuggingModel):
     def __init__(self, model_path="joeddav/xlm-roberta-large-xnli", tokenizer_path=None,

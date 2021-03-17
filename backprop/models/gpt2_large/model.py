@@ -1,5 +1,5 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from kiri.models import TextGenerationModel
+from backprop.models import TextGenerationModel
 
 class GPT2Large(TextGenerationModel):
     def __init__(self, *args, **kwargs):

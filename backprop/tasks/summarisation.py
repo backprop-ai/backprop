@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from .base import Task
-from kiri.models import T5QASummaryEmotion, BaseModel
+from backprop.models import T5QASummaryEmotion, BaseModel
 
 import requests
 
@@ -20,13 +20,13 @@ class Summarisation(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's summarisation endpoint (english or your own uploaded model)
+            1. Name of the model on Backprop's summarisation endpoint (english or your own uploaded model)
             2. Officially supported local models (english).
-            3. Model class of instance Kiri's BaseModel that implements the summarisation task
-            4. Path/name of saved Kiri model
+            3. Model class of instance Backprop's BaseModel that implements the summarisation task
+            4. Path/name of saved Backprop model
         model_class (optional): The model class to use when supplying a path for the model.
         local (optional): Run locally. Defaults to False
-        api_key (optional): Kiri API key for non-local inference
+        api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
         init (optional): Whether to initialise model immediately or wait until first call.
             Defaults to True
@@ -57,7 +57,7 @@ class Summarisation(Task):
         else:
             task_input["model"] = self.model
 
-            res = requests.post("https://api.kiri.ai/summarisation", json=task_input,
+            res = requests.post("https://api.backprop.co/summarisation", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):

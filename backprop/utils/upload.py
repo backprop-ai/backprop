@@ -1,5 +1,5 @@
 from . import save
-from kiri.models import BaseModel
+from backprop.models import BaseModel
 from zipfile import ZipFile
 import os
 import dill
@@ -13,7 +13,7 @@ def upload(model: BaseModel = None, path: str = None, api_key: str = None, save_
     Args:
         model: Model object
         path: Path to saved model
-        api_key: Kiri API key
+        api_key: Backprop API key
         save_path: Optional path to save model if providing a model object
     """
     
@@ -55,7 +55,7 @@ def upload(model: BaseModel = None, path: str = None, api_key: str = None, save_
 
 
     print("Getting upload url...")
-    res = requests.post("https://api.kiri.ai/upload-url",
+    res = requests.post("https://api.backprop.co/upload-url",
                                 json={"model_name": model_name},
                                 headers={"x-api-key": api_key})
     if res.status_code != 200:

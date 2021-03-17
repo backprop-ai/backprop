@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union
-from kiri.models import BartLargeMNLI, XLMRLargeXNLI, BaseModel
+from backprop.models import BartLargeMNLI, XLMRLargeXNLI, BaseModel
 from .base import Task
 
 import requests
@@ -21,12 +21,12 @@ class TextClassification(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's classification endpoint (english, multilingual or your own uploaded model)
+            1. Name of the model on Backprop's classification endpoint (english, multilingual or your own uploaded model)
             2. Officially supported local models (english, multilingual).
-            3. Model class of instance Kiri's TextClassificationModel
-            4. Path/name of saved Kiri model
+            3. Model class of instance Backprop's TextClassificationModel
+            4. Path/name of saved Backprop model
         local (optional): Run locally. Defaults to False
-        api_key (optional): Kiri API key for non-local inference
+        api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
         init (optional): Whether to initialise model immediately or wait until first call.
             Defaults to True
@@ -65,7 +65,7 @@ class TextClassification(Task):
                 "model": self.model,
             }
 
-            res = requests.post("https://api.kiri.ai/text-classification", json=body,
+            res = requests.post("https://api.backprop.co/text-classification", json=body,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):

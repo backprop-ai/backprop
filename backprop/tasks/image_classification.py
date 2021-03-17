@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from ..models import BaseModel, ClassificationModel
-from kiri.models import CLIP
+from backprop.models import CLIP
 from .base import Task
 import base64
 
@@ -22,12 +22,12 @@ class ImageClassification(Task):
 
     Attributes:
         model:
-            1. Name of the model on Kiri's image classification endpoint (english or your own uploaded model)
+            1. Name of the model on Backprop's image classification endpoint (english or your own uploaded model)
             2. Officially supported local models (english) or Huggingface path to the model.
-            3. Model class of instance Kiri's BaseModel that implements the image-classification task
-            4. Path/name of saved Kiri model
+            3. Model class of instance Backprop's BaseModel that implements the image-classification task
+            4. Path/name of saved Backprop model
         local (optional): Run locally. Defaults to False
-        api_key (optional): Kiri API key for non-local inference
+        api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
         init (optional): Whether to initialise model immediately or wait until first call.
             Defaults to True
@@ -83,7 +83,7 @@ class ImageClassification(Task):
                 "model": self.model,
             }
 
-            res = requests.post("https://api.kiri.ai/image-classification", json=body,
+            res = requests.post("https://api.backprop.co/image-classification", json=body,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):

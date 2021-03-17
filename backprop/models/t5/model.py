@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from random import shuffle
 import os
 
-from kiri.models import TextGenerationModel
+from backprop.models import TextGenerationModel
 
 class T5(TextGenerationModel, pl.LightningModule):
     def __init__(self, *args, model_path="t5-small", **kwargs):
@@ -130,5 +130,5 @@ class T5(TextGenerationModel, pl.LightningModule):
 
         self.model.eval()
 
-        print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
+        print("Training finished! Save your model for later with backprop.save or upload it with backprop.upload")
 
