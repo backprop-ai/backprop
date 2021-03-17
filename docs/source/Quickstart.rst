@@ -30,7 +30,7 @@ Basic Task Solving
 
 .. code-block:: python
 
-    from backprop import QA
+    import backprop
 
     context = "Take a look at the examples folder to see use cases!"
 

@@ -10,8 +10,7 @@ import urllib
 from tqdm import tqdm
 import regex as re
 
-# TODO: Correct URL
-CLIP_VOCAB = "https://github.com/backprop-ai/kiri/raw/main/kiri/models/clip/bpe_simple_vocab_16e6.txt.gz"
+CLIP_VOCAB = "https://github.com/backprop-ai/backprop/raw/main/backprop/models/clip/bpe_simple_vocab_16e6.txt.gz"
 
 @lru_cache()
 def default_bpe():
