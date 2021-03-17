@@ -1,9 +1,9 @@
-from kiri import Kiri
+from backprop import Backprop
 from docs.emails import emails
 
 """
 Here's example functionality for a customer-service email system. 
-This shows two capabilities of Kiri: zero-shot classification, and sentiment detection.
+This shows two capabilities of Backprop: zero-shot classification, and sentiment detection.
 
 Zero-shot classification is categorizing into a group of labels that were never seen during training.
 
@@ -17,17 +17,17 @@ labels = ["Returns", "Promotional", "Technical Issues", "Product Inquiries", "Sh
 # Negative sentiment, give special attention to these.
 negative_sentiments = ["annoyance", "disapproval", "disappointment", "anger", "disgust"]
 
-kiri = Kiri(local=True)
-kiri.classify_text("This is just to get rid of the example message before printing", ["test"])
+backprop = Backprop(local=True)
+backprop.classify_text("This is just to get rid of the example message before printing", ["test"])
 
 # Print example, just to display local results
 print("Inbox")
 print("==================")
 for email in emails:
-    classification_results = kiri.classify_text(email, labels)
+    classification_results = backprop.classify_text(email, labels)
     label = max(classification_results, key=classification_results.get)
     
-    emote = kiri.emotion(email)
+    emote = backprop.emotion(email)
     high_priority = any([e in emote for e in negative_sentiments])
     
     print(f"Category: {label}")
