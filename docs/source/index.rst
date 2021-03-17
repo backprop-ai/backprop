@@ -1,12 +1,12 @@
-.. Kiri documentation master file, created by
+.. Backprop documentation master file, created by
    sphinx-quickstart on Sun Jan  3 12:07:08 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Kiri Home
+Backprop Home
 ==========
 
-Kiri is a Python library that makes it simple to solve AI tasks without requiring any data.
+Backprop is a Python library that makes it simple to solve AI tasks without requiring any data.
 
 .. toctree::
    :maxdepth: 2
@@ -35,8 +35,8 @@ Kiri is a Python library that makes it simple to solve AI tasks without requirin
    :maxdepth: 2
    :caption: Package Reference
    
-   kiri.core
-   kiri.models
-   kiri.tasks
-   kiri.utils
+   backprop.core
+   backprop.models
+   backprop.tasks
+   backprop.utils
    

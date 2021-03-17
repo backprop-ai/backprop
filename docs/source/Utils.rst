@@ -1,7 +1,7 @@
 Utils
 =====
 
-Functions from ``kiri.utils`` let you save, load and upload models.
+Functions from ``backprop.utils`` let you save, load and upload models.
 
 Before saving or uploading a model be sure to have added the model a name, description and list of tasks.
 
@@ -17,12 +17,12 @@ See the available task strings in :ref:`models`.
     model.description = "Some description about what the model can do"
     model.tasks = ["text-classification"]
 
-See the full reference in :ref:`kiri-utils`.
+See the full reference in :ref:`backprop-utils`.
 
 Save
 ----
 
-.. automodule:: kiri.utils.save
+.. automodule:: backprop.utils.save
    :members:
    :undoc-members:
    :show-inheritance:
@@ -30,16 +30,16 @@ Save
 
 .. code-block:: python
 
-    import kiri
+    import backprop
 
-    # Saves model instance to ~/.cache/kiri/model_name
+    # Saves model instance to ~/.cache/backprop/model_name
     # model_name is determined from model_instance.name
-    kiri.save(model_instance)
+    backprop.save(model_instance)
 
 Load
 ----
 
-.. automodule:: kiri.utils.load
+.. automodule:: backprop.utils.load
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,10 +47,10 @@ Load
 
 .. code-block:: python
 
-    import kiri
+    import backprop
 
-    # Loads model instance from ~/.cache/kiri/model_name
-    model = kiri.load("model_name")
+    # Loads model instance from ~/.cache/backprop/model_name
+    model = backprop.load("model_name")
 
 
 Upload
@@ -58,7 +58,7 @@ Upload
 
 For a successful upload, ensure that the model is valid by following the check list in :ref:`models`.
 
-.. automodule:: kiri.utils.upload
+.. automodule:: backprop.utils.upload
    :members:
    :undoc-members:
    :show-inheritance:
@@ -66,7 +66,7 @@ For a successful upload, ensure that the model is valid by following the check l
 
 .. code-block:: python
 
-    import kiri
+    import backprop
 
-    # Uploads model to Kiri for production ready inference
-    kiri.upload(model, api_key="abc")
+    # Uploads model to Backprop for production ready inference
+    backprop.upload(model, api_key="abc")

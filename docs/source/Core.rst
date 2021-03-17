@@ -3,22 +3,22 @@
 Core Functionality
 ==================
 
-Using the Kiri class is the best way to use Kiri if you don't need to customise much.
+Using the Backprop class is the best way to use Backprop if you don't need to customise much.
 
 .. code-block:: python
 
-    from kiri import Kiri
+    from backprop import Backprop
 
     # Use our inference API
-    k = Kiri(api_key="abc")
+    b = Backprop(api_key="abc")
     # Or run locally
-    k = Kiri(local=True)
+    b = Backprop(local=True)
 
 The created instance can solve tasks locally or via the API.
 
 You can also specify models to be used for the tasks.
 
-See the full reference in :ref:`kiri-core`.
+See the full reference in :ref:`backprop-core`.
 
 Supported Tasks
 ---------------
@@ -29,10 +29,10 @@ Q&A answers a question based on a paragraph of text. It also supports previous q
 
 .. code-block:: python
 
-    k.qa("Where does Sally live?", "Sally lives in London.")
+    b.qa("Where does Sally live?", "Sally lives in London.")
     "London"
 
-See the `Q&A <https://github.com/kiri-ai/kiri/blob/main/examples/Q%26A.ipynb>`_ examples with code.
+See the `Q&A <https://github.com/backprop-ai/backprop/blob/main/examples/Q%26A.ipynb>`_ examples with code.
 
 Text Classification
 ^^^^^^^^^^^^^^^^^^^
@@ -42,10 +42,10 @@ It is supported in 100+ languages: Afrikaans, Albanian, Amharic, Arabic, Armenia
 
 .. code-block:: python
 
-    k.classify_text("I am mad because my product broke.", ["product issue", "nature"])
+    b.classify_text("I am mad because my product broke.", ["product issue", "nature"])
     {"product issue": 0.98, "nature": 0.05}
 
-Check the example `text classification <https://github.com/kiri-ai/kiri/blob/main/examples/TextClassification.ipynb>`_ with code.
+Check the example `text classification <https://github.com/backprop-ai/backprop/blob/main/examples/TextClassification.ipynb>`_ with code.
 
 Sentiment Detection
 ^^^^^^^^^^^^^^^^^^^
@@ -55,20 +55,20 @@ Use is simple: just pass in a string of text, and get back an emotion or list of
 
 .. code-block:: python
 
-    k.emotion("I really like what you did there")
+    b.emotion("I really like what you did there")
     "approval"
 
-See `sentiment detection <https://github.com/kiri-ai/kiri/blob/main/examples/Sentiment.ipynb>`_ with code.
+See `sentiment detection <https://github.com/backprop-ai/backprop/blob/main/examples/Sentiment.ipynb>`_ with code.
 
 Text Summarisation
 ^^^^^^^^^^^^^^^^^^
 Also self-explanatory: takes a chunk of input text, and gives a summary of key information.
 
-See the example for `text summarisation <https://github.com/kiri-ai/kiri/blob/main/examples/Summarisation.ipynb>`_ with code.
+See the example for `text summarisation <https://github.com/backprop-ai/backprop/blob/main/examples/Summarisation.ipynb>`_ with code.
 
 .. code-block:: python
 
-    k.summarise("This is a long document that contains plenty of words")
+    b.summarise("This is a long document that contains plenty of words")
     "short summary of document"
 
 Image Classification
@@ -79,10 +79,10 @@ It takes an image and a set of labels to calculate the probabilities for each la
 
 .. code-block:: python
 
-    k.image_classification("/home/Documents/dog.png", ["cat", "dog"])
+    b.image_classification("/home/Documents/dog.png", ["cat", "dog"])
     {"cat": 0.01, "dog": 0.99}
 
-Check the example `image classification <https://github.com/kiri-ai/kiri/blob/main/examples/ImageClassification.ipynb>`_ with code.
+Check the example `image classification <https://github.com/backprop-ai/backprop/blob/main/examples/ImageClassification.ipynb>`_ with code.
 
 Text Generation
 ^^^^^^^^^^^^^^^
@@ -93,10 +93,10 @@ This is useful for story/idea generation or solving a broad range of tasks.
 
 .. code-block:: python
 
-    k.generate_text("I like to go to")
+    b.generate_text("I like to go to")
     " the beach because I love the sun."
 
-Check the example `text generation <https://github.com/kiri-ai/kiri/blob/main/examples/TextGeneration.ipynb>`_ with code.
+Check the example `text generation <https://github.com/backprop-ai/backprop/blob/main/examples/TextGeneration.ipynb>`_ with code.
 
 Text Vectorisation
 ^^^^^^^^^^^^^^^^^^
@@ -108,7 +108,7 @@ You could see how similar the vectors of two different paragraphs are, to group 
 
 .. code-block:: python
 
-    k.vectorise_text("iPhone 12 128GB")
+    b.vectorise_text("iPhone 12 128GB")
     [0.92949192, 0.23123010, ...]
 
 
@@ -117,12 +117,12 @@ Supported Utility Methods
 
 .. code-block:: python
 
-    # Saves model instance to ~/.cache/kiri/model_name
+    # Saves model instance to ~/.cache/backprop/model_name
     # model_name is determined from model_instance.name
-    k.save(model_instance)
+    b.save(model_instance)
 
-    # Loads model instance from ~/.cache/kiri/model_name
-    model = k.load("model_name")
+    # Loads model instance from ~/.cache/backprop/model_name
+    model = b.load("model_name")
 
-    # Uploads model to Kiri for production ready inference
-    k.upload(model, api_key="abc")
+    # Uploads model to Backprop for production ready inference
+    b.upload(model, api_key="abc")

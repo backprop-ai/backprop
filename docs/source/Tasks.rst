@@ -7,11 +7,11 @@ They know how to communicate with models running locally and in our API.
 Supported Tasks
 ---------------
 
-Tasks can be imported from ``kiri.tasks``.
-The core ``Kiri`` class uses tasks in the background, so usage is very similar.
+Tasks can be imported from ``backprop.tasks``.
+The core ``Backprop`` class uses tasks in the background, so usage is very similar.
 Using tasks directly offers some more finegrained control on an individual task level.
 
-See the full reference in :ref:`kiri-tasks`.
+See the full reference in :ref:`backprop-tasks`.
 
 Q&A
 ^^^
@@ -19,7 +19,7 @@ Q&A answers a question based on a paragraph of text. It also supports previous q
 
 .. code-block:: python
 
-    from kiri.tasks import QA
+    from backprop.tasks import QA
 
     qa = QA(local=True)
 
@@ -34,7 +34,7 @@ It is supported in 100+ languages: Afrikaans, Albanian, Amharic, Arabic, Armenia
 
 .. code-block:: python
 
-    from kiri.tasks import TextClassification
+    from backprop.tasks import TextClassification
 
     tc = TextClassification(local=True)
 
@@ -49,7 +49,7 @@ Use is simple: just pass in a string of text, and get back an emotion or list of
 
 .. code-block:: python
 
-    from kiri.tasks import Emotion
+    from backprop.tasks import Emotion
 
     emotion = Emotion(local=True)
 
@@ -62,7 +62,7 @@ Also self-explanatory: takes a chunk of input text, and gives a summary of key i
 
 .. code-block:: python
 
-    from kiri.tasks import Summarisation
+    from backprop.tasks import Summarisation
 
     summarisation = Summarisation(local=True)
 
@@ -77,7 +77,7 @@ It takes an image and a set of labels to calculate the probabilities for each la
 
 .. code-block:: python
 
-    from kiri.tasks import ImageClassification
+    from backprop.tasks import ImageClassification
 
     ic = ImageClassification(local=True)
 
@@ -93,7 +93,7 @@ This is useful for story/idea generation or solving a broad range of tasks.
 
 .. code-block:: python
 
-    from kiri.tasks import TextGeneration
+    from backprop.tasks import TextGeneration
 
     tg = TextGeneration(local=True)
 
@@ -110,7 +110,7 @@ You could see how similar the vectors of two different paragraphs are, to group 
 
 .. code-block:: python
 
-    from kiri.tasks import TextVectorisation
+    from backprop.tasks import TextVectorisation
 
     tv = TextVectorisation(local=True)
 
