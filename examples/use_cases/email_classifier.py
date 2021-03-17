@@ -1,4 +1,4 @@
-from backprop import Backprop
+import backprop
 from docs.emails import emails
 
 """
@@ -17,17 +17,18 @@ labels = ["Returns", "Promotional", "Technical Issues", "Product Inquiries", "Sh
 # Negative sentiment, give special attention to these.
 negative_sentiments = ["annoyance", "disapproval", "disappointment", "anger", "disgust"]
 
-backprop = Backprop(local=True)
-backprop.classify_text("This is just to get rid of the example message before printing", ["test"])
+tc = backprop.TextClassification()
+emotion = backprop.Emotion()
+tc("This is just to get rid of the example message before printing", ["test"])
 
 # Print example, just to display local results
 print("Inbox")
 print("==================")
 for email in emails:
-    classification_results = backprop.classify_text(email, labels)
+    classification_results = tc(email, labels)
     label = max(classification_results, key=classification_results.get)
     
-    emote = backprop.emotion(email)
+    emote = emotion(email)
     high_priority = any([e in emote for e in negative_sentiments])
     
     print(f"Category: {label}")
