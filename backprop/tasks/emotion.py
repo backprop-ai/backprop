@@ -30,7 +30,7 @@ class Emotion(Task):
         device (optional): Device to run inference on. Defaults to "cuda" if available.
     """
     def __init__(self, model: Union[str, BaseModel] = None,
-                local: bool = False, api_key: str = None, device: str = "cpu"):
+                local: bool = False, api_key: str = None, device: str = None):
 
         super().__init__(model, local=local, api_key=api_key, device=device,
                         local_models=LOCAL_MODELS, api_models=API_MODELS,

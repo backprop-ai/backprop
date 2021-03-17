@@ -13,7 +13,8 @@ class GPT2Large(TextGenerationModel):
     def __call__(self, task_input, task="text-generation"):
         if task in ["text-generation", "generation"]:
             text = task_input.pop("text")
+            temperature = task_input.pop("temperature", 1.2)
 
-            return self.generate(text, **task_input)
+            return self.generate(text, **task_input, pad_token_id=50256, temperature=temperature)
         else:
             raise ValueError(f"Unsupported task: {task}")
