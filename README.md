@@ -11,7 +11,7 @@ Backprop is a Python library that makes it simple to solve AI tasks with state-o
 Backprop is built around solving tasks with transfer learning. It implements advanced models that are general enough to solve real world tasks with minimal data required from the user.
 
 <p align="center">
-   <img src=".github/kiri-example.png" width="600"/>
+   <img src=".github/example.png" width="700"/>
 </p>
 
 Out of the box tasks you can solve with Backprop:
@@ -28,10 +28,10 @@ For more specific use cases, you can adapt a task with little data and a few lin
 
 You can run all tasks on your own machine, or in production with our optimised inference [API](https://backprop.co), where you only pay for usage. It includes all the tasks & models in our library, and allows you to upload your own finetuned models.
 
-| ⚡ [Getting started](#getting-started)                            | Installation, few minute introduction     |
-| :---------------------------------------------------------------- | :---------------------------------------- |
-| 💡 [Examples](https://github.com/backprop-ai/backprop/tree/main/examples) | Sample problems solved using Backprop         |
-| 📙 [Docs](https://backprop.readthedocs.io/en/latest/)                 | In-depth documentation for advanced usage |
+| ⚡ [Getting started](#getting-started)                                    | Installation, few minute introduction     |
+| :------------------------------------------------------------------------ | :---------------------------------------- |
+| 💡 [Examples](https://github.com/backprop-ai/backprop/tree/main/examples) | Sample problems solved using Backprop     |
+| 📙 [Docs](https://backprop.readthedocs.io/en/latest/)                     | In-depth documentation for advanced usage |
 
 ## Getting started
 
