@@ -11,7 +11,7 @@ class Task:
                 default_api_model: str = None):
 
         if api_key == None:
-            local=True
+            local = True
                     
         if device == None:
             import torch
@@ -39,10 +39,6 @@ class Task:
         else:
             if model is None or type(model) != str:
                 model = default_api_model
-
-            if api_key is None:
-                raise ValueError(
-                    "Please provide your api_key (https://kiri.ai) with api_key=... or set local=True")
     
             # All checks passed
             self.model = model
