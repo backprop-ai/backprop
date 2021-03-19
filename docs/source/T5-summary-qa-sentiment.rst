@@ -1,7 +1,7 @@
 T5 for Summary, Q&A, and Sentiment
 ==================================
 
-Kiri is built to be flexible -- while we've included some useful pre-trained models for tasks, we want users to be able to 
+Backprop is built to be flexible -- while we've included some useful pre-trained models for tasks, we want users to be able to 
 easily deploy their own models, built to solve their own problems.
 
 Here, we include some info on the training of our T5 model for summary, Q&A, and sentiment analysis.

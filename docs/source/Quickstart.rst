@@ -4,16 +4,16 @@ Quickstart
 Installation
 ------------
 
-Install Kiri via PyPi
+Install Backprop via PyPi
 
 .. code-block ::
 
-    pip install kiri
+    pip install backprop
 
 Supported Tasks
 ---------------
 
-Out of the box tasks you can solve with Kiri:
+Out of the box tasks you can solve with Backprop:
 
 * Conversational question answering in English (for FAQ chatbots, text analysis, etc.)
 * Text Classification in 100+ languages (for email sorting, intent detection, etc.)
@@ -30,31 +30,28 @@ Basic Task Solving
 
 .. code-block:: python
 
-    from kiri import Kiri
+    import backprop
 
     context = "Take a look at the examples folder to see use cases!"
 
-    # Use our inference API
-    k = Kiri(api_key="abc")
-    # Or run locally
-    k = Kiri(local=True)
+    qa = backprop.QA()
 
     # Start building!
-    answer = k.qa("Where can I see what to build?", context)
+    answer = qa("Where can I see what to build?", context)
 
     print(answer)
     # Prints
     "the examples folder"
 
-See examples for all available tasks in :ref:`core`.
+See examples for all available tasks in :ref:`tasks`.
 
 Basic Finetuning and Uploading
 ------------------------------
 
 .. code-block:: python
 
-    from kiri.models import T5
-    from kiri.tasks import TextGeneration
+    from backprop.models import T5
+    from backprop import TextGeneration
 
     tg = TextGeneration(T5, local=True)
 
@@ -72,20 +69,19 @@ Basic Finetuning and Uploading
     # Prints
     "positive"
 
-    # Upload to Kiri for production ready inference
-    import kiri
+    # Upload to Backprop for production ready inference
 
     model = tg.model
     # Describe your model
     model.name = "t5-sentiment"
     model.description = "Predicts positive and negative sentiment"
 
-    kiri.upload(model, api_key="abc")
+    backprop.upload(model, api_key="abc")
 
 Learn more about finetuning in :ref:`ft`.
 
-Why Kiri?
----------
+Why Backprop?
+-------------
 
 1. No experience needed
 

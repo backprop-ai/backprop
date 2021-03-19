@@ -1,3 +1,5 @@
+.. _tasks:
+
 Tasks
 =====
 
@@ -7,11 +9,11 @@ They know how to communicate with models running locally and in our API.
 Supported Tasks
 ---------------
 
-Tasks can be imported from ``kiri.tasks``.
-The core ``Kiri`` class uses tasks in the background, so usage is very similar.
+Tasks can be imported directly from ``backprop``.
+The core ``Backprop`` class uses tasks in the background, so usage is very similar.
 Using tasks directly offers some more finegrained control on an individual task level.
 
-See the full reference in :ref:`kiri-tasks`.
+See the full reference in :ref:`backprop-tasks`.
 
 Q&A
 ^^^
@@ -19,12 +21,14 @@ Q&A answers a question based on a paragraph of text. It also supports previous q
 
 .. code-block:: python
 
-    from kiri.tasks import QA
+    from backprop import QA
 
-    qa = QA(local=True)
+    qa = QA()
 
     qa("Where does Sally live?", "Sally lives in London.")
     "London"
+
+See the `Q&A <https://github.com/backprop-ai/backprop/blob/main/examples/Q%26A.ipynb>`_ examples with code.
 
 Text Classification
 ^^^^^^^^^^^^^^^^^^^
@@ -34,12 +38,14 @@ It is supported in 100+ languages: Afrikaans, Albanian, Amharic, Arabic, Armenia
 
 .. code-block:: python
 
-    from kiri.tasks import TextClassification
+    from backprop import TextClassification
 
-    tc = TextClassification(local=True)
+    tc = TextClassification()
 
     tc("I am mad because my product broke.", ["product issue", "nature"])
     {"product issue": 0.98, "nature": 0.05}
+
+Check the example `text classification <https://github.com/backprop-ai/backprop/blob/main/examples/TextClassification.ipynb>`_ with code.
 
 Sentiment Detection
 ^^^^^^^^^^^^^^^^^^^
@@ -49,12 +55,14 @@ Use is simple: just pass in a string of text, and get back an emotion or list of
 
 .. code-block:: python
 
-    from kiri.tasks import Emotion
+    from backprop import Emotion
 
-    emotion = Emotion(local=True)
+    emotion = Emotion()
 
     emotion("I really like what you did there")
     "approval"
+
+See `sentiment detection <https://github.com/backprop-ai/backprop/blob/main/examples/Sentiment.ipynb>`_ with code.
 
 Text Summarisation
 ^^^^^^^^^^^^^^^^^^
@@ -62,12 +70,14 @@ Also self-explanatory: takes a chunk of input text, and gives a summary of key i
 
 .. code-block:: python
 
-    from kiri.tasks import Summarisation
+    from backprop import Summarisation
 
-    summarisation = Summarisation(local=True)
+    summarisation = Summarisation()
 
     summarisation("This is a long document that contains plenty of words")
     "short summary of document"
+
+See the example for `text summarisation <https://github.com/backprop-ai/backprop/blob/main/examples/Summarisation.ipynb>`_ with code.
 
 Image Classification
 ^^^^^^^^^^^^^^^^^^^^
@@ -77,12 +87,14 @@ It takes an image and a set of labels to calculate the probabilities for each la
 
 .. code-block:: python
 
-    from kiri.tasks import ImageClassification
+    from backprop import ImageClassification
 
-    ic = ImageClassification(local=True)
+    ic = ImageClassification()
 
     ic("/home/Documents/dog.png", ["cat", "dog"])
     {"cat": 0.01, "dog": 0.99}
+
+Check the example `image classification <https://github.com/backprop-ai/backprop/blob/main/examples/ImageClassification.ipynb>`_ with code.
 
 Text Generation
 ^^^^^^^^^^^^^^^
@@ -93,12 +105,14 @@ This is useful for story/idea generation or solving a broad range of tasks.
 
 .. code-block:: python
 
-    from kiri.tasks import TextGeneration
+    from backprop import TextGeneration
 
-    tg = TextGeneration(local=True)
+    tg = TextGeneration()
 
     tg("I like to go to")
     " the beach because I love the sun."
+
+Check the example `text generation <https://github.com/backprop-ai/backprop/blob/main/examples/TextGeneration.ipynb>`_ with code.
 
 Text Vectorisation
 ^^^^^^^^^^^^^^^^^^
@@ -110,9 +124,9 @@ You could see how similar the vectors of two different paragraphs are, to group 
 
 .. code-block:: python
 
-    from kiri.tasks import TextVectorisation
+    from backprop import TextVectorisation
 
-    tv = TextVectorisation(local=True)
+    tv = TextVectorisation()
 
     tv("iPhone 12 128GB")
     [0.92949192, 0.23123010, ...]

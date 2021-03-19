@@ -12,8 +12,8 @@ This makes them very versatile for many tasks.
 
 .. code-block:: python
 
-    from kiri.models import T5
-    from kiri.tasks import TextGeneration
+    from backprop.models import T5
+    from backprop import TextGeneration
 
     tg = TextGeneration(T5, local=True)
 
@@ -31,4 +31,4 @@ This makes them very versatile for many tasks.
     # Prints
     "positive"
 
-See the in-depth `Finetuning <https://github.com/kiri-ai/kiri/blob/main/examples/Finetuning.ipynb>`_ example with code.
+See the in-depth `Finetuning <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning.ipynb>`_ example with code.
