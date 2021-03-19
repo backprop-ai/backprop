@@ -72,9 +72,6 @@ class T5(TextGenerationModel, Finetunable):
             epochs: Integer that specifies how many iterations of training to do
             batch_size: Leave as None to determine the batch size automatically
         """
-        if not torch.cuda.is_available():
-            raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
-
         assert len(input_text) == len(output_text)
         OPTIMAL_BATCH_SIZE = 128
 

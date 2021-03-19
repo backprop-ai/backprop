@@ -93,6 +93,8 @@ class Finetunable(pl.LightningModule):
         del self.dataset_valid
         del self.trainer
 
+        # For some reason the model can end up on CPU after training
+        self.to(self._model_device)
         self.model.eval()
         print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
 
