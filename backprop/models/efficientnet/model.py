@@ -18,16 +18,13 @@ import os
 from io import BytesIO
 import base64
 
-IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/kiri-ai/kiri/ic-finetuning/kiri/models/efficientnet/imagenet_labels.txt"
+IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/backprop-ai/backprop/ic-finetuning/backprop/models/efficientnet/imagenet_labels.txt"
 
 class EfficientNet(PathModel, Finetunable):
     def __init__(self, model_path="efficientnet-b0", init_model=None,
                 init_tokenizer=None, device=None):
         Finetunable.__init__(self)
         
-        name = model_path
-        description = "EfficientNet is an image classification model that achieves state-of-the-art accuracy while being an order-of-magnitude smaller and faster than previous models. Trained on ImageNet's 1000 categories."
-        tasks = ["image-classification"]
         self.image_size = EfficientNet_pt.get_image_size(model_path)
         self.num_classes = 1000
 
@@ -45,8 +42,11 @@ class EfficientNet(PathModel, Finetunable):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ])
 
-        PathModel.__init__(self, model_path, init_model, name=name, description=description,
-            tasks=tasks)
+        PathModel.__init__(self, model_path, init_model)
+        
+        self.name = model_path
+        self.description = "EfficientNet is an image classification model that achieves state-of-the-art accuracy while being an order-of-magnitude smaller and faster than previous models. Trained on ImageNet's 1000 categories."
+        self.tasks = ["image-classification"]
 
     def __call__(self, task_input, task="image-classification"):
         if task == "image-classification":
