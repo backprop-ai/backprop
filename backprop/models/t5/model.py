@@ -60,7 +60,7 @@ class T5(TextGenerationModel, Finetunable):
     
     def finetune(self, input_text: List[str], output_text: List[str],
                 max_input_length=128, max_output_length=32,
-                validation_split: float = 0.15, epochs: int = 20):
+                validation_split: float = 0.15, epochs: int = 20, batch_size: int = None):
         """
         Finetunes T5 for a text generation task.
         input_text and output_text must be ordered the same way (item 1 of input must match item 1 of output)
@@ -70,6 +70,7 @@ class T5(TextGenerationModel, Finetunable):
             output_text: List of strings that are predicted using input (must match input ordering)
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
+            batch_size: Leave as None to determine the batch size automatically
         """
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
@@ -82,4 +83,4 @@ class T5(TextGenerationModel, Finetunable):
         dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
         
         Finetunable.finetune(self, dataset, validation_split=validation_split,
-            epochs=epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE)
+            epochs=epochs, batch_size=batch_size, optimal_batch_size=OPTIMAL_BATCH_SIZE)

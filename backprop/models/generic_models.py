@@ -9,6 +9,7 @@ import os
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from pytorch_lightning.utilities.memory import garbage_collection_cuda
 
 class BaseModel:
     """
@@ -45,9 +46,9 @@ class Finetunable(pl.LightningModule):
 
         self.batch_size = 1
 
-    def finetune(self, dataset, validation_split: float = 0.15, epochs: int = 20,
+    def finetune(self, dataset, validation_split: float = 0.15, epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping: bool = True, trainer = None):
-        self.batch_size = 1
+        self.batch_size = batch_size or 1
 
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
@@ -59,10 +60,14 @@ class Finetunable(pl.LightningModule):
         self.dataset_train = dataset_train
         self.dataset_valid = dataset_valid
 
-        # Find batch size
-        temp_trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
-        print("Finding the optimal batch size...")
-        temp_trainer.tune(self)
+        if batch_size == None:
+            # Find batch size
+            temp_trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
+            print("Finding the optimal batch size...")
+            temp_trainer.tune(self)
+            del self.trainer
+            del temp_trainer
+            garbage_collection_cuda()
 
         trainer_kwargs = {}
         
@@ -81,7 +86,6 @@ class Finetunable(pl.LightningModule):
             trainer = pl.Trainer(gpus=-1, max_epochs=epochs, checkpoint_callback=False,
                 logger=False, **trainer_kwargs)
 
-        self.device
         self.model.train()
         trainer.fit(self)
 
@@ -94,12 +98,12 @@ class Finetunable(pl.LightningModule):
 
     def train_dataloader(self):
         return DataLoader(self.dataset_train,
-            batch_size=self.batch_size or self.hparams.batch_size,
+            batch_size=self.batch_size,
             num_workers=os.cpu_count() or 0)
 
     def val_dataloader(self):
         return DataLoader(self.dataset_valid,
-            batch_size=self.batch_size or self.hparams.batch_size,
+            batch_size=self.batch_size,
             num_workers=os.cpu_count() or 0)
     
     def configure_optimizers(self):
