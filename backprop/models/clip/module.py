@@ -23,14 +23,8 @@ class CLIP(PathModel):
             self._model_device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
-<<<<<<< HEAD:kiri/models/clip/module.py
-        if init:
-            self.model, self.transform = self.init_model(model_path, device=self._model_device)
-            self.tokenizer = self.init_tokenizer()
-=======
-        self.model, self.transform = self.init_model(model_path, device=self._device)
+        self.model, self.transform = self.init_model(model_path, device=self._model_device)
         self.tokenizer = self.init_tokenizer()
->>>>>>> main:backprop/models/clip/module.py
             
     def __call__(self, task_input, task="image-classification"):
         if task == "image-classification":

@@ -136,7 +136,7 @@ class PathModel(BaseModel):
             self._model_device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
-        self.model = self.init_model(model_path).eval().to(self._device)
+        self.model = self.init_model(model_path).eval().to(self._model_device)
 
         # Not all models need tokenizers
         if self.tokenizer_path:

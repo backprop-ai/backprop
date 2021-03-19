@@ -7,11 +7,7 @@ from torch.utils.data import DataLoader
 from random import shuffle
 import os
 
-<<<<<<< HEAD:kiri/models/t5/model.py
-from kiri.models import TextGenerationModel, Finetunable
-=======
-from backprop.models import TextGenerationModel
->>>>>>> main:backprop/models/t5/model.py
+from backprop.models import TextGenerationModel, Finetunable
 
 class T5(TextGenerationModel, Finetunable):
     def __init__(self, *args, model_path="t5-small", **kwargs):
@@ -85,46 +81,5 @@ class T5(TextGenerationModel, Finetunable):
         dataset = zip(input_text, output_text)
         dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
         
-<<<<<<< HEAD:kiri/models/t5/model.py
         Finetunable.finetune(self, dataset, validation_split=validation_split,
             epochs=epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE)
-=======
-        shuffle(dataset)
-
-        dataset_train = dataset[:int(len(dataset) * (1 - validation_split))]
-        dataset_valid = dataset[int(len(dataset) * (1 - validation_split)):]
-
-        self.dataset_train = dataset_train
-        self.dataset_valid = dataset_valid
-
-        # Stop when val loss stops improving
-        early_stopping = EarlyStopping(monitor="val_loss", patience=1)
-
-        # Find batch size
-        trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
-        print("Finding the optimal batch size...")
-        trainer.tune(self)
-
-        batch_size = self.batch_size|self.hparams.batch_size
-
-        # Don't go over
-        batch_size = min(batch_size, OPTIMAL_BATCH_SIZE)
-
-        accumulate_grad_batches = max(1, int(OPTIMAL_BATCH_SIZE / self.batch_size))
-
-        trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=accumulate_grad_batches,
-            max_epochs=epochs, checkpoint_callback=False, logger=False, callbacks=[early_stopping])
-
-        print("Starting to train...")
-        self.model.train()
-        trainer.fit(self)
-
-        del self.dataset_train
-        del self.dataset_valid
-        del self.trainer
-
-        self.model.eval()
-
-        print("Training finished! Save your model for later with backprop.save or upload it with backprop.upload")
-
->>>>>>> main:backprop/models/t5/model.py

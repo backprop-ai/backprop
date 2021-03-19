@@ -5,8 +5,8 @@ from efficientnet_pytorch import EfficientNet as EfficientNet_pt
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from random import shuffle
-from kiri.models import PathModel, Finetunable
-from kiri.utils.download import download
+from backprop.models import PathModel, Finetunable
+from backprop.utils.download import download
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.utils.data import DataLoader
 from functools import partial
