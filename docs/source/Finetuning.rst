@@ -36,7 +36,7 @@ Text Classification
 ^^^^^^^^^^^^^^^^^^^
 
 * :ref:`text-classification task <text-classification>`
-* `text-classification finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_ImageClassification.ipynb>`_
+* `text-classification finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_TextClassification.ipynb>`_
 
 Supported models:
 
