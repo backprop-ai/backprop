@@ -84,7 +84,9 @@ class XLNet(ClassificationModel, Finetunable):
     
     def finetune(self, input_text: List[str], output: List[str],
                 max_input_length=128, validation_split: float=0.15, 
-                epochs: int=20):
+                epochs: int=20, batch_size: int=None,
+                early_stopping: bool = True,
+                trainer: pl.Trainer = None):
         """
         Finetune XLNet for text classification.
         input_text and output must be ordered 1:1
@@ -97,6 +99,10 @@ class XLNet(ClassificationModel, Finetunable):
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
             batch_size: Leave as None to determine the batch size automatically
+            epochs: Integer that specifies how many iterations of training to do
+            batch_size: Leave as None to determine the batch size automatically
+            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
+            trainer: Your custom pytorch_lightning trainer
         """
 
         assert len(input_text) == len(output)
@@ -112,4 +118,5 @@ class XLNet(ClassificationModel, Finetunable):
         print("Processing data...")
         dataset = zip(input_text, output)
         dataset = [(self.encode(r[0], class_to_idx[r[1]], max_input_length)) for r in dataset]
-        Finetunable.finetune(self, dataset, validation_split, epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE)
+        Finetunable.finetune(self, dataset, validation_split=validation_split, epochs=epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE,
+                            early_stopping=early_stopping, trainer=trainer)

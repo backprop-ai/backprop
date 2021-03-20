@@ -32,6 +32,16 @@ Supported models:
 
 * :ref:`EfficientNet <efficientnet>`
 
+Text Classification
+^^^^^^^^^^^^^^^^^^^
+
+* :ref:`text-classification task <text-classification>`
+* `text-classification finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_ImageClassification.ipynb>`_
+
+Supported models:
+
+* :ref:`XLNet <xlnet>`
+
 Basic Example
 ^^^^^^^^^^^^^
 
