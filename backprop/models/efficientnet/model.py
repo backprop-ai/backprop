@@ -18,7 +18,7 @@ import os
 from io import BytesIO
 import base64
 
-IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/backprop-ai/backprop/ic-finetuning/backprop/models/efficientnet/imagenet_labels.txt"
+IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/backprop-ai/backprop/main/backprop/models/efficientnet/imagenet_labels.txt"
 
 class EfficientNet(PathModel, Finetunable):
     """
