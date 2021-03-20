@@ -37,7 +37,7 @@ def save(model, path=None):
         "tasks": tasks
     }
 
-    packages = ["backprop", "transformers", "sentence_transformers", "pytorch_lightning"]
+    packages = ["backprop", "transformers", "sentence_transformers", "pytorch_lightning", "efficientnet_pytorch"]
     requirements = [f"{package}=={pkg_resources.get_distribution(package).version}"
                     for package in packages]
 

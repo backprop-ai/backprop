@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="backprop",
-    version="0.0.3",
+    version="0.0.4",
     author="Backprop",
     author_email="hello@backprop.co",
     description="Backprop",
@@ -20,7 +20,8 @@ setuptools.setup(
         "torchvision<0.9.0",
         "ftfy",
         "pytorch_lightning>=1.2.0,<1.3.0",
-        "dill"
+        "dill",
+        "efficientnet_pytorch"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
