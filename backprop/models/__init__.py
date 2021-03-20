@@ -8,3 +8,4 @@ from .clip import CLIP
 from .msmarco_distilroberta_base_v2 import MSMARCODistilrobertaBaseV2
 from .distiluse_base_multilingual_cased_v2 import DistiluseBaseMultilingualCasedV2
 from .efficientnet import EfficientNet
+from .xlnet import XLNet

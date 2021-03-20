@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 from backprop.models import BartLargeMNLI, XLMRLargeXNLI, BaseModel
 from .base import Task
 
@@ -12,6 +12,8 @@ LOCAL_MODELS = {
 }
 
 DEFAULT_API_MODEL = "english"
+
+FINETUNABLE_MODELS = ["xlnet"]
 
 API_MODELS = ["english", "multilingual"]
 
@@ -38,22 +40,20 @@ class TextClassification(Task):
                         default_api_model=DEFAULT_API_MODEL)
 
     
-    def __call__(self, text: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
-        """Classify input text according to given labels.
-
-        Args:
-            text: string or list of strings to classify
-            labels: list of strings or list of labels
+    def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None):
+        """Classify input text according toOptionals or list of labels
 
         Returns:
             dict where each key is a label and value is probability between 0 and 1, or list of dicts.
         """
         if self.local:
             task = "text-classification"
+            
             task_input = {
                 "text": text,
                 "labels": labels
             }
+
             return self.model(task_input, task=task)
         else:
             body = {
@@ -69,3 +69,9 @@ class TextClassification(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["probabilities"]
+    
+    def finetune(self, *args, **kwargs):
+        try:
+            return self.model.finetune(*args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try {', '.join(FINETUNABLE_MODELS)}")
