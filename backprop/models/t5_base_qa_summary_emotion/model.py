@@ -4,8 +4,16 @@ from typing import List, Tuple
 from backprop.models import T5
 
 class T5QASummaryEmotion(T5):
-    def __init__(self, *args, **kwargs):
-        T5.__init__(self, model_path="kiri-ai/t5-base-qa-summary-emotion",
+    """
+    Initialises a T5 model that has been finetuned on qa, summarisation and emotion detection.
+
+    Attributes:
+        args: args passed to :class:`backprop.models.t5.model.T5`
+        model_path: path to an appropriate T5 model on huggingface (kiri-ai/t5-base-qa-summary-emotion)
+        kwargs: kwrags passed to :class:`backprop.models.t5.model.T5`
+    """
+    def __init__(self, *args, model_path="kiri-ai/t5-base-qa-summary-emotion", **kwargs):
+        T5.__init__(self, model_path=model_path,
                     *args, **kwargs)
 
         self.tasks = ["text-generation", "emotion", "summarisation", "qa"]
@@ -13,6 +21,13 @@ class T5QASummaryEmotion(T5):
         self.name = "t5-base-qa-summary-emotion"
 
     def __call__(self, task_input, task="text-generation"):
+        """
+        Uses the model for the chosen task
+
+        Args:
+            task_input: input dictionary according to the chosen task's specification
+            task: one of text-generation, emotion, summarisation, qa 
+        """
         if task in ["text-generation", "generation"]:
             text = task_input.pop("text")
 

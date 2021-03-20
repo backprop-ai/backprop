@@ -4,8 +4,8 @@ backprop.models.t5
 ======================
 
 
-backprop.models.t5.model
----------------------------
+T5
+--
 
 .. autoclass:: backprop.models.t5.model.T5
    :members: finetune

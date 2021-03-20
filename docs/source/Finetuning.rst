@@ -5,7 +5,14 @@ Finetuning
 
 Finetuning lets you take a model that has been trained on a very broad task and adapt it to your specific niche.
 
-Finetuning is currently only supported for the T5 models (:ref:`t5` and :ref:`t5baseqasummaryemotion`).
+Finetuning is currently supported for the following tasks and models:
+
+* ``text-generation``:
+    * :ref:`t5`
+    * :ref:`t5baseqasummaryemotion`
+  
+* ``image-classification``:
+    * :ref:`efficientnet`
 
 The T5 models are text generation models that can take any text as input and produce any text as output.
 This makes them very versatile for many tasks.

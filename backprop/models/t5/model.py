@@ -75,9 +75,11 @@ class T5(TextGenerationModel, Finetunable):
     
     def finetune(self, input_text: List[str], output_text: List[str],
                 max_input_length=128, max_output_length=32,
-                validation_split: float = 0.15, epochs: int = 20, batch_size: int = None):
+                validation_split: float = 0.15, epochs: int = 20,
+                batch_size: int = None, early_stopping: bool = True,
+                trainer: pl.Trainer = None):
         """
-        Finetunes T5 for a text generation task.
+        Finetunes T5 for the text-generation task.
         
         Note:
             input_text and output_text must have matching ordering (item 1 of input must match item 1 of output)
@@ -85,10 +87,14 @@ class T5(TextGenerationModel, Finetunable):
         Args:
             input_text: List of strings that are used to predict and output (must match output ordering)
             output_text: List of strings that are predicted using input (must match input ordering)
+            max_input_length: Maximum number of tokens (1 token ~ 1 word) in input. Anything higher will be truncated. Max 512.
+            max_output_length: Maximum number of tokens (1 token ~ 1 word) in output. Anything higher will be truncated. Max 512.
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
             batch_size: Leave as None to determine the batch size automatically
-        
+            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
+            trainer: Your custom pytorch_lightning trainer
+
         Examples::
 
             import backprop
@@ -111,4 +117,5 @@ class T5(TextGenerationModel, Finetunable):
         dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
         
         Finetunable.finetune(self, dataset, validation_split=validation_split,
-            epochs=epochs, batch_size=batch_size, optimal_batch_size=OPTIMAL_BATCH_SIZE)
+            epochs=epochs, batch_size=batch_size, optimal_batch_size=OPTIMAL_BATCH_SIZE,
+            early_stopping=early_stopping, trainer=trainer)
