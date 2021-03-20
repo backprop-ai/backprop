@@ -1,5 +1,5 @@
 import torch
-import torch.nn.functional as F
+import pytorch_lightning as pl
 from transformers import XLNetForSequenceClassification, XLNetTokenizer
 from transformers.optimization import AdamW
 from backprop.models import ClassificationModel, Finetunable
@@ -7,6 +7,16 @@ from typing import List, Union
 
 
 class XLNet(ClassificationModel, Finetunable):
+    """
+    CMU & Google Brain's XLNet model for text classification.
+
+    Attributes:
+        args: args passed to :class:`backprop.models.generic_models.ClassificationModel`
+        model_path: path to an XLNet model on hugging face (xlnet-base-cased, xlnet-large-cased)
+        kwargs: kwargs passed to :class:`backprop.models.generic_models.ClassificationModel`
+
+    """
+
     def __init__(self, *args, model_path="xlnet-base-cased", **kwargs):
         Finetunable.__init__(self)
 
@@ -18,6 +28,16 @@ class XLNet(ClassificationModel, Finetunable):
         self.name = "xlnet"
 
     def __call__(self, task_input, task="text-classification"):
+        """
+        Uses the model for text classification.
+        At this point, the model needs to already have been finetuned.
+        This is what sets up the final layer for classification.
+
+        Args:
+            task_input: input dictionary according to the ``text-classification`` task specification
+            task: text-classification
+        """
+        
         if task == "text-classification":
             text = task_input.pop("text")
             
@@ -95,7 +115,7 @@ class XLNet(ClassificationModel, Finetunable):
         Args:
             input_text: List of strings to classify (must match output ordering)
             output: List of input classifications (must match input ordering)
-            max_input_length: Length to cut off input text
+            max_input_length: Maximum number of tokens to be supported as input. Caps at 512.
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
             batch_size: Leave as None to determine the batch size automatically

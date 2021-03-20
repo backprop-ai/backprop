@@ -43,6 +43,11 @@ class TextClassification(Task):
     def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None):
         """Classify input text based on previous training (user-tuned models) or according to given list of labels (zero-shot)
 
+        Args:
+            text: string or list of strings to be classified
+            labels: list of labels for zero-shot classification (on our out-of-the-box models).
+                    If using a user-trained model (e.g. XLNet), this is not used.
+
         Returns:
             dict where each key is a label and value is probability between 0 and 1, or list of dicts.
         """
@@ -71,6 +76,9 @@ class TextClassification(Task):
             return res["probabilities"]
     
     def finetune(self, *args, **kwargs):
+        """
+        Passes the args and kwargs to the model's finetune method.
+        """
         try:
             return self.model.finetune(*args, **kwargs)
         except NotImplementedError:

@@ -16,7 +16,7 @@ class T5(TextGenerationModel, Finetunable):
     Attributes:
         args: args passed to :class:`backprop.models.generic_models.TextGenerationModel`
         model_path: path to a T5 model on huggingface (t5-small, t5-base, t5-large)
-        kwargs: kwrags passed to :class:`backprop.models.generic_models.TextGenerationModel`
+        kwargs: kwargs passed to :class:`backprop.models.generic_models.TextGenerationModel`
     """
     def __init__(self, *args, model_path="t5-small", **kwargs):
         Finetunable.__init__(self)
