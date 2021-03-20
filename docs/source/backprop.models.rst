@@ -16,6 +16,7 @@ backprop.models
    backprop.models.t5_base_qa_summary_emotion
    backprop.models.xlmr_large_xnli
    backprop.models.efficientnet
+   backprop.models.xlnet
 
 Submodules
 ----------
