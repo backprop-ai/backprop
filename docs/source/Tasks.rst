@@ -10,8 +10,6 @@ Supported Tasks
 ---------------
 
 Tasks can be imported directly from ``backprop``.
-The core ``Backprop`` class uses tasks in the background, so usage is very similar.
-Using tasks directly offers some more finegrained control on an individual task level.
 
 See the full reference in :ref:`backprop-tasks`.
 
