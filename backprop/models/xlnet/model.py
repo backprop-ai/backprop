@@ -36,8 +36,7 @@ class XLNet(ClassificationModel, Finetunable):
         
         probabilities = []
         for t in text:
-            # TODO max len
-            tokens = self.tokenizer(t, truncation=True, max_length=128, padding="max_length", return_tensors="pt")
+            tokens = self.tokenizer(t, truncation=True, padding="max_length", return_tensors="pt")
             
             input_ids = tokens.input_ids[0].unsqueeze(0).to(self._device)
             mask = tokens.attention_mask[0].unsqueeze(0).to(self._device)
@@ -47,7 +46,7 @@ class XLNet(ClassificationModel, Finetunable):
                 "attention_mask": mask
             }
 
-            outputs = self.model(**inp) #self.model(input_ids=input_ids, attention_mask=mask)
+            outputs = self.model(**inp)
             logits = outputs[0]
             predictions = torch.softmax(logits, dim=1).detach().squeeze(0).tolist()
             probs = {}
