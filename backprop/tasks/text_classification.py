@@ -41,7 +41,7 @@ class TextClassification(Task):
 
     
     def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None):
-        """Classify input text according toOptionals or list of labels
+        """Classify input text based on previous training (user-tuned models) or according to given list of labels (zero-shot)
 
         Returns:
             dict where each key is a label and value is probability between 0 and 1, or list of dicts.

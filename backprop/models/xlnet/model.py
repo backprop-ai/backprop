@@ -27,7 +27,7 @@ class XLNet(ClassificationModel, Finetunable):
         
     @torch.no_grad()
     def text_classification(self, text: Union[str, List[str]]):
-        self.model.to(self._device)
+        self.model.to(self._model_device)
 
         is_list = type(text) == list
         
@@ -38,8 +38,8 @@ class XLNet(ClassificationModel, Finetunable):
         for t in text:
             tokens = self.tokenizer(t, truncation=True, padding="max_length", return_tensors="pt")
             
-            input_ids = tokens.input_ids[0].unsqueeze(0).to(self._device)
-            mask = tokens.attention_mask[0].unsqueeze(0).to(self._device)
+            input_ids = tokens.input_ids[0].unsqueeze(0).to(self._model_device)
+            mask = tokens.attention_mask[0].unsqueeze(0).to(self._model_device)
 
             inp = {
                 "input_ids": input_ids,
@@ -108,7 +108,6 @@ class XLNet(ClassificationModel, Finetunable):
         class_to_idx = {v: k for k, v in enumerate(labels)}
 
         self.model = XLNetForSequenceClassification.from_pretrained(self.model_path, num_labels=len(labels))
-        self.model.to(self._device)
 
         print("Processing data...")
         dataset = zip(input_text, output)
