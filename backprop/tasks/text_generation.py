@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union
-from backprop.models import GPT2Large, T5QASummaryEmotion, BaseModel
+from backprop.models import GPT2Large, T5QASummaryEmotion, BaseModel, T5
 from .base import Task
 
 import requests
@@ -8,10 +8,13 @@ DEFAULT_LOCAL_MODEL = GPT2Large
 
 LOCAL_MODELS = {
     "gpt2": DEFAULT_LOCAL_MODEL,
-    "t5-base-qa-summary-emotion": T5QASummaryEmotion
+    "t5-base-qa-summary-emotion": T5QASummaryEmotion,
+    "t5": T5
 }
 
 DEFAULT_API_MODEL = "gpt2-large"
+
+FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
 
 API_MODELS = ["gpt2-large", "t5-base-qa-summary-emotion"]
 
@@ -81,4 +84,10 @@ class TextGeneration(Task):
             return res["output"]
 
     def finetune(self, *args, **kwargs):
-        return self.model.finetune(*args, **kwargs)
+        """
+        Passes the args and kwargs to the model's finetune method.
+        """
+        try:
+            return self.model.finetune(*args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")

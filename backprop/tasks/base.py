@@ -19,7 +19,7 @@ class Task:
         
         self.local = local
         self.api_key = api_key
-        self._device = device
+        self._model_device = device
 
         # Pick the correct model name
         if local:
@@ -47,4 +47,7 @@ class Task:
         raise Exception("The base Task is not callable!")
 
     def finetune(self, *args, **kwargs):
+        """
+        Finetuning is not implemented for this task.
+        """
         raise NotImplementedError("Finetuning is not implemented for this task")

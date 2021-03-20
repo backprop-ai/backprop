@@ -1,10 +1,15 @@
 from typing import List
 from transformers import AutoModelForPreTraining, AutoTokenizer, \
     AutoModelForSequenceClassification
+from torch.utils.data import DataLoader
 from sentence_transformers import SentenceTransformer
 from functools import partial
+import os
 
 import torch
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from pytorch_lightning.utilities.memory import garbage_collection_cuda
 
 class BaseModel:
     """
@@ -16,9 +21,9 @@ class BaseModel:
     """
     def __init__(self, model, name: str = None, description: str = None, tasks: List[str] = None):
         self.model = model
-        self.name = name|"base-model"
-        self.description = description|"This is the base description. Change me."
-        self.tasks = tasks|[] # Supports no tasks
+        self.name = name or "base-model"
+        self.description = description or "This is the base description. Change me."
+        self.tasks = tasks or [] # Supports no tasks
 
     def __call__(self, *args, **kwargs):
         return self.model(*args, **kwargs)
@@ -30,6 +35,89 @@ class BaseModel:
         self.model.to(device)
 
     # def set_name(self, name: str):
+
+
+class Finetunable(pl.LightningModule):
+    """
+    Makes a model easily finetunable.
+    """
+    def __init__(self):
+        pl.LightningModule.__init__(self)
+
+        self.batch_size = 1
+
+    def finetune(self, dataset, validation_split: float = 0.15, epochs: int = 20, batch_size: int = None,
+                optimal_batch_size: int = None, early_stopping: bool = True, trainer = None):
+        self.batch_size = batch_size or 1
+
+        if not torch.cuda.is_available():
+            raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
+        
+        len_train = int(len(dataset) * (1 - validation_split))
+        len_valid = len(dataset) - len_train
+        dataset_train, dataset_valid = torch.utils.data.random_split(dataset, [len_train, len_valid])
+
+        self.dataset_train = dataset_train
+        self.dataset_valid = dataset_valid
+
+        if batch_size == None:
+            # Find batch size
+            temp_trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
+            print("Finding the optimal batch size...")
+            temp_trainer.tune(self)
+
+            # Ensure that memory gets cleared
+            del self.trainer
+            del temp_trainer
+            garbage_collection_cuda()
+
+        trainer_kwargs = {}
+        
+        if optimal_batch_size:
+            # Don't go over
+            batch_size = min(self.batch_size, optimal_batch_size)
+            accumulate_grad_batches = max(1, int(optimal_batch_size / batch_size))
+            trainer_kwargs["accumulate_grad_batches"] = accumulate_grad_batches
+        
+        if early_stopping:
+            # Stop when val loss stops improving
+            early_stopping = EarlyStopping(monitor="val_loss", patience=1)
+            trainer_kwargs["callbacks"] = [early_stopping]
+
+        if not trainer:
+            trainer = pl.Trainer(gpus=-1, max_epochs=epochs, checkpoint_callback=False,
+                logger=False, **trainer_kwargs)
+
+        self.model.train()
+        trainer.fit(self)
+
+        del self.dataset_train
+        del self.dataset_valid
+        del self.trainer
+
+        # For some reason the model can end up on CPU after training
+        self.to(self._model_device)
+        self.model.eval()
+        print("Training finished! Save your model for later with backprop.save or upload it with backprop.upload")
+
+    def train_dataloader(self):
+        return DataLoader(self.dataset_train,
+            batch_size=self.batch_size,
+            num_workers=os.cpu_count() or 0)
+
+    def val_dataloader(self):
+        return DataLoader(self.dataset_valid,
+            batch_size=self.batch_size,
+            num_workers=os.cpu_count() or 0)
+    
+    def configure_optimizers(self):
+        raise NotImplementedError("configure_optimizers must be implemented")
+
+    def training_step(self, batch, batch_idx):
+        raise NotImplementedError("training_step must be implemented")
+
+    def validation_step(self, batch, batch_idx):
+        raise NotImplementedError("validation_step must be implemented")
 
 
 
@@ -50,13 +138,13 @@ class PathModel(BaseModel):
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
         self.tokenizer_path = tokenizer_path
-        self._device = device
+        self._model_device = device
 
-        if self._device is None:
-            self._device = "cuda" if torch.cuda.is_available() else "cpu"
+        if self._model_device is None:
+            self._model_device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # Initialise
-        self.model = self.init_model(model_path).eval().to(self._device)
+        self.model = self.init_model(model_path).eval().to(self._model_device)
 
         # Not all models need tokenizers
         if self.tokenizer_path:
@@ -93,12 +181,12 @@ class HuggingModel(PathModel):
             tokenizer_path = self.tokenizer_path
             init_model = self.init_model
             init_tokenizer = self.init_tokenizer
-            device = self._device
+            device = self._model_device
         else:
             init_model = model_class.from_pretrained
             init_tokenizer = tokenizer_class.from_pretrained
 
-        return super().__init__(model_path, tokenizer_path=tokenizer_path,
+        return PathModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                                 init_model=init_model,
                                 init_tokenizer=init_tokenizer,
                                 device=device)
@@ -120,11 +208,11 @@ class TextVectorisationModel(PathModel):
         if hasattr(self, "initialised"):
             model_path = self.model_path
             init_model = self.init_model
-            device = self._device
+            device = self._model_device
         else:
             init_model = partial(model_class, device=device)
 
-        return super().__init__(model_path,
+        return PathModel.__init__(self, model_path,
                                 init_model=init_model,
                                 device=device)
 
@@ -178,7 +266,7 @@ class TextGenerationModel(HuggingModel):
             features = self.tokenizer(text, return_tensors="pt")
 
             for k, v in features.items():
-                features[k] = v.to(self._device)
+                features[k] = v.to(self._model_device)
 
             with torch.no_grad():
                 tokens = self.model.generate(do_sample=do_sample,
@@ -231,7 +319,7 @@ class ClassificationModel(HuggingModel):
     def calculate_probability(self, text, label, device):
         hypothesis = f"This example is {label}."
         features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
-                                    truncation=True).to(self._device)
+                                    truncation=True).to(self._model_device)
         logits = self.model(features)[0]
         entail_contradiction_logits = logits[:, [0, 2]]
         probs = entail_contradiction_logits.softmax(dim=1)
@@ -251,7 +339,7 @@ class ClassificationModel(HuggingModel):
             for text, labels in zip(text, labels):
                 results = {}
                 for label in labels:
-                    results[label] = self.calculate_probability(text, label, self._device)
+                    results[label] = self.calculate_probability(text, label, self._model_device)
 
                 results_list.append(results)
 
@@ -260,6 +348,6 @@ class ClassificationModel(HuggingModel):
             results = {}
             for label in labels:
                 results[label] = self.calculate_probability(
-                    text, label, self._device)
+                    text, label, self._model_device)
 
             return results

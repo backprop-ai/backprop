@@ -7,22 +7,35 @@ from torch.utils.data import DataLoader
 from random import shuffle
 import os
 
-from backprop.models import TextGenerationModel
+from backprop.models import TextGenerationModel, Finetunable
 
-class T5(TextGenerationModel, pl.LightningModule):
+class T5(TextGenerationModel, Finetunable):
+    """
+    Google's T5 model for text-generation.
+
+    Attributes:
+        args: args passed to :class:`backprop.models.generic_models.TextGenerationModel`
+        model_path: path to a T5 model on huggingface (t5-small, t5-base, t5-large)
+        kwargs: kwrags passed to :class:`backprop.models.generic_models.TextGenerationModel`
+    """
     def __init__(self, *args, model_path="t5-small", **kwargs):
-        pl.LightningModule.__init__(self)
-
+        Finetunable.__init__(self)
         TextGenerationModel.__init__(self, model_path,
                                 *args, **kwargs)
 
+        self.batch_size = 1
         self.tasks = ["text-generation", "generation"]
         self.description = "This is the T5 model by Google."
         self.name = "t5"
-        self.batch_size = 1
-        self.hparams.batch_size = 1
 
     def __call__(self, task_input, task="text-generation"):
+        """
+        Uses the model for the text-generation task
+
+        Args:
+            task_input: input dictionary according to the ``text-generation`` task specification
+            task: text-generation
+        """
         if task in ["text-generation", "generation"]:
             text = task_input.pop("text")
 
@@ -60,32 +73,42 @@ class T5(TextGenerationModel, pl.LightningModule):
         tokens =  self.tokenizer(text, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")
         return {"labels": tokens.input_ids[0], "decoder_attention_mask": tokens.attention_mask[0]}
     
-    def train_dataloader(self):
-        return DataLoader(self.dataset_train,
-            batch_size=self.batch_size|self.hparams.batch_size,
-            num_workers=os.cpu_count()|0)
-
-    def val_dataloader(self):
-        return DataLoader(self.dataset_valid,
-            batch_size=self.batch_size|self.hparams.batch_size,
-            num_workers=os.cpu_count()|0)
-    
     def finetune(self, input_text: List[str], output_text: List[str],
                 max_input_length=128, max_output_length=32,
-                validation_split: float = 0.15, epochs: int = 20):
+                validation_split: float = 0.15, epochs: int = 20,
+                batch_size: int = None, early_stopping: bool = True,
+                trainer: pl.Trainer = None):
         """
-        Finetunes T5 for a text generation task.
-        input_text and output_text must be ordered the same way (item 1 of input must match item 1 of output)
+        Finetunes T5 for the text-generation task.
+        
+        Note:
+            input_text and output_text must have matching ordering (item 1 of input must match item 1 of output)
 
         Args:
             input_text: List of strings that are used to predict and output (must match output ordering)
             output_text: List of strings that are predicted using input (must match input ordering)
+            max_input_length: Maximum number of tokens (1 token ~ 1 word) in input. Anything higher will be truncated. Max 512.
+            max_output_length: Maximum number of tokens (1 token ~ 1 word) in output. Anything higher will be truncated. Max 512.
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
-        """
-        if not torch.cuda.is_available():
-            raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
+            batch_size: Leave as None to determine the batch size automatically
+            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
+            trainer: Your custom pytorch_lightning trainer
 
+        Examples::
+
+            import backprop
+            
+            # Initialise model
+            model = backprop.models.T5()
+
+            # Any text works as training data
+            inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+            out = ["positive", "negative"]
+
+            # Finetune
+            model.finetune(inp, out)
+        """
         assert len(input_text) == len(output_text)
         OPTIMAL_BATCH_SIZE = 128
 
@@ -93,41 +116,6 @@ class T5(TextGenerationModel, pl.LightningModule):
         dataset = zip(input_text, output_text)
         dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
         
-        shuffle(dataset)
-
-        dataset_train = dataset[:int(len(dataset) * (1 - validation_split))]
-        dataset_valid = dataset[int(len(dataset) * (1 - validation_split)):]
-
-        self.dataset_train = dataset_train
-        self.dataset_valid = dataset_valid
-
-        # Stop when val loss stops improving
-        early_stopping = EarlyStopping(monitor="val_loss", patience=1)
-
-        # Find batch size
-        trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
-        print("Finding the optimal batch size...")
-        trainer.tune(self)
-
-        batch_size = self.batch_size|self.hparams.batch_size
-
-        # Don't go over
-        batch_size = min(batch_size, OPTIMAL_BATCH_SIZE)
-
-        accumulate_grad_batches = max(1, int(OPTIMAL_BATCH_SIZE / self.batch_size))
-
-        trainer = pl.Trainer(gpus=-1, accumulate_grad_batches=accumulate_grad_batches,
-            max_epochs=epochs, checkpoint_callback=False, logger=False, callbacks=[early_stopping])
-
-        print("Starting to train...")
-        self.model.train()
-        trainer.fit(self)
-
-        del self.dataset_train
-        del self.dataset_valid
-        del self.trainer
-
-        self.model.eval()
-
-        print("Training finished! Save your model for later with backprop.save or upload it with backprop.upload")
-
+        Finetunable.finetune(self, dataset, validation_split=validation_split,
+            epochs=epochs, batch_size=batch_size, optimal_batch_size=OPTIMAL_BATCH_SIZE,
+            early_stopping=early_stopping, trainer=trainer)
