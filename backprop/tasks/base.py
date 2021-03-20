@@ -47,4 +47,7 @@ class Task:
         raise Exception("The base Task is not callable!")
 
     def finetune(self, *args, **kwargs):
+        """
+        Finetuning is not implemented for this task.
+        """
         raise NotImplementedError("Finetuning is not implemented for this task")

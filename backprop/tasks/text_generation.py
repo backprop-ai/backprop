@@ -84,6 +84,9 @@ class TextGeneration(Task):
             return res["output"]
 
     def finetune(self, *args, **kwargs):
+        """
+        Passes the args and kwargs to the model's finetune method.
+        """
         try:
             return self.model.finetune(*args, **kwargs)
         except NotImplementedError:

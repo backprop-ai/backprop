@@ -5,17 +5,44 @@ Finetuning
 
 Finetuning lets you take a model that has been trained on a very broad task and adapt it to your specific niche.
 
-Finetuning is currently only supported for the T5 models (:ref:`t5` and :ref:`t5baseqasummaryemotion`).
+Finetuning is currently supported for the following tasks and models:
 
-The T5 models are text generation models that can take any text as input and produce any text as output.
-This makes them very versatile for many tasks.
+Text Generation
+^^^^^^^^^^^^^^^
+
+References:
+
+* :ref:`text-generation task <text-generation>`
+* `text-generation finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_TextGeneration.ipynb>`_
+
+Supported models:
+
+* :ref:`T5 <t5>`
+* :ref:`T5QASummaryEmotion <t5baseqasummaryemotion>`
+  
+Image Classification
+^^^^^^^^^^^^^^^^^^^^
+
+References:
+
+* :ref:`image-classification task <image-classification>`
+* `image-classification finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_ImageClassification.ipynb>`_
+
+Supported models:
+
+* :ref:`EfficientNet <efficientnet>`
+
+Basic Example
+^^^^^^^^^^^^^
+
+Here is a simple example of finetuning for text generation with T5.
 
 .. code-block:: python
 
     from backprop.models import T5
     from backprop import TextGeneration
 
-    tg = TextGeneration(T5, local=True)
+    tg = TextGeneration(T5)
 
     # Any text works as training data
     inp = ["I really liked the service I received!", "Meh, it was not impressive."]
@@ -31,4 +58,8 @@ This makes them very versatile for many tasks.
     # Prints
     "positive"
 
-See the in-depth `Finetuning <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning.ipynb>`_ example with code.
+
+In-depth Example
+^^^^^^^^^^^^^^^^    
+
+See the in-depth `Getting Started with Finetuning <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb>`_ notebook with code.

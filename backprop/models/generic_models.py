@@ -65,6 +65,8 @@ class Finetunable(pl.LightningModule):
             temp_trainer = pl.Trainer(auto_scale_batch_size="power", gpus=-1)
             print("Finding the optimal batch size...")
             temp_trainer.tune(self)
+
+            # Ensure that memory gets cleared
             del self.trainer
             del temp_trainer
             garbage_collection_cuda()
@@ -96,7 +98,7 @@ class Finetunable(pl.LightningModule):
         # For some reason the model can end up on CPU after training
         self.to(self._model_device)
         self.model.eval()
-        print("Training finished! Save your model for later with kiri.save or upload it with kiri.upload")
+        print("Training finished! Save your model for later with backprop.save or upload it with backprop.upload")
 
     def train_dataloader(self):
         return DataLoader(self.dataset_train,
