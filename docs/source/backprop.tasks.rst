@@ -21,6 +21,7 @@ backprop.tasks.emotion
    :special-members: __call__
    :show-inheritance:
 
+.. _image-classification:
 backprop.tasks.image\_classification
 ---------------------------------------
 
@@ -57,6 +58,7 @@ backprop.tasks.text\_classification
    :special-members: __call__
    :show-inheritance:
 
+.. _text-generation:
 backprop.tasks.text\_generation
 ----------------------------------
 
@@ -73,12 +75,4 @@ backprop.tasks.text\_vectorisation
    :members:
    :undoc-members:
    :special-members: __call__
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: backprop.tasks
-   :members:
-   :undoc-members:
    :show-inheritance:
