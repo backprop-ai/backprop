@@ -10,6 +10,14 @@ import os
 from backprop.models import TextGenerationModel, Finetunable
 
 class T5(TextGenerationModel, Finetunable):
+    """
+    Google's T5 model for text-generation.
+
+    Attributes:
+        args: args passed to :class:`backprop.models.generic_models.TextGenerationModel`
+        model_path: path to a T5 model on huggingface (t5-small, t5-base, t5-large)
+        kwargs: kwrags passed to :class:`backprop.models.generic_models.TextGenerationModel`
+    """
     def __init__(self, *args, model_path="t5-small", **kwargs):
         Finetunable.__init__(self)
         TextGenerationModel.__init__(self, model_path,
@@ -21,6 +29,13 @@ class T5(TextGenerationModel, Finetunable):
         self.name = "t5"
 
     def __call__(self, task_input, task="text-generation"):
+        """
+        Uses the model for the text-generation task
+
+        Args:
+            task_input: input dictionary according to the ``text-generation`` task specification
+            task: text-generation
+        """
         if task in ["text-generation", "generation"]:
             text = task_input.pop("text")
 
@@ -63,7 +78,9 @@ class T5(TextGenerationModel, Finetunable):
                 validation_split: float = 0.15, epochs: int = 20, batch_size: int = None):
         """
         Finetunes T5 for a text generation task.
-        input_text and output_text must be ordered the same way (item 1 of input must match item 1 of output)
+        
+        Note:
+            input_text and output_text must have matching ordering (item 1 of input must match item 1 of output)
 
         Args:
             input_text: List of strings that are used to predict and output (must match output ordering)
@@ -71,6 +88,20 @@ class T5(TextGenerationModel, Finetunable):
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
             batch_size: Leave as None to determine the batch size automatically
+        
+        Examples::
+
+            import backprop
+            
+            # Initialise model
+            model = backprop.models.T5()
+
+            # Any text works as training data
+            inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+            out = ["positive", "negative"]
+
+            # Finetune
+            model.finetune(inp, out)
         """
         assert len(input_text) == len(output_text)
         OPTIMAL_BATCH_SIZE = 128

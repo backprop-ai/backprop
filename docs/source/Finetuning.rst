@@ -31,4 +31,4 @@ This makes them very versatile for many tasks.
     # Prints
     "positive"
 
-See the in-depth `Finetuning <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning.ipynb>`_ example with code.
+See the in-depth `Getting Started with Finetuning <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning.ipynb>`_ notebook with code.
