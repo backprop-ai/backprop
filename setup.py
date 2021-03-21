@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="backprop",
-    version="0.0.5",
+    version="0.0.6",
     author="Backprop",
     author_email="hello@backprop.co",
     description="Backprop",
@@ -18,6 +18,7 @@ setuptools.setup(
         "sentence_transformers>=0.4.1.2",
         "torch<1.8.0",
         "torchvision<0.9.0",
+        "torchtext<0.9.0",
         "ftfy",
         "pytorch_lightning>=1.2.0,<1.3.0",
         "dill",
