@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="backprop",
-    version="0.0.6",
+    version="0.0.7",
     author="Backprop",
     author_email="hello@backprop.co",
     description="Backprop",
@@ -13,6 +13,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/backprop-ai/backprop",
     packages=setuptools.find_packages(),
+    project_urls={
+        "Bug Tracker": "https://github.com/backprop-ai/backprop/issues",
+        "Documentation": "https://backprop.readthedocs.io/en/latest/",
+        "Source Code": "https://github.com/backprop-ai/backprop",
+    },
     install_requires=[
         "transformers>=4.3.2,<4.4.0",
         "sentence_transformers>=0.4.1.2",
@@ -28,6 +33,10 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Scientific/Engineering :: Image Recognition",
+        "Topic :: Scientific/Engineering :: Information Analysis",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )
