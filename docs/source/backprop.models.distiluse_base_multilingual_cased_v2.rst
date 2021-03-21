@@ -1,3 +1,5 @@
+.. _distiluse:
+
 backprop.models.distiluse\_base\_multilingual\_cased\_v2
 ============================================================
 

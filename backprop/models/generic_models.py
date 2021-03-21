@@ -276,11 +276,11 @@ class TextVectorisationModel(PathModel, Finetunable):
         Finetunes the model for the text-vectorisation task.
         
         Note:
-            input_text and output_text must have matching ordering (item 1 of input must match item 1 of output)
+            text_pairs and similarity_scores must have matching ordering (item 1 of text_pairs must match item 1 of similarity_scores)
 
         Args:
             text_pairs: List of text pairs that are to be compares (must match output ordering)
-            output_text: List of floats between 0 and 1 that score the similarity of the pairs (must match text pairs ordering)
+            similarity_scores: List of floats between 0 and 1 that score the similarity of the pairs (must match text pairs ordering)
             max_input_length: Maximum number of tokens (1 token ~ 1 word) in text. Anything higher will be truncated. Max 512.
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
             epochs: Integer that specifies how many iterations of training to do
