@@ -49,6 +49,7 @@ backprop.tasks.summarisation
    :special-members: __call__
    :show-inheritance:
 
+.. _text-classification:
 backprop.tasks.text\_classification
 --------------------------------------
 
@@ -68,6 +69,7 @@ backprop.tasks.text\_generation
    :special-members: __call__
    :show-inheritance:
 
+.. _text-vectorisation:
 backprop.tasks.text\_vectorisation
 -------------------------------------
 

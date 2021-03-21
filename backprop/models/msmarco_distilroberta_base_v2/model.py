@@ -10,6 +10,13 @@ class MSMARCODistilrobertaBaseV2(TextVectorisationModel):
         self.name = "msmarco-distilroberta-base-v2"
 
     def __call__(self, task_input, task="text-vectorisation"):
+        """
+        Uses the model for the text-vectorisation task
+
+        Args:
+            task_input: input dictionary according to the ``text-vectorisation`` task specification
+            task: text-vectorisation
+        """
         if task in ["text-vectorisation", "vectorisation"]:
             text = task_input.pop("text")
 
