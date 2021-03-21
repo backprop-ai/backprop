@@ -203,11 +203,11 @@ class TextVectorisationModel(PathModel, Finetunable):
             Defaults to SentenceTransformer
         device (optional): Device for inference. Defaults to "cuda" if available.
     """
-    def __init__(self, model_path, model_class=SentenceTransformer,
+    def __init__(self, model_path, init_model=SentenceTransformer,
                 device=None):
         Finetunable.__init__(self)
 
-        init_model = partial(model_class, device=device)
+        init_model = partial(init_model, device=device)
 
         PathModel.__init__(self, model_path,
                                 init_model=init_model,
@@ -268,10 +268,41 @@ class TextVectorisationModel(PathModel, Finetunable):
         return {"scores": torch.tensor([similarity_score], dtype=torch.float32)}
 
     def finetune(self, text_pairs: List[Tuple[str, str]], similarity_scores: List[float],
-                max_input_length=128,
+                max_input_length=64,
                 validation_split: float = 0.15, epochs: int = 20,
                 batch_size: int = None, early_stopping: bool = True,
                 trainer: pl.Trainer = None):
+        """
+        Finetunes the model for the text-vectorisation task.
+        
+        Note:
+            input_text and output_text must have matching ordering (item 1 of input must match item 1 of output)
+
+        Args:
+            text_pairs: List of text pairs that are to be compares (must match output ordering)
+            output_text: List of floats between 0 and 1 that score the similarity of the pairs (must match text pairs ordering)
+            max_input_length: Maximum number of tokens (1 token ~ 1 word) in text. Anything higher will be truncated. Max 512.
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
+            epochs: Integer that specifies how many iterations of training to do
+            batch_size: Leave as None to determine the batch size automatically
+            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
+            trainer: Your custom pytorch_lightning trainer
+
+        Example::
+
+            import backprop
+            
+            # Initialise a text vectorisation model
+            model = backprop.models.DistiluseBaseMultilingualCasedV2()
+
+            # Any text works as training data
+            inp = [("hello there", "hi there"), ("how are you", "where is my wallet?")]
+            scores = [1.0, 0.0]
+
+            # Finetune
+            model.finetune(inp, scores)
+        """
+
         assert len(text_pairs) == len(similarity_scores), "Input list must match the output list"
         OPTIMAL_BATCH_SIZE = 128
 

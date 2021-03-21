@@ -1,7 +1,25 @@
 import torch
 from torch import Tensor
+from typing import Union, List
 
-def cosine_similarity(vec1: Tensor, vec2: Tensor):
+def cosine_similarity(vec1: Union[List[float], Tensor],
+                    vec2: Union[Union[List[float], Tensor], Union[List[List[float]], List[Tensor]]]):
+    """
+    Calculates cosine similarity between two vectors.
+
+    Args:
+        vec1: list of floats or corresponding tensor
+        vec2: list of floats / list of list of floats or corresponding tensor
+
+    Example::
+        import backprop
+
+        backprop.cosine_similarity(vec1, vec2)
+        0.8982
+
+        backprop.cosine_similarity(vec1, [vec2, vec3])
+        [0.8982, 0.3421]
+    """
     if not isinstance(vec1, Tensor):
         vec1 = torch.tensor(vec1)
 
