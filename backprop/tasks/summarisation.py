@@ -12,6 +12,8 @@ LOCAL_MODELS = {
 
 DEFAULT_API_MODEL = "english"
 
+FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
+
 API_MODELS = ["english"]
 
 class Summarisation(Task):
@@ -61,3 +63,21 @@ class Summarisation(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["summary"]
+    
+    def finetune(self, *args, **kwargs):
+        """
+        Passes args and kwargs to the model's finetune method
+        """
+        inps = kwargs.pop("input_text")
+
+        mod_inps = []
+
+        for i in range(len(inps)):
+            mod_inps[i] = f"summarise: {inps[i]}"
+        
+        kwargs["input_text"] = mod_inps
+
+        try:
+            return self.model.finetune(*args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")

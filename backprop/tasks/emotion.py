@@ -12,6 +12,8 @@ LOCAL_MODELS = {
 
 DEFAULT_API_MODEL = "english"
 
+FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
+
 API_MODELS = ["english"]
 
 class Emotion(Task):
@@ -62,3 +64,23 @@ class Emotion(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["emotion"]
+    
+    def finetune(self, *args, **kwargs):
+        """
+        Appends prefixes to inputs and outputs for sentiment task.
+        Passes args and kwargs to the model's finetune method.
+        """
+        inps = kwargs.pop("input_text")
+
+        mod_inps = []
+
+        for i in range(len(inps)):
+            mod_inps[i] = f"emotion: {inps[i]}"
+        
+        kwargs["input_text"] = mod_inps
+
+        try:
+            return self.model.finetune(*args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+    
