@@ -15,6 +15,8 @@ DEFAULT_API_MODEL = "english"
 
 API_MODELS = ["english", "multilingual"]
 
+FINETUNABLE_MODELS = ["english", "multilingual"]
+
 class TextVectorisation(Task):
     """
     Task for text vectorisation.
@@ -64,3 +66,12 @@ class TextVectorisation(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["vector"]
+
+    def finetune(self, *args, **kwargs):
+        """
+        Passes the args and kwargs to the model's finetune method.
+        """
+        try:
+            return self.model.finetune(*args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
