@@ -222,9 +222,9 @@ class TextVectorisationModel(PathModel, Finetunable):
     def __call__(self, *args, **kwargs):
         return self.vectorise(*args, **kwargs)
 
+    @torch.no_grad()
     def vectorise(self, *args, **kwargs):
-        with torch.no_grad():
-            return self.model.encode(*args, **kwargs)
+        return self.model.encode(*args, **kwargs)
 
     def training_step(self, batch, batch_idx):
         out1 = self.model.forward({"input_ids": batch["input_ids1"], "attention_mask": batch["attention_mask1"]})["sentence_embedding"]
