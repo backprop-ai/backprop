@@ -147,7 +147,7 @@ class T5(TextGenerationModel, Finetunable):
         
         questions = [f"q: {q}" for q in questions]
         contexts = [f"context: {c}" for c in contexts]
-        answers = [f"a: {a}" for a in answers]
+        answers = [f"{a}" for a in answers]
         
         # Creates previous QA strings 
         prev_qas_prep = []
@@ -163,7 +163,7 @@ class T5(TextGenerationModel, Finetunable):
         inps = []
         for i in range(len(questions)):
             prev = "" if not prev_qas else prev_qas_prep[i]
-            inp = f"{prev}\n{questions[i]}\n{contexts[i]}"
+            inp = f"{prev}\n{questions[i]}\n{contexts[i]}\na: "
             inps.append(inp)
         
         return inps, answers
