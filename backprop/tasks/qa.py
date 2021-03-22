@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 from .base import Task
 from backprop.models import T5QASummaryEmotion, BaseModel
 
@@ -11,6 +11,8 @@ LOCAL_MODELS = {
 }
 
 DEFAULT_API_MODEL = "english"
+
+FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
 
 API_MODELS = ["english"]
 
@@ -78,3 +80,53 @@ class QA(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["answer"]
+    
+    def finetune(params: Dict, *args, **kwargs):
+        """
+        Passes args and kwargs to the model's finetune method.
+        Input orderings must match.
+
+        Args:
+            params: dictionary of lists: 'questions', 'answers', 'contexts'.
+                    Optionally includes 'prev_qas': list of list of (q, a) tuples to prepend to context.
+        
+        Examples::
+
+            import backprop
+            
+            # Initialise task
+            qa = backprop.QA(backprop.models.T5)
+
+            questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
+            answers = ["A library that trains models", "Python", "1964"]
+            contexts = ["Backprop is a Python library that makes training and using models easier.", 
+                        "Backprop is a Python library that makes training and using models easier.",
+                        "Bob Moog was a physicist. He invented the Moog synthesizer in 1964."]
+            
+            prev_qas = [[], 
+                        [("What's Backprop?", "A library that trains models)],
+                        []]
+
+            params = {"questions": questions,
+                      "answers": answers,
+                      "contexts": contexts,
+                      "prev_qas": prev_qas}
+
+            # Finetune
+            qa.finetune(params)
+        """
+
+        if not "questions" in params:
+            print("Params requires key: 'questions' (list of questions)")
+            return
+        if not "answers" in params:
+            print("Params requires key: 'answers' (list of answers)")
+            return
+        if not "contexts" in params:
+            print("Params requires key: 'contexts' (list of question contexts)")
+            return
+        
+        try:
+            return self.model.finetune(params, task="qa", *args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")

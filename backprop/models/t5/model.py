@@ -73,20 +73,47 @@ class T5(TextGenerationModel, Finetunable):
         tokens =  self.tokenizer(text, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")
         return {"labels": tokens.input_ids[0], "decoder_attention_mask": tokens.attention_mask[0]}
     
-    def finetune(self, input_text: List[str], output_text: List[str],
-                max_input_length=128, max_output_length=32,
-                validation_split: float = 0.15, epochs: int = 20,
-                batch_size: int = None, early_stopping: bool = True,
-                trainer: pl.Trainer = None):
+    def prepare_qa(self, questions, answers, contexts, prev_qas):
+        assert len(questions) == len(answers) and len(answers) == len(contexts)
+        if prev_qas:
+            assert len(prev_qas) == len(questions)
+        
+        questions = [f"q: {q}" for q in questions]
+        contexts = [f"context: {c}" for c in contexts]
+        answers = [f"a: {a}" for a in answers]
+        
+        # Creates previous QA strings 
+        prev_qas_prep = []
+        if prev_qas:
+            for prev_qa in prev_qas:
+                if prev_qa != []:
+                     qa_str = [f"q: {q}\na: {a}" for q,a in prev_qa]
+                     qa_str = "".join(qa_str)
+                     prev_qas_prep.append(qa_str)
+                else:
+                    prev_qas_prep.append("")
+
+        inps = []
+        for i in range(len(questions)):
+            prev = "" if not prev_qas else prev_qas_prep[i]
+            inp = f"{prev}\n{questions[i]}\n{contexts[i]}"
+            inps.append(inp)
+        
+        return inps, answers
+
+    def finetune(self, params, max_input_length=128, max_output_length=32,
+                 validation_splie: float=0.15, epochs: int=20,
+                 batch_size: int=None, early_stopping: bool = True,
+                 trainer: pl.Trainer = None, task: string = "text-generation"):
         """
         Finetunes T5 for the text-generation task.
         
         Note:
-            input_text and output_text must have matching ordering (item 1 of input must match item 1 of output)
+            input_text and output_text in params must have matching ordering (item 1 of input must match item 1 of output)
 
         Args:
-            input_text: List of strings that are used to predict and output (must match output ordering)
-            output_text: List of strings that are predicted using input (must match input ordering)
+            params: Dictionary of model inputs. Contains 'input_text' and 'output_text' for generation, summarisation, and emotion.
+                    QA requires specifically formatted input: see QA task's finetuning function for more details.
             max_input_length: Maximum number of tokens (1 token ~ 1 word) in input. Anything higher will be truncated. Max 512.
             max_output_length: Maximum number of tokens (1 token ~ 1 word) in output. Anything higher will be truncated. Max 512.
             validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
@@ -94,6 +121,7 @@ class T5(TextGenerationModel, Finetunable):
             batch_size: Leave as None to determine the batch size automatically
             early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
             trainer: Your custom pytorch_lightning trainer
+            task: Task on which finetuning will occur. Must be in ["text-generation", "summarisation", "emotion", "qa"]
 
         Examples::
 
@@ -105,17 +133,35 @@ class T5(TextGenerationModel, Finetunable):
             # Any text works as training data
             inp = ["I really liked the service I received!", "Meh, it was not impressive."]
             out = ["positive", "negative"]
+            params = {"input_text": inp, "output_text": out}
 
             # Finetune
-            model.finetune(inp, out)
+            model.finetune(params)
         """
-        assert len(input_text) == len(output_text)
-        OPTIMAL_BATCH_SIZE = 128
 
-        print("Processing data...")
-        dataset = zip(input_text, output_text)
-        dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
+        if task == "text-generation":
+            pass
+        elif task == "summarisation":
+            params["input_text"] = [f"summarise: {i}" for i in params["input_text"]]
+        elif task == "emotion":
+            params["input_text"] = [f"emotion: {i}" for i in params["input_text"]]
+        elif task == "qa":
+            prev_qas = None
+            if "prev_qas" in params:
+                prev_qas = params["prev_qas"]
+            inps, outs = prepare_qa(params["questions"], params["answers"], params["contexts"], prev_qas)
+            params["input_text"] = inps
+            params["output_text"] = outs
+        else:
+            raise ValueError(f"Unsupported task: {task}")
+
+        assert len(params["input_text"] == len(params["output_text"]))
+        OPTIMAL_BATCH_SIZE = 128                
         
+        print("Processing data...")
+        dataset = zip(params["input_text"], params["output_text"])
+        dataset = [self.encode(r, max_input_length, max_output_length) for r in dataset]
+
         Finetunable.finetune(self, dataset, validation_split=validation_split,
             epochs=epochs, batch_size=batch_size, optimal_batch_size=OPTIMAL_BATCH_SIZE,
             early_stopping=early_stopping, trainer=trainer)

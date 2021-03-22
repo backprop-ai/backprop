@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 from .base import Task
 from backprop.models import T5QASummaryEmotion, BaseModel
 
@@ -65,22 +65,23 @@ class Emotion(Task):
 
             return res["emotion"]
     
-    def finetune(self, *args, **kwargs):
+    def finetune(self, params: Dict, *args, **kwargs):
         """
-        Appends prefixes to inputs and outputs for sentiment task.
         Passes args and kwargs to the model's finetune method.
+
+        Args:
+            params: dictionary of 'input_text' and 'output_text' lists.
         """
-        inps = kwargs.pop("input_text")
 
-        mod_inps = []
-
-        for i in range(len(inps)):
-            mod_inps[i] = f"emotion: {inps[i]}"
-        
-        kwargs["input_text"] = mod_inps
+        if not "input_text" in params:
+            print("Params requires key: 'input_text' (list of inputs)")
+            return
+        if not "output_text" in params:
+            print("Params requires key: 'output_text' (list of outputs)")
+            return
 
         try:
-            return self.model.finetune(*args, **kwargs)
+            return self.model.finetune(params, task="emotion", *args, **kwargs)
         except NotImplementedError:
             raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
     
