@@ -59,9 +59,10 @@ Here is a simple example of finetuning for text generation with T5.
     # Any text works as training data
     inp = ["I really liked the service I received!", "Meh, it was not impressive."]
     out = ["positive", "negative"]
+    params = {"input_text": inp, "output_text": out}
 
     # Finetune with a single line of code
-    tg.finetune(inp, out)
+    tg.finetune(params)
 
     # Use your trained model
     prediction = tg("I enjoyed it!")

@@ -33,15 +33,82 @@ class T5(TextGenerationModel, Finetunable):
         Uses the model for the text-generation task
 
         Args:
-            task_input: input dictionary according to the ``text-generation`` task specification
-            task: text-generation
+            task_input: input dictionary according to the ``text-generation`` task specification,
+                        or specification of task you've finetuned for.
+            task: text-generation, or a task you've tuned a T5 model on
         """
-        if task in ["text-generation", "generation"]:
-            text = task_input.pop("text")
+        if task in self.tasks:
+            if task in ["text-generation", "generation"]:
+                text = task_input.pop("text")
+                return self.generate(text, **task_input)
+            elif task == "emotion":
+                return self.emotion(task_input["text"])
+            elif task == "summarisation":
+                return self.summarise(task_input["text"])
+            elif task == "qa":
+                prev_q = task_input.get("prev_q", [])
+                prev_a = task_input.get("prev_a", [])
+                prev_qa = []
+                if len(prev_q) != 0:
+                    prev_qa = list(zip(prev_q, prev_a))
+                return self.qa(task_input["question"], task_input["context"], prev_qa=prev_qa)
 
-            return self.generate(text, **task_input)
         else:
             raise ValueError(f"Unsupported task: {task}")
+
+        def process_qa(self, question, context, prev_qa):
+        input_text = [f"q: {qa[0]} a: {qa[1]}" for qa in prev_qa]
+        input_text.append(f"q: {question}")
+        input_text.append(f"c: {context}")
+        input_text = " ".join(input_text)
+
+        return input_text
+
+
+    def qa(self, question, context, prev_qa: List[Tuple[str, str]] = []):
+        if isinstance(question, list):
+            # Must have a consistent amount of examples
+            assert(len(question) == len(context))
+            if len(prev_qa) != 0:
+                assert(len(question) == len(prev_qa))
+            else:
+                prev_qa = [prev_qa] * len(question)
+
+            # Process according to the model used
+            input_text = [self.process_qa(q, c, p)
+                          for q, c, p in zip(question, context, prev_qa)]
+        else:
+            input_text = self.process_qa(question, context, prev_qa)
+
+        return self.generate(input_text, do_sample=False, max_length=96)
+
+    
+    def process_emotion(self, text):
+        return f"emotion: {text}"
+
+    
+    def emotion(self, text):
+        if isinstance(text, list):
+            # Process according to the model used
+            text = [self.process_emotion(item) for item in text]
+        else:
+            text = self.process_emotion(text)
+
+        return self.generate(text, do_sample=False, max_length=96)
+
+    
+    def process_summarisation(self, text):
+        return f"summarise: {text}"
+
+    
+    def summarise(self, text):
+        if isinstance(text, list):
+            # Process according to the model used
+            text = [self.process_summarisation(item) for item in text]
+        else:
+            text = self.process_summarisation(text)
+
+        return self.generate(text, do_sample=False, max_length=96)
     
     def training_step(self, batch, batch_idx):
         outputs = self.model(**batch)
@@ -143,8 +210,10 @@ class T5(TextGenerationModel, Finetunable):
             pass
         elif task == "summarisation":
             params["input_text"] = [f"summarise: {i}" for i in params["input_text"]]
+            self.tasks.append(task)
         elif task == "emotion":
             params["input_text"] = [f"emotion: {i}" for i in params["input_text"]]
+            self.tasks.append(task)
         elif task == "qa":
             prev_qas = None
             if "prev_qas" in params:
@@ -152,6 +221,7 @@ class T5(TextGenerationModel, Finetunable):
             inps, outs = prepare_qa(params["questions"], params["answers"], params["contexts"], prev_qas)
             params["input_text"] = inps
             params["output_text"] = outs
+            self.tasks.append(task)
         else:
             raise ValueError(f"Unsupported task: {task}")
 
