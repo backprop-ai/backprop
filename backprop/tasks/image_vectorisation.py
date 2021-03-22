@@ -26,8 +26,8 @@ class ImageVectorisation(Task):
     Attributes:
         model:
             1. Name of the model on Backprop's vectorisation endpoint (clip or your own uploaded model)
-            2. Officially supported local models (english, multilingual).
-            3. Model class of instance Backprop's TextVectorisationModel
+            2. Officially supported local models (clip).
+            3. Model class of instance Backprop's BaseModel (that supports the task)
             4. Path/name of saved Backprop model
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
@@ -45,7 +45,7 @@ class ImageVectorisation(Task):
         """Vectorise input image.
 
         Args:
-            text: image or list of images to vectorise
+            text: image or list of images to vectorise. Can be both PIL Image objects or paths to images.
 
         Returns:
             Vector or list of vectors
@@ -60,13 +60,13 @@ class ImageVectorisation(Task):
 
         image = []
         for img in image_path:
-            if not isinstance(image, Image.Image):
+            if not isinstance(img, Image.Image):
                 with open(img, "rb") as image_file:
                     img = base64.b64encode(image_file.read())
             else:
                 buffered = BytesIO()
                 img.save(buffered, format=img.format)
-                img_str = base64.b64encode(buffered.getvalue())
+                img = base64.b64encode(buffered.getvalue())
             
             image.append(img)
 

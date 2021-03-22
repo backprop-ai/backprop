@@ -64,13 +64,13 @@ class ImageClassification(Task):
 
         image = []
         for img in image_path:
-            if not isinstance(image, Image.Image):
+            if not isinstance(img, Image.Image):
                 with open(img, "rb") as image_file:
                     img = base64.b64encode(image_file.read())
             else:
                 buffered = BytesIO()
                 img.save(buffered, format=img.format)
-                img_str = base64.b64encode(buffered.getvalue())
+                img = base64.b64encode(buffered.getvalue())
             
             image.append(img)
 
