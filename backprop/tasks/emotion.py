@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 from .base import Task
 from backprop.models import T5QASummaryEmotion, BaseModel
 
@@ -11,6 +11,8 @@ LOCAL_MODELS = {
 }
 
 DEFAULT_API_MODEL = "english"
+
+FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
 
 API_MODELS = ["english"]
 
@@ -62,3 +64,24 @@ class Emotion(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["emotion"]
+    
+    def finetune(self, params: Dict, *args, **kwargs):
+        """
+        Passes args and kwargs to the model's finetune method.
+
+        Args:
+            params: dictionary of 'input_text' and 'output_text' lists.
+        """
+
+        if not "input_text" in params:
+            print("Params requires key: 'input_text' (list of inputs)")
+            return
+        if not "output_text" in params:
+            print("Params requires key: 'output_text' (list of outputs)")
+            return
+
+        try:
+            return self.model.finetune(params, task="emotion", *args, **kwargs)
+        except NotImplementedError:
+            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+    
