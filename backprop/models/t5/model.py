@@ -56,7 +56,7 @@ class T5(TextGenerationModel, Finetunable):
         else:
             raise ValueError(f"Unsupported task: {task}")
 
-        def process_qa(self, question, context, prev_qa):
+    def process_qa(self, question, context, prev_qa):
         input_text = [f"q: {qa[0]} a: {qa[1]}" for qa in prev_qa]
         input_text.append(f"q: {question}")
         input_text.append(f"c: {context}")
@@ -169,9 +169,9 @@ class T5(TextGenerationModel, Finetunable):
         return inps, answers
 
     def finetune(self, params, max_input_length=128, max_output_length=32,
-                 validation_splie: float=0.15, epochs: int=20,
+                 validation_split: float=0.15, epochs: int=20,
                  batch_size: int=None, early_stopping: bool = True,
-                 trainer: pl.Trainer = None, task: string = "text-generation"):
+                 trainer: pl.Trainer = None, task: str = "text-generation"):
         """
         Finetunes T5 for the text-generation task.
         
@@ -218,14 +218,14 @@ class T5(TextGenerationModel, Finetunable):
             prev_qas = None
             if "prev_qas" in params:
                 prev_qas = params["prev_qas"]
-            inps, outs = prepare_qa(params["questions"], params["answers"], params["contexts"], prev_qas)
+            inps, outs = self.prepare_qa(params["questions"], params["answers"], params["contexts"], prev_qas)
             params["input_text"] = inps
             params["output_text"] = outs
             self.tasks.append(task)
         else:
             raise ValueError(f"Unsupported task: {task}")
 
-        assert len(params["input_text"] == len(params["output_text"]))
+        assert len(params["input_text"]) == len(params["output_text"])
         OPTIMAL_BATCH_SIZE = 128                
         
         print("Processing data...")

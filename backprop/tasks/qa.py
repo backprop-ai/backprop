@@ -81,7 +81,7 @@ class QA(Task):
 
             return res["answer"]
     
-    def finetune(params: Dict, *args, **kwargs):
+    def finetune(self, params: Dict, *args, **kwargs):
         """
         Passes args and kwargs to the model's finetune method.
         Input orderings must match.
@@ -104,7 +104,7 @@ class QA(Task):
                         "Bob Moog was a physicist. He invented the Moog synthesizer in 1964."]
             
             prev_qas = [[], 
-                        [("What's Backprop?", "A library that trains models)],
+                        [("What's Backprop?", "A library that trains models")],
                         []]
 
             params = {"questions": questions,
@@ -113,9 +113,10 @@ class QA(Task):
                       "prev_qas": prev_qas}
 
             # Finetune
-            qa.finetune(params)
+            qa.finetune(params=params)
         """
-
+        # params = kwargs["params"]
+        print(params)
         if not "questions" in params:
             print("Params requires key: 'questions' (list of questions)")
             return
@@ -125,8 +126,8 @@ class QA(Task):
         if not "contexts" in params:
             print("Params requires key: 'contexts' (list of question contexts)")
             return
-        
+
         try:
-            return self.model.finetune(params, task="qa", *args, **kwargs)
+            return self.model.finetune(params=params, task="qa", *args, **kwargs)
         except NotImplementedError:
             raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
