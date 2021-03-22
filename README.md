@@ -65,6 +65,8 @@ print(answer)
 "the examples folder"
 ```
 
+See [all available tasks](https://backprop.readthedocs.io/en/latest/Tasks.html).
+
 ### Basic finetuning and uploading
 
 ```python
@@ -96,6 +98,8 @@ model.description = "Predicts positive and negative sentiment"
 
 backprop.upload(model, api_key="abc")
 ```
+
+See [finetuning for other tasks](https://backprop.readthedocs.io/en/latest/Finetuning.html).
 
 ## Why Backprop?
 
