@@ -6,7 +6,7 @@
 Backprop Home
 =============
 
-Backprop is a Python library that makes it simple to solve AI tasks without requiring any data.
+Backprop makes it simple to use, finetune, and deploy state-of-the-art ML models.
 
 .. toctree::
    :maxdepth: 2

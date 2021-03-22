@@ -60,7 +60,7 @@ Basic Finetuning and Uploading
     out = ["positive", "negative"]
 
     # Finetune with a single line of code
-    tg.finetune(inp, out)
+    tg.finetune({"input_text": inp, "output_text": out})
 
     # Use your trained model
     prediction = tg("I enjoyed it!")
