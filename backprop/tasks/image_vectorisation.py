@@ -1,34 +1,33 @@
 from typing import List, Tuple, Union
-from ..models import BaseModel, ClassificationModel
-from backprop.models import CLIP, EfficientNet
 from .base import Task
-from PIL import Image
+from backprop.models import CLIP, BaseModel
 import base64
+from PIL import Image
+from io import BytesIO
 
 import requests
-from io import BytesIO
 
 DEFAULT_LOCAL_MODEL = CLIP
 
 LOCAL_MODELS = {
-    "english": CLIP,
-    "efficientnet": EfficientNet
+    "clip": DEFAULT_LOCAL_MODEL,
 }
 
-DEFAULT_API_MODEL = "english"
-FINETUNABLE_MODELS = ["efficientnet"]
+DEFAULT_API_MODEL = "clip"
 
-API_MODELS = ["english"]
+API_MODELS = ["clip"]
 
-class ImageClassification(Task):
+FINETUNABLE_MODELS = []
+
+class ImageVectorisation(Task):
     """
-    Task for classification.
+    Task for text vectorisation.
 
     Attributes:
         model:
-            1. Name of the model on Backprop's image classification endpoint (english, efficientnet or your own uploaded model)
-            2. Officially supported local models (english, efficientnet).
-            3. Model class of instance Backprop's BaseModel that implements the image-classification task
+            1. Name of the model on Backprop's vectorisation endpoint (clip or your own uploaded model)
+            2. Officially supported local models (clip).
+            3. Model class of instance Backprop's BaseModel (that supports the task)
             4. Path/name of saved Backprop model
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
@@ -41,19 +40,16 @@ class ImageClassification(Task):
                         local_models=LOCAL_MODELS, api_models=API_MODELS,
                         default_local_model=DEFAULT_LOCAL_MODEL,
                         default_api_model=DEFAULT_API_MODEL)
-
     
-    def __call__(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None):
-        """Classify image according to given labels.
+    def __call__(self, image_path: Union[str, List[str]]):
+        """Vectorise input image.
 
         Args:
-            image_path: path to image or list of paths to image
-            labels: list of strings or list of labels (for zero shot classification)
+            text: image or list of images to vectorise. Can be both PIL Image objects or paths to images.
 
         Returns:
-            dict where each key is a label and value is probability between 0 and 1 or list of dicts
+            Vector or list of vectors
         """
-
         is_list = False
 
         if type(image_path) == list:
@@ -76,33 +72,31 @@ class ImageClassification(Task):
 
         if not is_list:
             image = image[0]
-            
+
         if self.local:
             task_input = {
-                "image": image,
-                "labels": labels
+                "image": image
             }
-            return self.model(task_input, task="image-classification")
+            return self.model(task_input, task="image-vectorisation")
         else:
             body = {
                 "image": image,
-                "labels": labels,
-                "model": self.model,
+                "model": self.model
             }
 
-            res = requests.post("https://api.backprop.co/image-classification", json=body,
+            res = requests.post("https://api.backprop.co/image-vectorisation", json=body,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
-            return res["probabilities"]
+            return res["vector"]
 
-    def finetune(self, *args, **kwargs):
-        """
-        Passes the args and kwargs to the model's finetune method.
-        """
-        try:
-            return self.model.finetune(*args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+    # def finetune(self, *args, **kwargs):
+    #     """
+    #     Passes the args and kwargs to the model's finetune method.
+    #     """
+    #     try:
+    #         return self.model.finetune(*args, **kwargs)
+    #     except NotImplementedError:
+    #         raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")

@@ -12,6 +12,7 @@ def cosine_similarity(vec1: Union[List[float], Tensor],
         vec2: list of floats / list of list of floats or corresponding tensor
 
     Example::
+    
         import backprop
 
         backprop.cosine_similarity(vec1, vec2)

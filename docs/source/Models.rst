@@ -171,6 +171,17 @@ Task string is ``"image-classification"``.
 | labels | ``List[str]`` or ``List[List[str]]`` | labels or list of labels to assign probabilities to   |
 +--------+--------------------------------------+-------------------------------------------------------+
 
+Image Vectorisation
+^^^^^^^^^^^^^^^^^^^
+
+Task string is ``"image-vectorisation"``.
+
++--------+--------------------------------------+-------------------------------------------------------+
+| key    | type                                 | description                                           |
++========+======================================+=======================================================+
+| image  | ``str`` or ``List[str]``             | base64 encoded image or list of base64 encoded images |
++--------+--------------------------------------+-------------------------------------------------------+
+
 Text Generation
 ^^^^^^^^^^^^^^^
 
