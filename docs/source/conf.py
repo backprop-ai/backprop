@@ -22,7 +22,7 @@ copyright = '2021, Backprop'
 author = 'Backprop'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = '0.0.9'
 
 
 # -- General configuration ---------------------------------------------------
