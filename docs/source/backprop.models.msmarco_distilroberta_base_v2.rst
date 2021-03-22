@@ -1,19 +1,14 @@
+.. _distilroberta-msmarco:
+
 backprop.models.msmarco\_distilroberta\_base\_v2
 ====================================================
 
 
-backprop.models.msmarco\_distilroberta\_base\_v2.model
----------------------------------------------------------
+MSMARCODistilrobertaBaseV2
+--------------------------
 
-.. automodule:: backprop.models.msmarco_distilroberta_base_v2.model
-   :members:
+.. autoclass:: backprop.models.msmarco_distilroberta_base_v2.model.MSMARCODistilrobertaBaseV2
+   :members: finetune
    :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: backprop.models.msmarco_distilroberta_base_v2
-   :members:
-   :undoc-members:
+   :special-members: __call__
    :show-inheritance:

@@ -26,7 +26,7 @@ Q&A answers a question based on a paragraph of text. It also supports previous q
     qa("Where does Sally live?", "Sally lives in London.")
     "London"
 
-See the `Q&A <https://github.com/backprop-ai/backprop/blob/main/examples/Q%26A.ipynb>`_ examples with code.
+See the `Q&A Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Q%26A.ipynb>`_ examples with code.
 
 Text Classification
 ^^^^^^^^^^^^^^^^^^^
@@ -43,7 +43,7 @@ It is supported in 100+ languages: Afrikaans, Albanian, Amharic, Arabic, Armenia
     tc("I am mad because my product broke.", ["product issue", "nature"])
     {"product issue": 0.98, "nature": 0.05}
 
-Check the example `text classification <https://github.com/backprop-ai/backprop/blob/main/examples/TextClassification.ipynb>`_ with code.
+Check the example `Text Classification Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/TextClassification.ipynb>`_ with code.
 
 Sentiment Detection
 ^^^^^^^^^^^^^^^^^^^
@@ -60,7 +60,7 @@ Use is simple: just pass in a string of text, and get back an emotion or list of
     emotion("I really like what you did there")
     "approval"
 
-See `sentiment detection <https://github.com/backprop-ai/backprop/blob/main/examples/Sentiment.ipynb>`_ with code.
+See `Sentiment Detection Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Sentiment.ipynb>`_ with code.
 
 Text Summarisation
 ^^^^^^^^^^^^^^^^^^
@@ -75,7 +75,7 @@ Also self-explanatory: takes a chunk of input text, and gives a summary of key i
     summarisation("This is a long document that contains plenty of words")
     "short summary of document"
 
-See the example for `text summarisation <https://github.com/backprop-ai/backprop/blob/main/examples/Summarisation.ipynb>`_ with code.
+See the example for `Text Summarisation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Summarisation.ipynb>`_ with code.
 
 Image Classification
 ^^^^^^^^^^^^^^^^^^^^
@@ -92,7 +92,25 @@ It takes an image and a set of labels to calculate the probabilities for each la
     ic("/home/Documents/dog.png", ["cat", "dog"])
     {"cat": 0.01, "dog": 0.99}
 
-Check the example `image classification <https://github.com/backprop-ai/backprop/blob/main/examples/ImageClassification.ipynb>`_ with code.
+Check the example `Image Classification Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/ImageClassification.ipynb>`_ with code.
+
+Image Vectorisation
+^^^^^^^^^^^^^^^^^^^
+
+Image Vectorisation takes an image and turns it into a vector.
+
+This makes it possible to compare different images numerically.
+
+.. code-block:: python
+
+    from backprop import ImageVectorisation
+
+    iv = ImageVectorisation()
+
+    iv("/home/Documents/dog.png")
+    [0.92949192, 0.23123010, ...]
+
+Check the example `Image Vectorisation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/ImageVectorisation.ipynb>`_ with code.
 
 Text Generation
 ^^^^^^^^^^^^^^^
@@ -110,7 +128,7 @@ This is useful for story/idea generation or solving a broad range of tasks.
     tg("I like to go to")
     " the beach because I love the sun."
 
-Check the example `text generation <https://github.com/backprop-ai/backprop/blob/main/examples/TextGeneration.ipynb>`_ with code.
+Check the example `Text Generation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/TextGeneration.ipynb>`_ with code.
 
 Text Vectorisation
 ^^^^^^^^^^^^^^^^^^
@@ -128,3 +146,5 @@ You could see how similar the vectors of two different paragraphs are, to group 
 
     tv("iPhone 12 128GB")
     [0.92949192, 0.23123010, ...]
+
+Check the example `Text Vectorisation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/TextVectorisation.ipynb>`_ with code.

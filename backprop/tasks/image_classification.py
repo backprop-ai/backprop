@@ -2,9 +2,11 @@ from typing import List, Tuple, Union
 from ..models import BaseModel, ClassificationModel
 from backprop.models import CLIP, EfficientNet
 from .base import Task
+from PIL import Image
 import base64
 
 import requests
+from io import BytesIO
 
 DEFAULT_LOCAL_MODEL = CLIP
 
@@ -62,9 +64,15 @@ class ImageClassification(Task):
 
         image = []
         for img in image_path:
-            with open(img, "rb") as image_file:
-                img = base64.b64encode(image_file.read())
-                image.append(img)
+            if not isinstance(img, Image.Image):
+                with open(img, "rb") as image_file:
+                    img = base64.b64encode(image_file.read())
+            else:
+                buffered = BytesIO()
+                img.save(buffered, format=img.format)
+                img = base64.b64encode(buffered.getvalue())
+            
+            image.append(img)
 
         if not is_list:
             image = image[0]

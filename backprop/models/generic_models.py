@@ -1,12 +1,13 @@
-from typing import List
+from typing import List, Tuple
 from transformers import AutoModelForPreTraining, AutoTokenizer, \
-    AutoModelForSequenceClassification
+    AutoModelForSequenceClassification, AdamW
 from torch.utils.data import DataLoader
 from sentence_transformers import SentenceTransformer
 from functools import partial
 import os
 
 import torch
+import torch.nn.functional as F
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.utilities.memory import garbage_collection_cuda
@@ -33,6 +34,7 @@ class BaseModel:
 
     def to(self, device):
         self.model.to(device)
+        self._model_device = device
 
     # def set_name(self, name: str):
 
@@ -192,7 +194,7 @@ class HuggingModel(PathModel):
                                 device=device)
 
 
-class TextVectorisationModel(PathModel):
+class TextVectorisationModel(PathModel, Finetunable):
     """
     Class for models which are initialised from a local path or Sentence Transformers
 
@@ -202,27 +204,114 @@ class TextVectorisationModel(PathModel):
             Defaults to SentenceTransformer
         device (optional): Device for inference. Defaults to "cuda" if available.
     """
-    def __init__(self, model_path, model_class=SentenceTransformer,
+    def __init__(self, model_path, init_model=SentenceTransformer,
                 device=None):
-        # Object was made with init = False
-        if hasattr(self, "initialised"):
-            model_path = self.model_path
-            init_model = self.init_model
-            device = self._model_device
-        else:
-            init_model = partial(model_class, device=device)
+        Finetunable.__init__(self)
 
-        return PathModel.__init__(self, model_path,
+        init_model = partial(init_model, device=device)
+
+        PathModel.__init__(self, model_path,
                                 init_model=init_model,
                                 device=device)
+
+        self.batch_size = 1
+        self.tasks = ["text-vectorisation"]
+        self.description = "This is a text vectorisation model"
+        self.name = "text-vec-model"
 
 
     def __call__(self, *args, **kwargs):
         return self.vectorise(*args, **kwargs)
 
+    @torch.no_grad()
     def vectorise(self, *args, **kwargs):
-        with torch.no_grad():
-            return self.model.encode(*args, **kwargs)
+        return self.model.encode(*args, **kwargs)
+
+    def training_step(self, batch, batch_idx):
+        out1 = self.model.forward({"input_ids": batch["input_ids1"], "attention_mask": batch["attention_mask1"]})["sentence_embedding"]
+        out2 = self.model.forward({"input_ids": batch["input_ids2"], "attention_mask": batch["attention_mask2"]})["sentence_embedding"]
+        scores = batch["scores"]
+
+        loss = torch.cosine_similarity(out1, out2)
+        loss = F.mse_loss(loss, scores.view(-1))
+        
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        out1 = self.model.forward({"input_ids": batch["input_ids1"], "attention_mask": batch["attention_mask1"]})["sentence_embedding"]
+        out2 = self.model.forward({"input_ids": batch["input_ids2"], "attention_mask": batch["attention_mask2"]})["sentence_embedding"]
+        scores = batch["scores"]
+
+        loss = torch.cosine_similarity(out1, out2)
+        loss = F.mse_loss(loss, scores.view(-1))
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
+        return loss
+
+    def configure_optimizers(self):
+        return AdamW(params=self.model.parameters(), lr=2e-5, eps=1e-6, correct_bias=False)
+
+    def encode(self, row, max_input_length):
+        inp = self.encode_input(row[0], max_length=max_input_length)
+        out = self.encode_output(row[1])
+
+        row = {**inp, **out}
+        return row
+
+    def encode_input(self, text_pair, max_length=128):
+        text1, text2 = text_pair
+        tokens1 = self.model.tokenizer(text1, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")
+        tokens2 = self.model.tokenizer(text2, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")
+        return {"input_ids1": tokens1.input_ids[0], "attention_mask1": tokens1.attention_mask[0],
+                "input_ids2": tokens2.input_ids[0], "attention_mask2": tokens2.attention_mask[0]}
+
+    def encode_output(self, similarity_score):
+        return {"scores": torch.tensor([similarity_score], dtype=torch.float32)}
+
+    def finetune(self, text_pairs: List[Tuple[str, str]], similarity_scores: List[float],
+                max_input_length=64,
+                validation_split: float = 0.15, epochs: int = 20,
+                batch_size: int = None, early_stopping: bool = True,
+                trainer: pl.Trainer = None):
+        """
+        Finetunes the model for the text-vectorisation task.
+        
+        Note:
+            text_pairs and similarity_scores must have matching ordering (item 1 of text_pairs must match item 1 of similarity_scores)
+
+        Args:
+            text_pairs: List of text pairs that are to be compares (must match output ordering)
+            similarity_scores: List of floats between 0 and 1 that score the similarity of the pairs (must match text pairs ordering)
+            max_input_length: Maximum number of tokens (1 token ~ 1 word) in text. Anything higher will be truncated. Max 512.
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
+            epochs: Integer that specifies how many iterations of training to do
+            batch_size: Leave as None to determine the batch size automatically
+            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
+            trainer: Your custom pytorch_lightning trainer
+
+        Example::
+
+            import backprop
+            
+            # Initialise a text vectorisation model
+            model = backprop.models.DistiluseBaseMultilingualCasedV2()
+
+            # Any text works as training data
+            inp = [("hello there", "hi there"), ("how are you", "where is my wallet?")]
+            scores = [1.0, 0.0]
+
+            # Finetune
+            model.finetune(inp, scores)
+        """
+
+        assert len(text_pairs) == len(similarity_scores), "Input list must match the output list"
+        OPTIMAL_BATCH_SIZE = 128
+
+        print("Processing data...")
+        dataset = zip(text_pairs, similarity_scores)
+        dataset = [self.encode(r, max_input_length) for r in dataset]
+
+        Finetunable.finetune(self, dataset)
 
 
 class TextGenerationModel(HuggingModel):

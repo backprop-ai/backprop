@@ -28,10 +28,11 @@ backprop.utils.upload
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+backprop.utils.functions
+------------------------
 
-.. automodule:: backprop.utils
+.. automodule:: backprop.utils.functions
    :members:
    :undoc-members:
    :show-inheritance:
+

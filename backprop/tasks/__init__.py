@@ -7,3 +7,4 @@ from .text_vectorisation import TextVectorisation
 from .text_generation import TextGeneration
 from .emotion import Emotion
 from .image_classification import ImageClassification
+from .image_vectorisation import ImageVectorisation

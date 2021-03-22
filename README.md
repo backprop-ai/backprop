@@ -1,37 +1,42 @@
-<h1 align="center">Backprop</h1>
+<h1 align="center">
+   <img src=".github/header.png" width="300" alt="Backprop"/>
+</h1>
 
 <p align="center">
    <a href="https://pypi.org/project/backprop/"><img src="https://img.shields.io/pypi/v/backprop"/></a> <img src="https://img.shields.io/pypi/pyversions/backprop"/> <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
 </p>
 
 <p align="center">
-Backprop is a Python library that makes it simple to solve AI tasks with state-of-the-art machine learning models.
+Backprop makes it simple to use, finetune, and deploy state-of-the-art ML models.
 </p>
-
-Backprop is built around solving tasks with transfer learning. It implements advanced models that are general enough to solve real world tasks with minimal data required from the user.
 
 <p align="center">
-   <img src=".github/example.png" width="700"/>
+   <img src=".github/example.png" width="600"/>
 </p>
+
+Solve a variety of tasks with pre-trained models or finetune them in one line for your own tasks.
 
 Out of the box tasks you can solve with Backprop:
 
-- Conversational question answering in English (for FAQ chatbots, text analysis, etc.)
-- Text Classification in 100+ languages (for email sorting, intent detection, etc.)
-- Image Classification (for object recognition, OCR, etc.)
-- Text Vectorisation in 50+ languages (semantic search for ecommerce, documentation, etc.)
-- Summarisation in English (TLDRs for long documents)
-- Emotion detection in English (for customer satisfaction, text analysis, etc.)
-- Text Generation (for idea, story generation and broad task solving)
+- Conversational question answering in English
+- Text Classification in 100+ languages
+- Image Classification
+- Text Vectorisation in 50+ languages
+- Image Vectorisation
+- Summarisation in English
+- Emotion detection in English
+- Text Generation
 
-For more specific use cases, you can adapt a task with little data and a few lines of code via finetuning. We are working to add finetuning to all our available tasks.
+For more specific use cases, you can adapt a task with little data and a single line of code via finetuning.
 
-You can run all tasks on your own machine, or in production with our optimised inference [API](https://backprop.co), where you only pay for usage. It includes all the tasks & models in our library, and allows you to upload your own finetuned models.
+You can run all tasks and models on your own machine, or in production with our inference [API](https://backprop.co).
 
-| ⚡ [Getting started](#getting-started)                                    | Installation, few minute introduction     |
-| :------------------------------------------------------------------------ | :---------------------------------------- |
-| 💡 [Examples](https://github.com/backprop-ai/backprop/tree/main/examples) | Sample problems solved using Backprop     |
-| 📙 [Docs](https://backprop.readthedocs.io/en/latest/)                     | In-depth documentation for advanced usage |
+Your finetuned models can be deployed in one line of code.
+
+| ⚡ [Getting started](#getting-started)                | Installation, few minute introduction             |
+| :---------------------------------------------------- | :------------------------------------------------ |
+| 💡 [Examples](#examples)                              | Finetuning and usage examples                     |
+| 📙 [Docs](https://backprop.readthedocs.io/en/latest/) | In-depth documentation about our tasks and models |
 
 ## Getting started
 
@@ -73,7 +78,7 @@ inp = ["I really liked the service I received!", "Meh, it was not impressive."]
 out = ["positive", "negative"]
 
 # Finetune with a single line of code
-tg.finetune(inp, out)
+tg.finetune({"input_text": inp, "output_text": out})
 
 # Use your trained model
 prediction = tg("I enjoyed it!")
@@ -106,7 +111,7 @@ backprop.upload(model, api_key="abc")
 
 3. There are an overwhelming amount of models
 
-   - We implement the best ones and make them simple to use
+   - We implement the best open-source and make them simple to use
    - A few general models can accomplish more with less optimisation
 
 4. Deploying models cost effectively is hard work
@@ -116,8 +121,17 @@ backprop.upload(model, api_key="abc")
 
 ## Examples
 
-Take a look at the [examples folder](https://github.com/backprop-ai/backprop/tree/main/examples).
+- Getting started with Finetuning ([Github](https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb), [Colab](https://colab.research.google.com/github/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb))
+- [Finetuning and task examples](https://github.com/backprop-ai/backprop/tree/main/examples)
 
 ## Documentation
 
 Check out our [docs](https://backprop.readthedocs.io/en/latest/).
+
+## Demos
+
+Zero-shot image classification with [CLIP](https://clip.backprop.co).
+
+## Feedback
+
+Found a bug or have ideas for new tasks and models? Open an [issue](https://github.com/backprop-ai/backprop/issues).

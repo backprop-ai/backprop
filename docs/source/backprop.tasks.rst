@@ -31,6 +31,16 @@ backprop.tasks.image\_classification
    :special-members: __call__
    :show-inheritance:
 
+.. _image-vectorisation:
+backprop.tasks.image\_vectorisation
+---------------------------------------
+
+.. automodule:: backprop.tasks.image_vectorisation
+   :members:
+   :undoc-members:
+   :special-members: __call__
+   :show-inheritance:
+
 backprop.tasks.qa
 --------------------
 
@@ -49,6 +59,7 @@ backprop.tasks.summarisation
    :special-members: __call__
    :show-inheritance:
 
+.. _text-classification:
 backprop.tasks.text\_classification
 --------------------------------------
 
@@ -68,6 +79,7 @@ backprop.tasks.text\_generation
    :special-members: __call__
    :show-inheritance:
 
+.. _text-vectorisation:
 backprop.tasks.text\_vectorisation
 -------------------------------------
 
