@@ -51,6 +51,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+html_theme_path = ["_themes"]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -61,6 +62,10 @@ html_logo = '_static/icon-gradient.svg'
 
 html_css_files = [
     'custom.css'
+]
+
+html_js_files = [
+    'custom.js'
 ]
 
 html_theme_options = {

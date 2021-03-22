@@ -2,3 +2,11 @@ img.logo {
     width:100px !important;
     height:100px !important;
 }
+
+a.icon-home {
+    font-size: 1.4em;
+}
+
+#github-button {
+    margin-bottom: .809em;
+}
