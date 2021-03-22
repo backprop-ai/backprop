@@ -31,6 +31,16 @@ backprop.tasks.image\_classification
    :special-members: __call__
    :show-inheritance:
 
+.. _image-vectorisation:
+backprop.tasks.image\_vectorisation
+---------------------------------------
+
+.. automodule:: backprop.tasks.image_vectorisation
+   :members:
+   :undoc-members:
+   :special-members: __call__
+   :show-inheritance:
+
 backprop.tasks.qa
 --------------------
 
