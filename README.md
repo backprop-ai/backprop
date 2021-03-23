@@ -1,5 +1,7 @@
 <h1 align="center">
-   <img src=".github/header.png" width="300" alt="Backprop"/>
+   <a href="https://backprop.co">
+      <img src=".github/header.png" width="300" alt="Backprop"/>
+   </a>
 </h1>
 
 <p align="center">
