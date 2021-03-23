@@ -136,6 +136,17 @@ Check out our [docs](https://backprop.readthedocs.io/en/latest/).
 
 Zero-shot image classification with [CLIP](https://clip.backprop.co).
 
+## Credits
+
+Backprop relies on many great libraries to work, most notably:
+
+* [PyTorch](https://github.com/pytorch/pytorch)
+* [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning)
+* [Transformers](https://github.com/huggingface/transformers)
+* [Sentence Transformers](https://github.com/UKPLab/sentence-transformers)
+* [EfficientNet PyTorch](https://github.com/lukemelas/EfficientNet-PyTorch)
+* [CLIP](https://github.com/openai/CLIP)
+
 ## Feedback
 
 Found a bug or have ideas for new tasks and models? Open an [issue](https://github.com/backprop-ai/backprop/issues).
