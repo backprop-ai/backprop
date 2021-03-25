@@ -59,7 +59,7 @@ class TextGeneration(Task):
                 or <1 for shorter ones. 
             num_beams (int): Number of beams to be used in beam search. Does a number of generations to pick the best one. (1: no beam search)
             num_generations (int): How many times to run generation. Results are returned as a list. 
-            do_sample (bool): Whether or not sampling strategies (teperature, top_k, top_p) should be used.
+            do_sample (bool): Whether or not sampling strategies (temperature, top_k, top_p) should be used.
 
         Example::
 
