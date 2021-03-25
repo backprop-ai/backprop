@@ -136,7 +136,7 @@ class CLIP(PathModel, Finetunable):
         return text
 
     def configure_optimizers(self):
-        return torch.optim.Adam(params=self.model.parameters(), lr=1e-3)
+        return torch.optim.Adam(params=self.model.parameters(), lr=1e-4)
 
     def common_step(self, batch, batch_idx):
         texts1, imgs1, texts2, imgs2, similarity_scores = batch
@@ -154,7 +154,7 @@ class CLIP(PathModel, Finetunable):
         img_text_vecs1_norm = img_text_vecs1 / img_text_vecs1.norm(dim=-1, keepdim=True)
         img_text_vecs2_norm = img_text_vecs2 / img_text_vecs2.norm(dim=-1, keepdim=True)
 
-        loss = torch.cosine_similarity(img_text_vecs1, img_text_vecs2)
+        loss = torch.cosine_similarity(img_text_vecs1_norm, img_text_vecs2_norm)
         loss = F.mse_loss(loss, similarity_scores.view(-1))
 
         return loss
@@ -178,7 +178,7 @@ class CLIP(PathModel, Finetunable):
         if task == "image-text-vectorisation":
             img_text_pairs1 = params["img_text_pairs1"]
             img_text_pairs2 = params["img_text_pairs2"]
-            similarity_scores = params["similiarity_scores"]
+            similarity_scores = params["similarity_scores"]
             assert len(img_text_pairs1) == len(img_text_pairs2) == len(similarity_scores), "The input lists must match"
             
             dataset = ImageTextPairDataset(img_text_pairs1, img_text_pairs2, similarity_scores,
