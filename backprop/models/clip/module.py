@@ -1,16 +1,21 @@
 import torch
+import torch.nn.functional as F
+import pytorch_lightning as pl
+
 from PIL import Image
 from typing import Union, List
 from functools import partial
 from . import clip, simple_tokenizer
-from backprop.models import PathModel
+from backprop.models import PathModel, Finetunable
+from backprop.utils import ImageTextPairDataset
 
 from io import BytesIO
 import base64
 
-class CLIP(PathModel):
+class CLIP(PathModel, Finetunable):
     def __init__(self, model_path="ViT-B/32", init_model=clip.load,
                 init_tokenizer=simple_tokenizer.SimpleTokenizer, device=None):
+        Finetunable.__init__(self)
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
@@ -129,3 +134,63 @@ class CLIP(PathModel):
             text = text[0]
 
         return text
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(params=self.model.parameters(), lr=1e-3)
+
+    def common_step(self, batch, batch_idx):
+        texts1, imgs1, texts2, imgs2, similarity_scores = batch
+
+        text_vecs1 = self.model.encode_text(texts1)
+        text_vecs2 = self.model.encode_text(texts2)
+        img_vecs1 = self.model.encode_image(imgs1)
+        img_vecs2 = self.model.encode_image(imgs2)
+
+        # Combine vecs
+        img_text_vecs1 = torch.cat([text_vecs1, img_vecs1], 1)
+        img_text_vecs2 = torch.cat([text_vecs2, img_vecs2], 1)
+
+        # Normalize
+        img_text_vecs1_norm = img_text_vecs1 / img_text_vecs1.norm(dim=-1, keepdim=True)
+        img_text_vecs2_norm = img_text_vecs2 / img_text_vecs2.norm(dim=-1, keepdim=True)
+
+        loss = torch.cosine_similarity(img_text_vecs1, img_text_vecs2)
+        loss = F.mse_loss(loss, similarity_scores.view(-1))
+
+        return loss
+
+    def training_step(self, batch, batch_idx):
+        loss = self.common_step(batch, batch_idx)
+
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        loss = self.common_step(batch, batch_idx)
+
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
+        return loss
+
+    def finetune(self, params,
+                 validation_split: float=0.15, epochs: int=20,
+                 batch_size: int=None, early_stopping: bool = True,
+                 trainer: pl.Trainer = None, task: str = "image-text-vectorisation"):
+        if task == "image-text-vectorisation":
+            img_text_pairs1 = params["img_text_pairs1"]
+            img_text_pairs2 = params["img_text_pairs2"]
+            similarity_scores = params["similiarity_scores"]
+            assert len(img_text_pairs1) == len(img_text_pairs2) == len(similarity_scores), "The input lists must match"
+            
+            dataset = ImageTextPairDataset(img_text_pairs1, img_text_pairs2, similarity_scores,
+                    self.transform, self.tokenizer)
+        else:
+            raise ValueError(f"Unsupported task: {task}")
+
+
+        OPTIMAL_BATCH_SIZE = 128
+
+        self.model.float()
+
+        Finetunable.finetune(self, dataset, validation_split=validation_split,
+            epochs=epochs, batch_size=batch_size, optimal_batch_size=OPTIMAL_BATCH_SIZE,
+            early_stopping=early_stopping, trainer=trainer)

@@ -1,4 +1,3 @@
-from backprop.models import BaseModel
 import dill
 import pkg_resources
 import os

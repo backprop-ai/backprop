@@ -1,2 +1,2 @@
-from .utils import save, load, upload, download, cosine_similarity
+from .utils import save, load, upload, download, cosine_similarity, ImageTextPairDataset
 from .tasks import Task, Emotion, ImageClassification, QA, Summarisation, TextClassification, TextGeneration, TextVectorisation, ImageVectorisation

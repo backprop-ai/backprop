@@ -1,11 +1,10 @@
 from . import save
-from backprop.models import BaseModel
 from zipfile import ZipFile
 import os
 import dill
 import requests
 
-def upload(model: BaseModel = None, path: str = None, api_key: str = None, save_path: str = None):
+def upload(model = None, path: str = None, api_key: str = None, save_path: str = None):
     """
     Deploys a model from object or path to Backprop. 
     Either the model or path to saved model must be provided.
