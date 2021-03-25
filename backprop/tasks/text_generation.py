@@ -41,26 +41,33 @@ class TextGeneration(Task):
                         default_api_model=DEFAULT_API_MODEL)
 
     
-    def __call__(self, text: Union[str, List[str]], min_length=None, max_length=None, temperature=None,
-                top_k=None, top_p=None, repetition_penalty=None, length_penalty=None,
-                num_beams=None, num_generations=None, do_sample=None):
-        """Generates text to continue off the given input.
+    def __call__(self, text: Union[str, List[str]], min_length: int = None, max_length: int = None, temperature: float = None,
+                top_k: int = None, top_p: float = None, repetition_penalty: float = None, length_penalty: float = None,
+                num_beams: int = None, num_generations: int = None, do_sample: bool = None):
+        """Generates text to continue from the given input.
 
         Args:
-            input_text: Text from which model will begin generating.
-            min_length: Minimum length of generation before EOS can be generated.
-            max_length: Maximum length of generated sequence.
-            temperature: Value that alters softmax probabilities.
-            top_k: Sampling strategy in which probabilities are redistributed among top k most-likely words.
-            top_p: Sampling strategy in which probabilities are distributed among 
-                set of words with combined probability greater than p.
-            repetition_penalty: Penalty to be applied to words present in the input_text and
-                words already generated in the sequence.
-            length_penalty: Penalty applied to overall sequence length. Set >1 for longer sequences,
+            input_text (string): Text from which the model will begin generating.
+            min_length (int): Minimum number of tokens to generate (1 token ~ 1 word).
+            max_length (int): Maximum number of tokens to generate (1 token ~ 1 word).
+            temperature (float): Value that alters the randomness of generation (0.0 is no randomness, higher values introduce randomness. 0.5 - 0.7 is a good starting point).
+            top_k (int): Only choose from the top_k tokens when generating (0 is no limit). 
+            top_p (float): Only choose from the top tokens with combined probability greater than top_p.
+            repetition_penalty (float): Penalty to be applied to tokens present in the input_text and
+                tokens already generated in the sequence (>1 discourages repetition while <1 encourages).
+            length_penalty (float): Penalty applied to overall sequence length. Set >1 for longer sequences,
                 or <1 for shorter ones. 
-            num_beams: Number of beams to be used in beam search. (1: no beam search)
-            num_generations: How many times to run generation. 
-            do_sample: Whether or not sampling strategies (top_k & top_p) should be used.
+            num_beams (int): Number of beams to be used in beam search. Does a number of generations to pick the best one. (1: no beam search)
+            num_generations (int): How many times to run generation. Results are returned as a list. 
+            do_sample (bool): Whether or not sampling strategies (teperature, top_k, top_p) should be used.
+
+        Example::
+
+            import backprop
+
+            tg = backprop.TextGeneration()
+            tg("Geralt knew the sings, the monster was a", min_length=20, max_length=50, temperature=0.7)
+            > "Geralt knew the sings, the monster was a real danger, and he was the only one in the village who knew how to defend himself."
         """
         params = [("text", text), ("min_length", min_length), ("max_length", max_length),
                 ("temperature", temperature), ("top_k", top_k), ("top_p", top_p),

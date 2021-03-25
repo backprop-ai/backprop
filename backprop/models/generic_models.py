@@ -336,6 +336,12 @@ class TextGenerationModel(HuggingModel):
                 do_sample = True
                 break
 
+        if "temperature" in kwargs:
+            # No sampling
+            if kwargs["temperature"] == 0.0:
+                do_sample = False
+                del kwargs["temperature"]
+
         # Override, name correctly
         if "num_generations" in kwargs:
             if kwargs["num_generations"] != None:

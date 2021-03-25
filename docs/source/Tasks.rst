@@ -26,7 +26,10 @@ Q&A answers a question based on a paragraph of text. It also supports previous q
     qa("Where does Sally live?", "Sally lives in London.")
     "London"
 
+
 See the `Q&A Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Q%26A.ipynb>`_ examples with code.
+
+See the :ref:`Q&A Task Reference <qa>`.
 
 Text Classification
 ^^^^^^^^^^^^^^^^^^^
@@ -45,6 +48,8 @@ It is supported in 100+ languages: Afrikaans, Albanian, Amharic, Arabic, Armenia
 
 Check the example `Text Classification Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/TextClassification.ipynb>`_ with code.
 
+See the :ref:`Text Classification Task Reference <text-classification>`.
+
 Sentiment Detection
 ^^^^^^^^^^^^^^^^^^^
 This is exactly what it says on the tin: analyzes emotional sentiment of some provided text input. 
@@ -62,6 +67,8 @@ Use is simple: just pass in a string of text, and get back an emotion or list of
 
 See `Sentiment Detection Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Sentiment.ipynb>`_ with code.
 
+See the :ref:`Emotion Task Reference <emotion>`.
+
 Text Summarisation
 ^^^^^^^^^^^^^^^^^^
 Also self-explanatory: takes a chunk of input text, and gives a summary of key information.
@@ -76,6 +83,8 @@ Also self-explanatory: takes a chunk of input text, and gives a summary of key i
     "short summary of document"
 
 See the example for `Text Summarisation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Summarisation.ipynb>`_ with code.
+
+See the :ref:`Text Summarisation Task Reference <summarisation>`.
 
 Image Classification
 ^^^^^^^^^^^^^^^^^^^^
@@ -93,6 +102,8 @@ It takes an image and a set of labels to calculate the probabilities for each la
     {"cat": 0.01, "dog": 0.99}
 
 Check the example `Image Classification Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/ImageClassification.ipynb>`_ with code.
+
+See the :ref:`Image Classification Task Reference <image-classification>`.
 
 Image Vectorisation
 ^^^^^^^^^^^^^^^^^^^
@@ -112,6 +123,8 @@ This makes it possible to compare different images numerically.
 
 Check the example `Image Vectorisation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/ImageVectorisation.ipynb>`_ with code.
 
+See the :ref:`Image Vectorisation Task Reference <image-vectorisation>`.
+
 Text Generation
 ^^^^^^^^^^^^^^^
 
@@ -129,6 +142,8 @@ This is useful for story/idea generation or solving a broad range of tasks.
     " the beach because I love the sun."
 
 Check the example `Text Generation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/TextGeneration.ipynb>`_ with code.
+
+See the :ref:`Text Generation Task Reference <text-generation>`.
 
 Text Vectorisation
 ^^^^^^^^^^^^^^^^^^
@@ -148,3 +163,5 @@ You could see how similar the vectors of two different paragraphs are, to group 
     [0.92949192, 0.23123010, ...]
 
 Check the example `Text Vectorisation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/TextVectorisation.ipynb>`_ with code.
+
+See the :ref:`Text Vectorisation Task Reference <text-vectorisation>`.
