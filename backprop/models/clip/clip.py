@@ -135,7 +135,7 @@ def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_a
     return model, _transform(model.input_resolution.item())
 
 
-def tokenize(tokenizer, texts: Union[str, List[str]], context_length: int = 77):
+def tokenize(tokenizer, texts: Union[str, List[str]], context_length: int = 77, truncation=True):
     if isinstance(texts, str):
         texts = [texts]
 
@@ -145,6 +145,9 @@ def tokenize(tokenizer, texts: Union[str, List[str]], context_length: int = 77):
     result = torch.zeros(len(all_tokens), context_length, dtype=torch.long)
 
     for i, tokens in enumerate(all_tokens):
+        if truncation == True:
+            tokens = tokens[:context_length]
+
         if len(tokens) > context_length:
             raise RuntimeError(f"Input {texts[i]} is too long for context length {context_length}")
         result[i, :len(tokens)] = torch.tensor(tokens)

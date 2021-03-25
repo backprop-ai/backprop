@@ -1,6 +1,7 @@
 import torch
 from PIL import Image
 from typing import Union, List
+from functools import partial
 from . import clip, simple_tokenizer
 from backprop.models import PathModel
 
@@ -24,7 +25,8 @@ class CLIP(PathModel):
 
         # Initialise
         self.model, self.transform = self.init_model(model_path, device=self._model_device)
-        self.tokenizer = self.init_tokenizer()
+        tokenizer = self.init_tokenizer()
+        self.tokenizer = partial(clip.tokenize, tokenizer)
             
     def __call__(self, task_input, task="image-classification"):
         if task == "image-classification":
@@ -65,7 +67,7 @@ class CLIP(PathModel):
             image = BytesIO(base64.b64decode(image_base64))
 
             image = self.transform(Image.open(image)).unsqueeze(0).to(self._model_device)
-            text = clip.tokenize(self.tokenizer, labels).to(self._model_device)
+            text = self.tokenizer(labels).to(self._model_device)
             
             logits_per_image, logits_per_text = self.model(image, text)
             probs = logits_per_image.softmax(dim=-1).cpu().numpy().tolist()[0]
@@ -119,7 +121,7 @@ class CLIP(PathModel):
         if not is_list:
             text = [text]
 
-        text = clip.tokenize(self.tokenizer, text).to(self._model_device)
+        text = self.tokenizer(text).to(self._model_device)
 
         text = self.model.encode_text(text).tolist()
 
