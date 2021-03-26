@@ -7,7 +7,7 @@ from typing import Union, List
 from functools import partial
 from . import clip, simple_tokenizer
 from backprop.models import PathModel, Finetunable
-from backprop.utils import ImageTextPairDataset
+from backprop.utils import ImageTextPairDataset, base64_to_img
 
 from io import BytesIO
 import base64
@@ -33,45 +33,92 @@ class CLIP(PathModel, Finetunable):
         tokenizer = self.init_tokenizer()
         self.tokenizer = partial(clip.tokenize, tokenizer)
             
-    def __call__(self, task_input, task="image-classification"):
+    def __call__(self, task_input, task="image-classification", return_tensor=False):
+        output = None
+        is_list = False
+        
         if task == "image-classification":
-            image_base64 = task_input.get("image")
+            image = task_input.get("image")
             labels = task_input.get("labels")
 
-            return self.image_classification(image_base64=image_base64, labels=labels)
+            image = base64_to_img(image)
+
+            if type(image) == list:
+                is_list = True
+            else:
+                image = [image]
+                labels = [labels]
+            
+            assert len(image) == len(labels), "images and labels lists must be the same size"
+
+            output = self.image_classification(image=image, labels=labels)
+
         elif task == "image-vectorisation":
-            image_base64 = task_input.get("image")
-            return self.image_vectorisation(image_base64=image_base64) 
+            image = task_input.get("image")
+            image = base64_to_img(image)
+
+            if type(image) == list:
+                is_list = True
+            else:
+                image = [image]
+
+            img_vecs = self.image_vectorisation(image=image) 
+
+            if not return_tensor:
+                img_vecs = img_vecs.tolist()
+
+            output = img_vecs
+
         elif task == "text-vectorisation":
             text = task_input.get("text")
-            return self.text_vectorisation(text=text) 
 
-    @torch.no_grad()
-    def image_classification(self, image_base64: Union[str, List[str]], labels: Union[List[str], List[List[str]]]):
-        # TODO: Proper batching
-        is_list = False
+            if type(text) == list:
+                is_list = True
+            else:
+                text = [text]
 
-        if type(image_base64) == list:
-            is_list = True
+            text_vecs = self.text_vectorisation(text=text) 
+
+            if not return_tensor:
+                text_vecs = text_vecs.tolist()
+
+            output = text_vecs
+        
+        elif task == "image-text-vectorisation":
+            image = task_input.get("image")
+            text = task_input.get("text")
+
+            if type(image) == list:
+                is_list = True
+            else:
+                image = [image]
+                text = [text]
+
+            assert len(image) == len(text), "image and text lists must be the same size"
+
+            img_text_vecs = self.image_text_vectorisation(image, text)
+
+            if not return_tensor:
+                img_text_vecs = img_text_vecs.tolist()
+            
+            output = img_text_vecs
 
         if not is_list:
-            image_base64 = [image_base64]
-            labels = [labels]
+            output = output[0]
 
-        assert len(image_base64) == len(labels), "images and labels lists must be the same size"
+        return output
+
+    @torch.no_grad()
+    def image_classification(self, image: List[Image.Image], labels: List[List[str]]):
+        # TODO: Proper batching
         
-        inputs = zip(image_base64, labels)
+        inputs = zip(image, labels)
+
         probabilities = []
+        for image, labels in inputs:
 
-        for image_base64, labels in inputs:
+            image = self.transform(image.unsqueeze(0)).to(self._model_device)
 
-            # Not bytes
-            if type(image_base64) == str:
-                image_base64 = image_base64.split(",")[-1]
-
-            image = BytesIO(base64.b64decode(image_base64))
-
-            image = self.transform(Image.open(image)).unsqueeze(0).to(self._model_device)
             text = self.tokenizer(labels).to(self._model_device)
             
             logits_per_image, logits_per_text = self.model(image, text)
@@ -80,60 +127,34 @@ class CLIP(PathModel, Finetunable):
             label_probs = zip(labels, probs)
             probabilities.append({lp[0]: lp[1] for lp in label_probs})
 
-        if is_list == False:
-            probabilities = probabilities[0]
-
         return probabilities
 
     @torch.no_grad()
-    def image_vectorisation(self, image_base64: Union[str, List[str]]):
-        is_list = False
+    def image_vectorisation(self, image: List[Image.Image]):
+        image = [self.transform(img) for img in image]
+        image = torch.stack(image).to(self._model_device)
 
-        if type(image_base64) == list:
-            is_list = True
-
-        if not is_list:
-            image_base64 = [image_base64]
-
-        images = []
-
-        for image in image_base64:
-            # Not bytes
-            if type(image) == str:
-                image = image.split(",")[-1]
-
-            image = BytesIO(base64.b64decode(image))
-            image = Image.open(image)
-            image = self.transform(image)
-            images.append(image)
-
-        images = torch.stack(images).to(self._model_device)
-
-        image_features = self.model.encode_image(images).tolist()
-
-        if is_list == False:
-            image_features = image_features[0]
+        image_features = self.model.encode_image(image)
 
         return image_features
 
     @torch.no_grad()
-    def text_vectorisation(self, text: Union[str, List[str]]):
-        is_list = False
-
-        if type(text) == list:
-            is_list = True
-
-        if not is_list:
-            text = [text]
-
+    def text_vectorisation(self, text: List[str]):
         text = self.tokenizer(text).to(self._model_device)
 
-        text = self.model.encode_text(text).tolist()
-
-        if is_list == False:
-            text = text[0]
+        text = self.model.encode_text(text)
 
         return text
+
+    @torch.no_grad()
+    def image_text_vectorisation(self, image: List[Image.Image], text: List[str]):
+        image_vecs = self.image_vectorisation(image)
+        text_vecs = self.text_vectorisation(text)
+
+        img_text_vecs = torch.cat([text_vecs, image_vecs], 1)
+        img_text_vecs /= img_text_vecs.norm(dim=-1, keepdim=True)
+
+        return img_text_vecs
 
     def configure_optimizers(self):
         return torch.optim.Adam(params=self.model.parameters(), lr=1e-4)

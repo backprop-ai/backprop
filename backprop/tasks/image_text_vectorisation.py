@@ -1,13 +1,13 @@
 from typing import List, Tuple, Union
 from .base import Task
 from backprop.models import CLIP, BaseModel
+from backprop.utils import path_to_img, img_to_base64
 import base64
 from PIL import Image
 from io import BytesIO
+import torch
 
 import requests
-from backprop.utils import img_to_base64, path_to_img
-import torch
 
 DEFAULT_LOCAL_MODEL = CLIP
 
@@ -21,9 +21,9 @@ API_MODELS = ["clip"]
 
 FINETUNABLE_MODELS = []
 
-class ImageVectorisation(Task):
+class ImageTextVectorisation(Task):
     """
-    Task for text vectorisation.
+    Task for combined imag-text vectorisation.
 
     Attributes:
         model:
@@ -43,43 +43,44 @@ class ImageVectorisation(Task):
                         default_local_model=DEFAULT_LOCAL_MODEL,
                         default_api_model=DEFAULT_API_MODEL)
     
-    def __call__(self, image: Union[Union[str, Image.Image], Union[List[str], List[Image.Image]]],
-                return_tensor=False):
-        """Vectorise input image.
+    def __call__(self, image: Union[str, List[str]], text: Union[str, List[str]], return_tensor=False):
+        """Vectorise input image and text pairs.
 
         Args:
             image: image or list of images to vectorise. Can be both PIL Image objects or paths to images.
+            text: text or list of text to vectorise. Must match image ordering.
 
         Returns:
             Vector or list of vectors
         """
-        is_list = False
-
         vector = None
         image = path_to_img(image)
 
         if self.local:
 
             task_input = {
-                "image": image
+                "image": image,
+                "text": text
             }
-            vector = self.model(task_input, task="image-vectorisation",
+            vector = self.model(task_input, task="image-text-vectorisation",
                                 return_tensor=return_tensor)
         else:
-            image = img_to_base64(image)
+            raise NotImplementedError("This task is not yet implemented in the API")
 
-            body = {
-                "image": image,
-                "model": self.model
-            }
+            # image = img_to_base64(image)
 
-            res = requests.post("https://api.backprop.co/image-vectorisation", json=body,
-                                headers={"x-api-key": self.api_key}).json()
+            # body = {
+            #     "image": image,
+            #     "model": self.model
+            # }
 
-            if res.get("message"):
-                raise Exception(f"Failed to make API request: {res['message']}")
+            # res = requests.post("https://api.backprop.co/image-vectorisation", json=body,
+            #                     headers={"x-api-key": self.api_key}).json()
 
-            vector = res["vector"]
+            # if res.get("message"):
+            #     raise Exception(f"Failed to make API request: {res['message']}")
+
+            # vector = res["vector"]
 
         if return_tensor and not isinstance(vector, torch.Tensor):
             vector = torch.tensor(vector)

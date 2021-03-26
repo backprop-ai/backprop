@@ -3,6 +3,7 @@ from .base import Task
 from backprop.models import MSMARCODistilrobertaBaseV2, DistiluseBaseMultilingualCasedV2, CLIP, BaseModel
 
 import requests
+import torch
 
 DEFAULT_LOCAL_MODEL = MSMARCODistilrobertaBaseV2
 
@@ -40,7 +41,7 @@ class TextVectorisation(Task):
                         default_local_model=DEFAULT_LOCAL_MODEL,
                         default_api_model=DEFAULT_API_MODEL)
     
-    def __call__(self, text: Union[str, List[str]]):
+    def __call__(self, text: Union[str, List[str]], return_tensor=False):
         """Vectorise input text.
 
         Args:
@@ -49,11 +50,13 @@ class TextVectorisation(Task):
         Returns:
             Vector or list of vectors
         """
+        vector = None
+
         if self.local:
             task_input = {
                 "text": text
             }
-            return self.model(task_input, task="text-vectorisation")
+            vector = self.model(task_input, task="text-vectorisation")
         else:
             body = {
                 "text": text,
@@ -66,7 +69,12 @@ class TextVectorisation(Task):
             if res.get("message"):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
-            return res["vector"]
+            vector = res["vector"]
+        
+        if return_tensor and not isinstance(vector, torch.Tensor):
+            vector = torch.tensor(vector)
+
+        return vector
 
     def finetune(self, *args, **kwargs):
         """
