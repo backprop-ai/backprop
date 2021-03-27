@@ -157,7 +157,7 @@ class CLIP(PathModel, Finetunable):
         return img_text_vecs
 
     def configure_optimizers(self):
-        return torch.optim.Adam(params=self.model.parameters(), lr=1e-4)
+        return torch.optim.AdamW(params=self.model.parameters(), lr=1e-5)
 
     def common_step(self, batch, batch_idx):
         texts1, imgs1, texts2, imgs2, similarity_scores = batch
