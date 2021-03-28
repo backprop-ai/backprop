@@ -35,6 +35,7 @@ class BaseModel:
     def to(self, device):
         self.model.to(device)
         self._model_device = device
+        return self
 
     # def set_name(self, name: str):
 
