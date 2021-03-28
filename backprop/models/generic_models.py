@@ -1,7 +1,7 @@
 from typing import List, Tuple
 from transformers import AutoModelForPreTraining, AutoTokenizer, \
     AutoModelForSequenceClassification, AdamW
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from sentence_transformers import SentenceTransformer
 from functools import partial
 import os
@@ -48,19 +48,28 @@ class Finetunable(pl.LightningModule):
 
         self.batch_size = 1
 
-    def finetune(self, dataset, validation_split: float = 0.15, epochs: int = 20, batch_size: int = None,
+    def finetune(self, dataset, validation_split: float = 0.15, train_idx: List[int] = None,
+                val_idx: List[int] = None, epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping: bool = True, trainer = None):
         self.batch_size = batch_size or 1
 
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")
         
-        len_train = int(len(dataset) * (1 - validation_split))
-        len_valid = len(dataset) - len_train
-        dataset_train, dataset_valid = torch.utils.data.random_split(dataset, [len_train, len_valid])
+        dataset_train = None
+        dataset_valid = None
 
-        self.dataset_train = dataset_train
-        self.dataset_valid = dataset_valid
+        if train_idx and val_idx:
+            dataset_train = Subset(dataset, train_idx)
+            dataset_valid = Subset(dataset, val_idx)
+        else:
+            len_train = int(len(dataset) * (1 - validation_split))
+            len_valid = len(dataset) - len_train
+            dataset_train, dataset_valid = torch.utils.data.random_split(dataset, [len_train, len_valid])
+
+        if not hasattr(self, "dataset_train") and not hasattr(self, "dataset_valid"):
+            self.dataset_train = dataset_train
+            self.dataset_valid = dataset_valid
 
         if batch_size == None:
             # Find batch size
@@ -105,12 +114,14 @@ class Finetunable(pl.LightningModule):
     def train_dataloader(self):
         return DataLoader(self.dataset_train,
             batch_size=self.batch_size,
-            num_workers=os.cpu_count() or 0)
+            num_workers=os.cpu_count() or 0,
+            sampler=self.dl_sampler(self.dataset_train) or None)
 
     def val_dataloader(self):
         return DataLoader(self.dataset_valid,
             batch_size=self.batch_size,
-            num_workers=os.cpu_count() or 0)
+            num_workers=os.cpu_count() or 0,
+            sampler=self.dl_sampler(self.dataset_valid) or None)
     
     def configure_optimizers(self):
         raise NotImplementedError("configure_optimizers must be implemented")

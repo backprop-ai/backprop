@@ -31,3 +31,25 @@ class ImageTextPairDataset(Dataset):
         similarity_scores = torch.tensor(self.similarity_scores[idx])
 
         return texts1, imgs1, texts2, imgs2, similarity_scores
+
+class ImageTextGroupDataset(Dataset):
+    def __init__(self, images, texts, groups, transform_img, tokenize_text):
+        super().__init__()
+
+        self.images = images
+        self.texts = texts
+        self.groups = groups
+
+        self.transform_img = transform_img
+        self.tokenize_text = tokenize_text
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        image = self.transform_img(Image.open(self.images[idx])).squeeze(0)
+        text = self.tokenize_text(self.texts[idx]).squeeze(0)
+
+        group = torch.tensor(self.groups[idx])
+
+        return image, text, group

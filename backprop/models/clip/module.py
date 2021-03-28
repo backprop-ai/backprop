@@ -1,16 +1,22 @@
 import torch
 import torch.nn.functional as F
+from torch.utils.data.sampler import Sampler
 import pytorch_lightning as pl
+import numpy as np
 
 from PIL import Image
 from typing import Union, List
 from functools import partial
 from . import clip, simple_tokenizer
 from backprop.models import PathModel, Finetunable
-from backprop.utils import ImageTextPairDataset, base64_to_img
+from backprop.utils import ImageTextGroupDataset, base64_to_img
+from backprop.utils.losses import TripletLoss
 
 from io import BytesIO
 import base64
+import random
+from torch.utils.data.dataloader import DataLoader
+import os
 
 class CLIP(PathModel, Finetunable):
     def __init__(self, model_path="ViT-B/32", init_model=clip.load,
@@ -23,7 +29,7 @@ class CLIP(PathModel, Finetunable):
 
         self.name = "clip"
         self.description = "OpenAI's recently released CLIP model — when supplied with a list of labels and an image, CLIP can accurately predict which labels best fit the provided image."
-        self.tasks = ["image-classification", "image-vectorisation", "text-vectorisation"]
+        self.tasks = ["image-classification", "image-vectorisation", "text-vectorisation", "image-text-vectorisation"]
 
         if self._model_device is None:
             self._model_device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -151,7 +157,7 @@ class CLIP(PathModel, Finetunable):
         image_vecs = self.image_vectorisation(image)
         text_vecs = self.text_vectorisation(text)
 
-        img_text_vecs = torch.cat([text_vecs, image_vecs], 1)
+        img_text_vecs = torch.cat([image_vecs, text_vecs], 1)
         img_text_vecs /= img_text_vecs.norm(dim=-1, keepdim=True)
 
         return img_text_vecs
@@ -160,23 +166,18 @@ class CLIP(PathModel, Finetunable):
         return torch.optim.AdamW(params=self.model.parameters(), lr=1e-5)
 
     def common_step(self, batch, batch_idx):
-        texts1, imgs1, texts2, imgs2, similarity_scores = batch
+        image, text, group = batch
 
-        text_vecs1 = self.model.encode_text(texts1)
-        text_vecs2 = self.model.encode_text(texts2)
-        img_vecs1 = self.model.encode_image(imgs1)
-        img_vecs2 = self.model.encode_image(imgs2)
+        img_vecs = self.model.encode_image(image)
+        text_vecs = self.model.encode_text(text)
 
         # Combine vecs
-        img_text_vecs1 = torch.cat([text_vecs1, img_vecs1], 1)
-        img_text_vecs2 = torch.cat([text_vecs2, img_vecs2], 1)
+        img_text_vecs = torch.cat([img_vecs, text_vecs], 1)
 
         # Normalize
-        img_text_vecs1_norm = img_text_vecs1 / img_text_vecs1.norm(dim=-1, keepdim=True)
-        img_text_vecs2_norm = img_text_vecs2 / img_text_vecs2.norm(dim=-1, keepdim=True)
+        img_text_vecs_norm = img_text_vecs / img_text_vecs.norm(dim=-1, keepdim=True)
 
-        loss = torch.cosine_similarity(img_text_vecs1_norm, img_text_vecs2_norm)
-        loss = F.mse_loss(loss, similarity_scores.view(-1))
+        loss = self.criterion(img_text_vecs_norm, group)
 
         return loss
 
@@ -192,21 +193,55 @@ class CLIP(PathModel, Finetunable):
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
         return loss
 
+    def train_dataloader(self):
+        return DataLoader(self.dataset_train,
+            batch_size=self.batch_size,
+            num_workers=os.cpu_count() or 0,
+            sampler=self.dl_sampler(self.dataset_train) or None)
+
+    def val_dataloader(self):
+        return DataLoader(self.dataset_valid,
+            batch_size=self.batch_size,
+            num_workers=os.cpu_count() or 0,
+            sampler=self.dl_sampler(self.dataset_valid) or None)
+
     def finetune(self, params,
-                 validation_split: float=0.15, epochs: int=20,
+                 validation_split: float=0.15, train_idx: List[int] = None,
+                 val_idx: List[int] = None, epochs: int=20,
                  batch_size: int=None, early_stopping: bool = True,
                  trainer: pl.Trainer = None, task: str = "image-text-vectorisation"):
         if task == "image-text-vectorisation":
-            img_text_pairs1 = params["img_text_pairs1"]
-            img_text_pairs2 = params["img_text_pairs2"]
-            similarity_scores = params["similarity_scores"]
-            assert len(img_text_pairs1) == len(img_text_pairs2) == len(similarity_scores), "The input lists must match"
+            images = params["images"]
+            texts = params["texts"]
+            groups = params["groups"]
+            assert len(images) == len(texts) == len(groups), "The input lists must match"
             
-            dataset = ImageTextPairDataset(img_text_pairs1, img_text_pairs2, similarity_scores,
+            if train_idx and val_idx:
+                dataset_train = ImageTextGroupDataset(
+                    [images[i] for i in train_idx],
+                    [texts[i] for i in train_idx],
+                    [groups[i] for i in train_idx],
+                    self.transform,
+                    self.tokenizer
+                )
+
+                dataset_valid = ImageTextGroupDataset(
+                    [images[i] for i in val_idx],
+                    [texts[i] for i in val_idx],
+                    [groups[i] for i in val_idx],
+                    self.transform,
+                    self.tokenizer
+                )
+
+                self.dataset_train = dataset_train
+                self.dataset_valid = dataset_valid
+
+            dataset = ImageTextGroupDataset(images, texts, groups,
                     self.transform, self.tokenizer)
+            self.dl_sampler = SameGroupSampler
+            self.criterion = TripletLoss(self._model_device)
         else:
             raise ValueError(f"Unsupported task: {task}")
-
 
         OPTIMAL_BATCH_SIZE = 128
 
@@ -215,3 +250,45 @@ class CLIP(PathModel, Finetunable):
         Finetunable.finetune(self, dataset, validation_split=validation_split,
             epochs=epochs, batch_size=batch_size, optimal_batch_size=OPTIMAL_BATCH_SIZE,
             early_stopping=early_stopping, trainer=trainer)
+
+class SameGroupSampler(Sampler):
+    def __init__(self, dataset):
+        super().__init__(dataset)
+
+        groups = dataset.groups
+
+        items = zip(list(range(len(groups))), groups)
+
+        item_to_group = {}
+        group_to_items = {}
+
+        for idx, group in items:
+            item_to_group[idx] = group
+
+            if group not in group_to_items:
+                group_to_items[group] = [idx]
+            else:
+                group_to_items[group].append(idx)
+
+        self.groups = set(groups)
+        self.item_to_group = item_to_group
+        self.group_to_items = group_to_items
+        
+    def __len__(self):
+        return len(self.groups)
+        
+    def __iter__(self):
+        for _ in range(len(self)):
+            # Sample one group
+            group_sample = random.sample(self.groups, 1)[0]
+            
+            items = self.group_to_items[group_sample]
+            replace = False
+            if len(items) < 2:
+                replace = True
+
+            # Sample two ids
+            sample1, sample2 = np.random.choice(items, 2, replace=replace)
+            
+            yield sample1
+            yield sample2
