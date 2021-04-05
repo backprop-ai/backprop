@@ -111,7 +111,7 @@ class EfficientNet(PathModel, Finetunable):
 
     def configure_optimizers(self):
         return torch.optim.SGD(params=self.model.parameters(), lr=1e-1, weight_decay=1e-4)
-
+    
     def training_step(self, batch, batch_idx):
         inputs, targets = batch
         outputs = self.model(inputs)

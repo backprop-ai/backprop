@@ -12,7 +12,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.utilities.memory import garbage_collection_cuda
 
-class BaseModel:
+class BaseModel(torch.nn.Module):
     """
     The base class for a model.
     
@@ -21,6 +21,7 @@ class BaseModel:
             Must be callable.
     """
     def __init__(self, model, name: str = None, description: str = None, tasks: List[str] = None):
+        torch.nn.Module.__init__(self)
         self.model = model
         self.name = name or "base-model"
         self.description = description or "This is the base description. Change me."
@@ -35,6 +36,14 @@ class BaseModel:
     def to(self, device):
         self.model.to(device)
         self._model_device = device
+        return self
+
+    def train(self, mode: bool = True):
+        self.model.train(mode)
+        return self
+
+    def eval(self):
+        self.model.eval()
         return self
 
     # def set_name(self, name: str):
