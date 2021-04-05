@@ -136,8 +136,8 @@ class CLIP(BaseModel):
             else:
                 is_list = True
 
-            # with torch.set_grad_enabled(train):
-            img_text_vecs = self.image_text_vectorisation(image, text)
+            with torch.set_grad_enabled(train):
+                img_text_vecs = self.image_text_vectorisation(image, text)
 
             if not return_tensor:
                 img_text_vecs = img_text_vecs.tolist()
