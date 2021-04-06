@@ -105,6 +105,40 @@ class TextGeneration(Task):
                 optimal_batch_size: int = None, early_stopping_epochs: int = 1,
                 train_dataloader = None, val_dataloader = None, step = None,
                 optimizer = None):
+        """
+        TODO: Update
+        Finetunes the model's text-generation task.
+        
+        Note:
+            input_text and output_text in params must have matching ordering (item 1 of input must match item 1 of output)
+
+        Args:
+            params: Dictionary of model inputs. Contains 'input_text' and 'output_text' for generation, summarisation, and emotion.
+                    QA requires specifically formatted input: see QA task's finetuning function for more details.
+            max_input_length: Maximum number of tokens (1 token ~ 1 word) in input. Anything higher will be truncated. Max 512.
+            max_output_length: Maximum number of tokens (1 token ~ 1 word) in output. Anything higher will be truncated. Max 512.
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
+            epochs: Integer that specifies how many iterations of training to do
+            batch_size: Leave as None to determine the batch size automatically
+            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
+            trainer: Your custom pytorch_lightning trainer
+            task: Task on which finetuning will occur. Must be in ["text-generation", "summarisation", "emotion", "qa"]
+
+        Examples::
+
+            import backprop
+            
+            # Initialise model
+            model = backprop.models.T5()
+
+            # Any text works as training data
+            inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+            out = ["positive", "negative"]
+            params = {"input_text": inp, "output_text": out}
+
+            # Finetune
+            model.finetune(params)
+        """
         input_text = params["input_text"]
         output_text = params["output_text"]
         assert len(input_text) == len(output_text), "The input lists must match"
