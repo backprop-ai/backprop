@@ -41,6 +41,7 @@ class CLIP(BaseModel):
         self.process_text = self.tokenizer
         self.process_image = self.transform
         self.optimal_batch_size = 128
+        self.pre_finetuning = self.model.float
             
     def __call__(self, task_input, task="image-classification", return_tensor=False, preprocess=True, train=False):
         output = None
