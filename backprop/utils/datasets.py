@@ -32,6 +32,53 @@ class ImageTextPairDataset(Dataset):
 
         return texts1, imgs1, texts2, imgs2, similarity_scores
 
+class ImagePairDataset(Dataset):
+    def __init__(self, imgs1, imgs2, similarity_scores,
+                transform_img):
+        super().__init__()
+
+        self.imgs1 = imgs1
+        self.imgs2 = imgs2
+
+        self.similarity_scores = similarity_scores
+
+        self.transform_img = transform_img
+
+    def __len__(self):
+        return len(self.similarity_scores)
+    
+    def __getitem__(self, idx):
+
+        imgs1 = self.transform_img(Image.open(self.imgs1[idx])).squeeze(0)
+        imgs2 = self.transform_img(Image.open(self.imgs2[idx])).squeeze(0)
+
+        similarity_scores = torch.tensor(self.similarity_scores[idx])
+
+        return imgs1, imgs2, similarity_scores
+
+class TextPairDataset(Dataset):
+    def __init__(self, texts1, texts2, similarity_scores,
+                tokenize_text):
+        super().__init__()
+
+        self.texts1 = texts1
+        self.texts2 = texts2
+
+        self.similarity_scores = similarity_scores
+
+        self.tokenize_text = tokenize_text
+
+    def __len__(self):
+        return len(self.similarity_scores)
+    
+    def __getitem__(self, idx):
+        texts1 = self.tokenize_text(self.texts1[idx]).squeeze(0)
+        texts2 = self.tokenize_text(self.texts2[idx]).squeeze(0)
+        
+        similarity_scores = torch.tensor(self.similarity_scores[idx])
+
+        return texts1, texts2, similarity_scores
+
 class ImageTextGroupDataset(Dataset):
     def __init__(self, images, texts, groups, transform_img, tokenize_text):
         super().__init__()
@@ -53,3 +100,41 @@ class ImageTextGroupDataset(Dataset):
         group = torch.tensor(self.groups[idx])
 
         return image, text, group
+
+class ImageGroupDataset(Dataset):
+    def __init__(self, images, groups, transform_img):
+        super().__init__()
+
+        self.images = images
+        self.groups = groups
+
+        self.transform_img = transform_img
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        image = self.transform_img(Image.open(self.images[idx])).squeeze(0)
+
+        group = torch.tensor(self.groups[idx])
+
+        return image, group
+
+class TextGroupDataset(Dataset):
+    def __init__(self, images, texts, groups, transform_img, tokenize_text):
+        super().__init__()
+
+        self.texts = texts
+        self.groups = groups
+
+        self.tokenize_text = tokenize_text
+
+    def __len__(self):
+        return len(self.texts)
+
+    def __getitem__(self, idx):
+        text = self.tokenize_text(self.texts[idx]).squeeze(0)
+
+        group = torch.tensor(self.groups[idx])
+
+        return text, group

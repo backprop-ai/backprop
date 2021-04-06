@@ -4,6 +4,7 @@ from backprop.models import CLIP, BaseModel
 from backprop.utils import path_to_img, img_to_base64
 from backprop.utils import ImageTextGroupDataset, base64_to_img, ImageTextPairDataset
 from backprop.utils.losses import TripletLoss
+from backprop.utils.samplers import SameGroupSampler
 import base64
 from PIL import Image
 from io import BytesIO
@@ -13,7 +14,6 @@ import random
 import requests
 import torch.nn.functional as F
 from torch.utils.data.dataloader import DataLoader
-from torch.utils.data.sampler import Sampler
 import os
 import numpy as np
 
@@ -210,46 +210,3 @@ class ImageTextVectorisation(Task):
                     train_dataloader=train_dataloader,
                     val_dataloader=val_dataloader,
                     step=step, configure_optimizers=configure_optimizers)
-
-
-class SameGroupSampler(Sampler):
-    def __init__(self, dataset):
-        super().__init__(dataset)
-
-        groups = dataset.groups
-
-        items = zip(list(range(len(groups))), groups)
-
-        item_to_group = {}
-        group_to_items = {}
-
-        for idx, group in items:
-            item_to_group[idx] = group
-
-            if group not in group_to_items:
-                group_to_items[group] = [idx]
-            else:
-                group_to_items[group].append(idx)
-
-        self.groups = set(groups)
-        self.item_to_group = item_to_group
-        self.group_to_items = group_to_items
-        
-    def __len__(self):
-        return len(self.groups)
-        
-    def __iter__(self):
-        for _ in range(len(self)):
-            # Sample one group
-            group_sample = random.sample(self.groups, 1)[0]
-            
-            items = self.group_to_items[group_sample]
-            replace = False
-            if len(items) < 2:
-                replace = True
-
-            # Sample two ids
-            sample1, sample2 = np.random.choice(items, 2, replace=replace)
-            
-            yield sample1
-            yield sample2

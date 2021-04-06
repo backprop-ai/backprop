@@ -3,7 +3,14 @@ from .base import Task
 from backprop.models import MSMARCODistilrobertaBaseV2, DistiluseBaseMultilingualCasedV2, CLIP, BaseModel
 
 import requests
+import torch.nn.functional as F
 import torch
+from torch.utils.data.dataloader import DataLoader
+import os
+import random
+from backprop.utils.datasets import TextGroupDataset, TextPairDataset
+from backprop.utils.samplers import SameGroupSampler
+from backprop.utils.losses.triplet_loss import TripletLoss
 
 DEFAULT_LOCAL_MODEL = MSMARCODistilrobertaBaseV2
 
@@ -76,11 +83,113 @@ class TextVectorisation(Task):
 
         return vector
 
-    def finetune(self, *args, **kwargs):
-        """
-        Passes the args and kwargs to the model's finetune method.
-        """
-        try:
-            return self.model.finetune(*args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+    def configure_optimizers(self):
+        return torch.optim.AdamW(params=self.model.parameters(), lr=1e-5)
+
+    def step_triplet(self, batch, batch_idx):
+        text, group = batch
+
+        text_vecs_norm = self.model({"text": text}, task="text-vectorisation",
+                    return_tensor=True, preprocess=False, train=True)
+
+        loss = self.criterion(text_vecs_norm, group)
+
+        return loss
+
+    def step_cosine(self, batch, batch_idx):
+        texts1, texts2, similarity_scores = batch
+
+        text_vecs1_norm = self.model({"text": texts1}, task="text-vectorisation",
+                    return_tensor=True, preprocess=False, train=True)
+        text_vecs2_norm = self.model({"text": texts2}, task="text-vectorisation",
+                    return_tensor=True, preprocess=False, train=True)
+
+        loss = torch.cosine_similarity(text_vecs1_norm, text_vecs2_norm)
+        loss = F.mse_loss(loss, similarity_scores.view(-1))
+
+        return loss
+
+    def train_dataloader_triplet(self):
+        return DataLoader(self.dataset_train,
+            batch_size=self.batch_size,
+            num_workers=os.cpu_count() or 0,
+            sampler=self.dl_sampler(self.dataset_train))
+
+    def val_dataloader_triplet(self):
+        return DataLoader(self.dataset_valid,
+            batch_size=self.batch_size,
+            num_workers=os.cpu_count() or 0,
+            sampler=self.dl_sampler(self.dataset_valid))
+
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]] = 0.15,
+                variant: str = "triplet", epochs: int = 20, batch_size: int = None,
+                optimal_batch_size: int = None, early_stopping_epochs: int = 1,
+                train_dataloader = None, val_dataloader = None, step = None, configure_optimizers = None):
+        optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)
+
+        configure_optimizers = configure_optimizers or self.configure_optimizers
+
+        if variant == "triplet":
+            texts = params["texts"]
+            groups = params["groups"]
+            assert len(texts) == len(groups), "The input lists must match"
+
+            step = step or self.step_triplet
+
+            if isinstance(validation_split, tuple):
+                train_idx, val_idx = validation_split
+            else:
+                all_idx = list(range(len(texts)))
+                val_len = int(len(all_idx) * validation_split)
+                val_idx = random.sample(val_len, all_idx)
+                train_idx = list(set(all_idx) - set(val_idx))
+            
+            dataset_train = TextGroupDataset(
+                [texts[i] for i in train_idx],
+                [groups[i] for i in train_idx],
+                self.model.process_text,
+            )
+
+            dataset_valid = TextGroupDataset(
+                [texts[i] for i in val_idx],
+                [groups[i] for i in val_idx],
+                self.model.process_text,
+            )
+
+            self.dl_sampler = SameGroupSampler
+            self.criterion = TripletLoss(self._model_device)
+
+            # Set model to float() for CLIP
+            if hasattr(self.model, "pre_finetuning"):
+                self.model.pre_finetuning()
+
+            super().finetune(validation_split=validation_split, epochs=epochs,
+                    batch_size=batch_size, optimal_batch_size=optimal_batch_size,
+                    early_stopping_epochs=early_stopping_epochs,
+                    train_dataloader=self.train_dataloader_triplet,
+                    val_dataloader=self.val_dataloader_triplet,
+                    dataset_train=dataset_train, dataset_valid=dataset_valid,
+                    step=step, configure_optimizers=configure_optimizers)
+        
+        elif variant == "cosine_similarity":
+            texts1 = params["texts1"]
+            texts2 = params["texts2"]
+            similarity_scores = params["similarity_scores"]
+
+            assert len(texts1) == len(texts2) == len(similarity_scores), "The input lists must match"
+
+            step = step or self.step_cosine
+
+            dataset = TextPairDataset(texts1, texts2, similarity_scores,
+                    self.model.process_text)
+
+            # Set model to float() for CLIP
+            if hasattr(self.model, "pre_finetuning"):
+                self.model.pre_finetuning()
+
+            super().finetune(dataset=dataset, validation_split=validation_split, epochs=epochs,
+                    batch_size=batch_size, optimal_batch_size=optimal_batch_size,
+                    early_stopping_epochs=early_stopping_epochs,
+                    train_dataloader=train_dataloader,
+                    val_dataloader=val_dataloader,
+                    step=step, configure_optimizers=configure_optimizers)

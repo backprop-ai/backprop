@@ -216,7 +216,7 @@ class HuggingModel(PathModel):
                                 device=device)
 
 
-class TextVectorisationModel(PathModel, Finetunable):
+class TextVectorisationModel(PathModel):
     """
     Class for models which are initialised from a local path or Sentence Transformers
 
@@ -228,24 +228,41 @@ class TextVectorisationModel(PathModel, Finetunable):
     """
     def __init__(self, model_path, init_model=SentenceTransformer,
                 device=None):
-        Finetunable.__init__(self)
-
         init_model = partial(init_model, device=device)
 
         PathModel.__init__(self, model_path,
                                 init_model=init_model,
                                 device=device)
 
-        self.batch_size = 1
         self.tasks = ["text-vectorisation"]
         self.description = "This is a text vectorisation model"
         self.name = "text-vec-model"
+        self.process_text = self.model.tokenizer
 
+    def __call__(self, task_input, task="text-vectorisation", return_tensor=False, preprocess=True, train=False):
+        if task == "text-vectorisation":
+            text = task_input.get("text")
 
-    def __call__(self, *args, **kwargs):
-        return self.vectorise(*args, **kwargs)
+            if preprocess:
+                if type(text) == list:
+                    is_list = True
+                else:
+                    text = [text]
 
-    @torch.no_grad()
+                text = self.process_text(text).to(self._model_device)
+            else:
+                is_list = True
+
+            with torch.set_grad_enabled(train):
+                text_vecs = self.vectorise(text=text)
+
+            if not return_tensor:
+                text_vecs = text_vecs.tolist()
+
+            output = text_vecs
+        else:
+            raise ValueError(f"Unsupported task '{task}'")
+
     def vectorise(self, *args, **kwargs):
         return self.model.encode(*args, **kwargs)
 
