@@ -3,6 +3,7 @@ from backprop.models import GPT2Large, T5QASummaryEmotion, BaseModel, T5
 from .base import Task
 
 import requests
+from transformers.optimization import Adafactor
 
 DEFAULT_LOCAL_MODEL = GPT2Large
 
@@ -90,22 +91,38 @@ class TextGeneration(Task):
 
             return res["output"]
 
-    def finetune(self, params: Dict, *args, **kwargs):
-        """
-        Passes the args and kwargs to the model's finetune method.
-        
-        Args:
-            params: dictionary of 'input_text' and 'output_text' lists.
-        """
+    def step(self, batch, batch_idx):
+        outputs = self.model(batch, task="text-generation", train=True)
 
-        if not "input_text" in params:
-            print("Params requires key: 'input_text' (list of inputs)")
-            return
-        if not "output_text" in params:
-            print("Params requires key: 'output_text' (list of outputs)")
-            return
+        return outputs.loss
 
-        try:
-            return self.model.finetune(params=params, task="text-generation", *args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+    def configure_optimizers(self):
+        return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
+
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]] = 0.15,
+                max_input_length: int = 128, max_output_length: int = 32,
+                epochs: int = 20, batch_size: int = None,
+                optimal_batch_size: int = None, early_stopping_epochs: int = 1,
+                train_dataloader = None, val_dataloader = None, step = None,
+                optimizer = None):
+        input_text = params["input_text"]
+        output_text = params["output_text"]
+        assert len(input_text) == len(output_text), "The input lists must match"
+
+        optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)
+
+        optimizer = optimizer or self.configure_optimizers
+
+        step = step or self.step
+
+        print("Processing data...")
+        dataset = zip(input_text, output_text)
+        dataset = [self.model.process_text(r[0], output_text=r[1],
+                    max_input_length=max_input_length,
+                    max_output_length=max_output_length) for r in dataset]
+
+        super().finetune(dataset=dataset, validation_split=validation_split, epochs=epochs,
+                batch_size=batch_size, optimal_batch_size=optimal_batch_size,
+                early_stopping_epochs=early_stopping_epochs, step=step,
+                optimizer=optimizer, train_dataloader=train_dataloader,
+                val_dataloader=val_dataloader)

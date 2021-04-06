@@ -85,7 +85,7 @@ class Task(pl.LightningModule):
     def finetune(self, dataset = None, validation_split: Union[float, Tuple[List[int], List[int]]] = 0.15,
                 epochs: int = 20, batch_size: int = None, optimal_batch_size: int = None,
                 early_stopping_epochs: int = 1, train_dataloader = None, val_dataloader = None,
-                dataset_train: Dataset = None, dataset_valid: Dataset = None, step = None):
+                dataset_train: Dataset = None, dataset_valid: Dataset = None, step = None, optimizer = None):
         self.batch_size = batch_size or 1
 
         if not torch.cuda.is_available():
@@ -122,6 +122,10 @@ class Task(pl.LightningModule):
         # Override step if provided
         if step:
             self.step = step
+
+        # Override optimizer if provided
+        if optimizer:
+            self.configure_optimizers = optimizer
 
         # Find batch size automatically
         if batch_size == None:

@@ -157,6 +157,7 @@ class PathModel(BaseModel):
     """
     def __init__(self, model_path, init_model, tokenizer_path=None,
                 init_tokenizer=None, device=None):
+        BaseModel.__init__(self, None)
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
@@ -337,7 +338,7 @@ class TextVectorisationModel(PathModel, Finetunable):
 
 class TextGenerationModel(HuggingModel):
     """
-    Class for models which are initialised from a local path or Sentence Transformers
+    Class for models which are initialised from a local path or Huggingface
 
     Attributes:
         *args and **kwargs are passed to HuggingModel's __init__

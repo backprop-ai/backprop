@@ -119,15 +119,21 @@ class ImageTextVectorisation(Task):
             num_workers=os.cpu_count() or 0,
             sampler=self.dl_sampler(self.dataset_valid))
 
-    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]],
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]] = 0.15,
                 variant: str = "triplet", epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping_epochs: int = 1,
-                train_dataloader = None, val_dataloader = None, step = None):
+                train_dataloader = None, val_dataloader = None, step = None, optimizer = None):
         if variant == "triplet":
             images = params["images"]
             texts = params["texts"]
             groups = params["groups"]
             assert len(images) == len(texts) == len(groups), "The input lists must match"
+
+            optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)
+
+            optimizer = optimizer or self.configure_optimizers
+
+            step = step or self.step
 
             if isinstance(validation_split, tuple):
                 train_idx, val_idx = validation_split
@@ -160,7 +166,7 @@ class ImageTextVectorisation(Task):
             self.model.model.float()
 
             super().finetune(validation_split=validation_split, epochs=epochs,
-                    batch_size=batch_size, optimal_batch_size=self.model.optimal_batch_size or 128,
+                    batch_size=batch_size, optimal_batch_size=optimal_batch_size,
                     early_stopping_epochs=early_stopping_epochs,
                     train_dataloader=self.train_dataloader_triplet,
                     val_dataloader=self.val_dataloader_triplet,
