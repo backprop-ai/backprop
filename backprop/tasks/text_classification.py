@@ -1,6 +1,8 @@
 from typing import List, Tuple, Union, Optional
 from backprop.models import BartLargeMNLI, XLMRLargeXNLI, BaseModel
 from .base import Task
+import torch
+from transformers.optimization import AdamW
 
 import requests
 
@@ -58,8 +60,12 @@ class TextClassification(Task):
                 "text": text,
                 "labels": labels
             }
+            if labels:
+                return self.model(task_input, task=task)
+            else:
+                outputs, labels = self.model(task_input, task=task)
+                return self.get_label_probabilities(outputs, labels)
 
-            return self.model(task_input, task=task)
         else:
             body = {
                 "text": text,
@@ -75,11 +81,66 @@ class TextClassification(Task):
 
             return res["probabilities"]
     
-    def finetune(self, *args, **kwargs):
+    def get_label_probabilities(self, outputs, labels):
+        is_list = type(outputs) == list
+
+        outputs = outputs if is_list else [outputs]
+
+        probabilities = []
+        for o in outputs:
+            logits = o[0]
+            predictions = torch.softmax(logits, dim=1).detach().squeeze(0).tolist()
+            probs = {}
+            for idx, pred in enumerate(predictions):
+                label = labels[idx]
+                probs[label] = pred
+
+            probabilities.append(probs)
+        
+        probabilities = probabilities if is_list else probabilities[0]
+
+        return probabilities
+
+    def step(self, batch, batch_idx):
+        outputs = self.model(batch, train=True)
+        loss = outputs[0]
+        return loss
+    
+    def configure_optimizers(self):
+        return AdamW(params=self.model.parameters(), lr=2e-5)
+
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
+                 max_input_length: int=128,
+                 epochs: int=20, batch_size: int=None, optimal_batch_size: int=None,
+                 early_stopping_epochs: int=1, train_dataloader=None, val_dataloader=None, 
+                 step=None, configure_optimizers=None):
         """
-        Passes the args and kwargs to the model's finetune method.
+        I'll do this later.
         """
-        try:
-            return self.model.finetune(*args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try {', '.join(FINETUNABLE_MODELS)}")
+        inputs = params["input_text"]
+        outputs = params["output"]
+
+        assert len(inputs) == len(outputs)
+
+        step = step or self.step
+
+        labels = set(outputs)
+        class_to_idx = {v: k for k, v in enumerate(labels)}
+        labels = {k: v for k,v in enumerate(labels)}
+
+        output_classes = [class_to_idx[i] for i in outputs]
+
+        if hasattr(self.model, "pre_finetuning"):
+            self.model.pre_finetuning(labels)
+
+
+        print("Processing data...")
+        dataset = zip(inputs, output_classes)
+        dataset = [self.model.process_text(r[0], r[1], max_input_length) for r in dataset]
+
+        super().finetune(dataset=dataset, validation_split=validation_split, 
+                        epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size, 
+                        early_stopping_epochs=early_stopping_epochs,
+                        train_dataloader=train_dataloader, val_dataloader=val_dataloader,
+                        step=step, configure_optimizers=configure_optimizers)
+
