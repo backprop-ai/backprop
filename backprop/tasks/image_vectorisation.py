@@ -151,7 +151,7 @@ class ImageVectorisation(Task):
             else:
                 all_idx = list(range(len(images)))
                 val_len = int(len(all_idx) * validation_split)
-                val_idx = random.sample(val_len, all_idx)
+                val_idx = random.sample(all_idx, val_len)
                 train_idx = list(set(all_idx) - set(val_idx))
             
             dataset_train = ImageGroupDataset(

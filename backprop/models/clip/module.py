@@ -38,9 +38,10 @@ class CLIP(BaseModel):
         self.model, self.transform = self.init_model(model_path, device=self._model_device)
         tokenizer = self.init_tokenizer()
         self.tokenizer = partial(clip.tokenize, tokenizer)
-        self.process_text = self.tokenizer
         self.process_image = self.transform
         self.optimal_batch_size = 128
+        # Can't specify max_length
+        self.max_length = None
         self.pre_finetuning = self.model.float
             
     def __call__(self, task_input, task="image-classification", return_tensor=False, preprocess=True, train=False):
@@ -149,6 +150,14 @@ class CLIP(BaseModel):
             output = output[0]
 
         return output
+
+    def process_text(self, input_text, max_length=None, padding=True):
+        if max_length:
+            raise ValueError(f"This model does not support specifying max_length")
+
+        processed = self.tokenizer(input_text)
+
+        return processed
 
 
     def image_classification(self, image: torch.TensorType, text: torch.TensorType, labels):

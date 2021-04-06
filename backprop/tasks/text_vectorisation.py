@@ -8,6 +8,7 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 import os
 import random
+from functools import partial
 from backprop.utils.datasets import TextGroupDataset, TextPairDataset
 from backprop.utils.samplers import SameGroupSampler
 from backprop.utils.losses.triplet_loss import TripletLoss
@@ -122,12 +123,14 @@ class TextVectorisation(Task):
             sampler=self.dl_sampler(self.dataset_valid))
 
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]] = 0.15,
-                variant: str = "triplet", epochs: int = 20, batch_size: int = None,
+                max_length: int = None, variant: str = "triplet", epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping_epochs: int = 1,
                 train_dataloader = None, val_dataloader = None, step = None, configure_optimizers = None):
         optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)
 
         configure_optimizers = configure_optimizers or self.configure_optimizers
+
+        process_text = partial(self.model.process_text, max_length=max_length)
 
         if variant == "triplet":
             texts = params["texts"]
@@ -141,19 +144,19 @@ class TextVectorisation(Task):
             else:
                 all_idx = list(range(len(texts)))
                 val_len = int(len(all_idx) * validation_split)
-                val_idx = random.sample(val_len, all_idx)
+                val_idx = random.sample(all_idx, val_len)
                 train_idx = list(set(all_idx) - set(val_idx))
             
             dataset_train = TextGroupDataset(
                 [texts[i] for i in train_idx],
                 [groups[i] for i in train_idx],
-                self.model.process_text,
+                process_text,
             )
 
             dataset_valid = TextGroupDataset(
                 [texts[i] for i in val_idx],
                 [groups[i] for i in val_idx],
-                self.model.process_text,
+                process_text,
             )
 
             self.dl_sampler = SameGroupSampler
@@ -181,7 +184,7 @@ class TextVectorisation(Task):
             step = step or self.step_cosine
 
             dataset = TextPairDataset(texts1, texts2, similarity_scores,
-                    self.model.process_text)
+                    process_text)
 
             # Set model to float() for CLIP
             if hasattr(self.model, "pre_finetuning"):

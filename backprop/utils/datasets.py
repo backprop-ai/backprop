@@ -21,10 +21,19 @@ class ImageTextPairDataset(Dataset):
         return len(self.similarity_scores)
     
     def __getitem__(self, idx):
+        texts1 = self.tokenize_text(self.texts1[idx])
+        texts2 = self.tokenize_text(self.texts2[idx])
 
-        texts1 = self.tokenize_text(self.texts1[idx]).squeeze(0)
-        texts2 = self.tokenize_text(self.texts2[idx]).squeeze(0)
-        
+        if isinstance(texts1, torch.Tensor):
+            texts1 = texts1.squeeze(0)
+        else:
+            texts1 = {k: v.squeeze(0) for k, v in texts1.items()}
+
+        if isinstance(texts2, torch.Tensor):
+            texts2 = texts2.squeeze(0)
+        else:
+            texts2 = {k: v.squeeze(0) for k, v in texts2.items()}
+
         imgs1 = self.transform_img(Image.open(self.imgs1[idx])).squeeze(0)
         imgs2 = self.transform_img(Image.open(self.imgs2[idx])).squeeze(0)
 
@@ -72,8 +81,18 @@ class TextPairDataset(Dataset):
         return len(self.similarity_scores)
     
     def __getitem__(self, idx):
-        texts1 = self.tokenize_text(self.texts1[idx]).squeeze(0)
-        texts2 = self.tokenize_text(self.texts2[idx]).squeeze(0)
+        texts1 = self.tokenize_text(self.texts1[idx])
+        texts2 = self.tokenize_text(self.texts2[idx])
+
+        if isinstance(texts1, torch.Tensor):
+            texts1 = texts1.squeeze(0)
+        else:
+            texts1 = {k: v.squeeze(0) for k, v in texts1.items()}
+
+        if isinstance(texts2, torch.Tensor):
+            texts2 = texts2.squeeze(0)
+        else:
+            texts2 = {k: v.squeeze(0) for k, v in texts2.items()}
         
         similarity_scores = torch.tensor(self.similarity_scores[idx])
 
@@ -95,7 +114,12 @@ class ImageTextGroupDataset(Dataset):
 
     def __getitem__(self, idx):
         image = self.transform_img(Image.open(self.images[idx])).squeeze(0)
-        text = self.tokenize_text(self.texts[idx]).squeeze(0)
+        text = self.tokenize_text(self.texts[idx])
+
+        if isinstance(text, torch.Tensor):
+            text = text.squeeze(0)
+        else:
+            text = {k: v.squeeze(0) for k, v in text.items()}
 
         group = torch.tensor(self.groups[idx])
 
@@ -121,7 +145,7 @@ class ImageGroupDataset(Dataset):
         return image, group
 
 class TextGroupDataset(Dataset):
-    def __init__(self, images, texts, groups, transform_img, tokenize_text):
+    def __init__(self, texts, groups, tokenize_text):
         super().__init__()
 
         self.texts = texts
@@ -133,7 +157,12 @@ class TextGroupDataset(Dataset):
         return len(self.texts)
 
     def __getitem__(self, idx):
-        text = self.tokenize_text(self.texts[idx]).squeeze(0)
+        text = self.tokenize_text(self.texts[idx])
+
+        if isinstance(text, torch.Tensor):
+            text = text.squeeze(0)
+        else:
+            text = {k: v.squeeze(0) for k, v in text.items()}
 
         group = torch.tensor(self.groups[idx])
 
