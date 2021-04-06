@@ -104,7 +104,7 @@ class TextGeneration(Task):
                 epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping_epochs: int = 1,
                 train_dataloader = None, val_dataloader = None, step = None,
-                optimizer = None):
+                configure_optimizers = None):
         """
         TODO: Update
         Finetunes the model's text-generation task.
@@ -145,7 +145,7 @@ class TextGeneration(Task):
 
         optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)
 
-        optimizer = optimizer or self.configure_optimizers
+        configure_optimizers = configure_optimizers or self.configure_optimizers
 
         step = step or self.step
 
@@ -158,5 +158,5 @@ class TextGeneration(Task):
         super().finetune(dataset=dataset, validation_split=validation_split, epochs=epochs,
                 batch_size=batch_size, optimal_batch_size=optimal_batch_size,
                 early_stopping_epochs=early_stopping_epochs, step=step,
-                optimizer=optimizer, train_dataloader=train_dataloader,
+                configure_optimizers=configure_optimizers, train_dataloader=train_dataloader,
                 val_dataloader=val_dataloader)

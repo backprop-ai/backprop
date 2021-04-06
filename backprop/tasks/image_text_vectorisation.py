@@ -122,7 +122,7 @@ class ImageTextVectorisation(Task):
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]] = 0.15,
                 variant: str = "triplet", epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping_epochs: int = 1,
-                train_dataloader = None, val_dataloader = None, step = None, optimizer = None):
+                train_dataloader = None, val_dataloader = None, step = None, configure_optimizers = None):
         if variant == "triplet":
             images = params["images"]
             texts = params["texts"]
@@ -131,7 +131,7 @@ class ImageTextVectorisation(Task):
 
             optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)
 
-            optimizer = optimizer or self.configure_optimizers
+            configure_optimizers = configure_optimizers or self.configure_optimizers
 
             step = step or self.step
 
@@ -171,7 +171,7 @@ class ImageTextVectorisation(Task):
                     train_dataloader=self.train_dataloader_triplet,
                     val_dataloader=self.val_dataloader_triplet,
                     dataset_train=dataset_train, dataset_valid=dataset_valid,
-                    step=self.step_triplet)
+                    step=self.step_triplet, configure_optimizers=configure_optimizers)
 
 
 
