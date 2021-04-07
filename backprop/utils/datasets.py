@@ -167,3 +167,32 @@ class TextGroupDataset(Dataset):
         group = torch.tensor(self.groups[idx])
 
         return text, group
+    
+
+class TextToTextDataset(Dataset):
+    def __init__(self, inputs, outputs, process_text, max_input_length, max_output_length):
+        super().__init__()
+        
+        self.inputs = inputs
+        self.outputs = outputs
+        self.process_text = process_text
+        self.max_input_length = max_input_length
+        self.max_output_length = max_output_length
+
+    def __len__(self):
+        return len(self.inputs)
+    
+    def __getitem__(self, idx):
+        inputs = self.inputs[idx]
+        outputs = self.outputs[idx]
+
+        inputs, outputs = self.process_text(inputs, outputs, self.max_input_length, self.max_output_length)
+        if isinstance(inputs, torch.Tensor):
+            inputs = inputs.squeeze(0)
+            outputs = outputs.squeeze(0)
+        else:
+            inputs = {k: v.squeeze(0) for k, v in inputs.items()}
+            outputs = {k: v.squeeze(0) for k, v in outputs.items()}
+
+
+        return {**inputs, **outputs}

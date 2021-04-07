@@ -1,6 +1,8 @@
 from typing import List, Tuple, Union, Dict
 from .base import Task
 from backprop.models import T5QASummaryEmotion, BaseModel
+from transformers.optimization import Adafactor
+from backprop.utils.datasets import TextToTextDataset
 
 import requests
 
@@ -64,22 +66,58 @@ class Summarisation(Task):
 
             return res["summary"]
     
-    def finetune(self, params: Dict, *args, **kwargs):
-        """
-        Passes args and kwargs to the model's finetune method
+    # def finetune(self, params: Dict, *args, **kwargs):
+    #     """
+    #     Passes args and kwargs to the model's finetune method
         
-        Args:
-            params: dictionary of 'input_text' and 'output_text' lists.
+    #     Args:
+    #         params: dictionary of 'input_text' and 'output_text' lists.
+    #     """
+
+    #     if not "input_text" in params:
+    #         print("Params requires key: 'input_text' (list of inputs)")
+    #         return
+    #     if not "output_text" in params:
+    #         print("Params requires key: 'output_text' (list of outputs)")
+    #         return
+
+    #     try:
+    #         return self.model.finetune(params, task="summarisation", *args, **kwargs)
+    #     except NotImplementedError:
+    #         raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+    
+    def step(self, batch, batch_idx):
+        outputs = self.model(batch, task="summarisation", train=True)
+        return outputs.loss
+    
+    def configure_optimizers(self):
+        return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
+    
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
+                  max_input_length: int=512, max_output_length: int=128,
+                  epochs: int=20, batch_size: int=None,
+                  optimal_batch_size: int=None, early_stopping_epochs: int=1,
+                  train_dataloader=None, val_dataloader=None, step=None,
+                  configure_optimizers=None):
         """
+        Later
+        """
+        inputs = params["input_text"]
+        outputs = params["output_text"]
+        assert len(inputs) == len(outputs)
 
-        if not "input_text" in params:
-            print("Params requires key: 'input_text' (list of inputs)")
-            return
-        if not "output_text" in params:
-            print("Params requires key: 'output_text' (list of outputs)")
-            return
+        step = step or self.step
+        configure_optimizers = configure_optimizers or self.configure_optimizers
 
-        try:
-            return self.model.finetune(params, task="summarisation", *args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+        print("Processing data...")
+        dataset = TextToTextDataset(inputs, outputs, self.model.process_summarisation, max_input_length, max_output_length)
+
+        super().finetune(dataset=dataset, validation_split=validation_split,
+                        epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,
+                        early_stopping_epochs=early_stopping_epochs,
+                        train_dataloader=train_dataloader, val_dataloader=val_dataloader,
+                        step=step, configure_optimizers=configure_optimizers)
+        
+
+
+

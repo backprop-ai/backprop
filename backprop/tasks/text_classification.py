@@ -117,12 +117,13 @@ class TextClassification(Task):
         """
         I'll do this later.
         """
-        inputs = params["input_text"]
-        outputs = params["output"]
+        inputs = params["texts"]
+        outputs = params["labels"]
 
         assert len(inputs) == len(outputs)
 
         step = step or self.step
+        configure_optimizers = configure_optimizers or self.configure_optimizers
 
         labels = set(outputs)
         class_to_idx = {v: k for k, v in enumerate(labels)}

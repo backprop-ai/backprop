@@ -80,5 +80,6 @@ class XLNet(ClassificationModel, Finetunable):
         return tokens.input_ids[0], tokens.attention_mask[0], target
 
     def init_pre_finetune(self, labels):
-        self.labels = labels
-        self.model = XLNetForSequenceClassification.from_pretrained(self.model_path, num_labels=len(labels))
+        if not hasattr(self, "labels") or len(self.labels) != len(labels):
+            self.labels = labels
+            self.model = XLNetForSequenceClassification.from_pretrained(self.model_path, num_labels=len(labels))
