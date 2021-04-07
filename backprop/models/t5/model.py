@@ -37,11 +37,12 @@ class T5(TextGenerationModel):
             task: text-generation, or a task you've tuned a T5 model on
         """
         if task == "text-generation":
-            if train:
-                return self.model(**task_input)
-            else:
-                text = task_input.pop("text")
-                return self.generate(text, **task_input)
+            with torch.set_grad_enabled(train):
+                if train:
+                    return self.model(**task_input)
+                else:
+                    text = task_input.pop("text")
+                    return self.generate(text, **task_input)
         else:
             raise ValueError(f"Unsupported task: {task}")
 

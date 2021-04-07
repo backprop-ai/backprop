@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 from PIL import Image
+import numpy as np
 
 class ImageTextPairDataset(Dataset):
     def __init__(self, img_text_pairs1, img_text_pairs2, similarity_scores,
@@ -167,7 +168,55 @@ class TextGroupDataset(Dataset):
         group = torch.tensor(self.groups[idx])
 
         return text, group
-    
+
+class SingleLabelImageClassificationDataset(Dataset):
+    def __init__(self, images, labels, process_image):
+        super().__init__()
+
+        self.images = images
+        self.labels = labels
+        self.label_to_idx = {label: i for i, label in enumerate(set(labels))}
+
+        self.process_image = process_image
+        
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        image = Image.open(self.images[idx])
+        image = self.process_image(image).squeeze(0)
+
+        target = torch.tensor(self.label_to_idx[self.labels[idx]])
+
+        return image, target
+
+
+class MultiLabelImageClassificationDataset(Dataset):
+    def __init__(self, images, labels, process_image):
+        super().__init__()
+
+        self.images = images
+        self.labels = labels
+        all_labels = list(np.concatenate(labels).flat)
+        self.all_labels = set(all_labels)
+        self.label_to_idx = {label: i for i, label in enumerate(self.all_labels)}
+
+        self.process_image = process_image
+        
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        image = Image.open(self.images[idx])
+        image = self.process_image(image).squeeze(0)
+
+        target = torch.zeros(len(self.all_labels))
+
+        for label in self.labels[idx]:
+            i = self.label_to_idx[label]
+            target[i] = 1.
+
+        return image, target
 
 class TextToTextDataset(Dataset):
     def __init__(self, inputs, outputs, process_text, max_input_length, max_output_length):

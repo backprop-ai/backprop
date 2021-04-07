@@ -1,8 +1,12 @@
 from typing import List, Tuple, Union
 from ..models import BaseModel, ClassificationModel
 from backprop.models import CLIP, EfficientNet
+from backprop.utils.datasets import SingleLabelImageClassificationDataset, MultiLabelImageClassificationDataset
 from .base import Task
 from PIL import Image
+from torch import nn
+import torch
+import numpy as np
 import base64
 
 import requests
@@ -98,11 +102,71 @@ class ImageClassification(Task):
 
             return res["probabilities"]
 
-    def finetune(self, *args, **kwargs):
+    
+    def step_single_label(self, batch, batch_idx):
+        images, targets = batch
+        outputs = self.model(images, task="image-classification", train=True)
+
+        loss = self.criterion(outputs, targets)
+        return loss
+
+    def step_multi_label(self, batch, batch_idx):
+        images, targets = batch
+        outputs = self.model(images, task="image-classification", train=True)
+
+        loss = self.criterion(outputs, targets)
+        return loss
+    
+
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
+                 variant: str = "single_label",
+                 epochs: int=20, batch_size: int=None, optimal_batch_size: int=None,
+                 early_stopping_epochs: int=1, train_dataloader=None, val_dataloader=None, 
+                 step=None, configure_optimizers=None):
         """
-        Passes the args and kwargs to the model's finetune method.
+        TODO
         """
-        try:
-            return self.model.finetune(*args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+        optimal_batch_size = optimal_batch_size or getattr(self.model, "optimal_batch_size", 128)
+
+        configure_optimizers = configure_optimizers or self.model.configure_optimizers or self.configure_optimizers
+
+        images = params["images"]
+        labels = params["labels"]
+
+        assert len(images) == len(labels), "The input lists must match"
+        
+        if variant == "single_label":
+
+            step = step or self.step_single_label
+
+            labels_set = set(labels)
+            labels_dict = {k: v for k, v in enumerate(labels_set)}
+
+            if hasattr(self.model, "pre_finetuning"):
+                self.model.pre_finetuning(labels=labels_dict, num_classes=len(labels_set))
+
+            dataset = SingleLabelImageClassificationDataset(images, labels, self.model.process_image)
+
+            self.criterion = nn.CrossEntropyLoss()
+        elif variant == "multi_label":
+            step = step or self.step_multi_label
+
+            all_labels = set(np.concatenate(labels).flat)
+
+            labels_dict = {i: label for i, label in enumerate(all_labels)}
+
+            if hasattr(self.model, "pre_finetuning"):
+                self.model.pre_finetuning(labels=labels_dict, num_classes=len(all_labels))
+
+            dataset = MultiLabelImageClassificationDataset(images, labels, self.model.process_image)
+
+            # Sigmoid and BCE
+            self.criterion = nn.BCEWithLogitsLoss()
+        else:
+            raise ValueError(f"Unsupported variant '{variant}'")
+
+        super().finetune(dataset=dataset, validation_split=validation_split, 
+                        epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size, 
+                        early_stopping_epochs=early_stopping_epochs,
+                        train_dataloader=train_dataloader, val_dataloader=val_dataloader,
+                        step=step, configure_optimizers=configure_optimizers)
