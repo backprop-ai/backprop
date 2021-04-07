@@ -169,6 +169,7 @@ class ImageVectorisation(Task):
             self.dl_sampler = SameGroupSampler
             self.criterion = TripletLoss(self._model_device)
 
+            # TODO: Move to base task
             # Set model to float() for CLIP
             if hasattr(self.model, "pre_finetuning"):
                 self.model.pre_finetuning()
