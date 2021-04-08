@@ -1,5 +1,4 @@
-from .generic_models import BaseModel, PathModel, HuggingModel, TextGenerationModel, ClassificationModel, TextVectorisationModel, Finetunable
-from .bart_large_mnli import BartLargeMNLI
+from .generic_models import BaseModel, PathModel, HFModel, TextGenerationModel, ClassificationModel, TextVectorisationModel, Finetunable
 from .xlmr_large_xnli import XLMRLargeXNLI
 from .gpt2_large import GPT2Large
 from .t5 import T5
@@ -9,3 +8,5 @@ from .msmarco_distilroberta_base_v2 import MSMARCODistilrobertaBaseV2
 from .distiluse_base_multilingual_cased_v2 import DistiluseBaseMultilingualCasedV2
 from .efficientnet import EfficientNet
 from .xlnet import XLNet
+from .hf_nli_model import HFNLIModel
+from .auto_model import AutoModel

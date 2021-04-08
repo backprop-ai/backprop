@@ -20,7 +20,7 @@ import base64
 
 IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/backprop-ai/backprop/main/backprop/models/efficientnet/imagenet_labels.txt"
 
-class EfficientNet(PathModel, Finetunable):
+class EfficientNet(PathModel):
     """
     EfficientNet is a very efficient image-classification model. Trained on ImageNet.
 

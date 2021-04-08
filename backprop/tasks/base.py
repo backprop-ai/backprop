@@ -1,6 +1,7 @@
 from typing import Dict, List, Union, Tuple
 import logging
 from backprop import load
+from backprop.models import AutoModel
 import pytorch_lightning as pl
 from torch.utils.data.dataloader import DataLoader
 import os
@@ -13,43 +14,34 @@ logger = logging.getLogger("info")
 
 class Task(pl.LightningModule):
     def __init__(self, model, local=False, api_key=None,
-                device: str = None, local_models: Dict = None,
-                api_models: List[str] = None, default_local_model: str = None,
-                default_api_model: str = None):
+                task: str = None,
+                device: str = None, models: Dict = None,
+                default_local_model: str = None):
         super().__init__()
 
         if api_key == None:
             local = True
-                    
-        if device == None:
-            import torch
-            device = "cuda" if torch.cuda.is_available() else "cpu"
         
         self.local = local
         self.api_key = api_key
-        self._model_device = device
 
         # Pick the correct model name
         if local:
             if model is None:
                 model = default_local_model
 
-            if type(model) == str or model is None:
-                # Get from dictionary or use provided if not there
-                model = local_models.get(model) or model
-
             if type(model) == str:
-                self.model = load(model)
-            elif hasattr(model, "model"):
-                self.model = model
-            else:
-                self.model = model(device=device)
+                model = AutoModel.from_pretrained(model, device=device)
+
+            if task not in model.tasks:
+                raise ValueError(f"Model does not support the '{task}' task")
+
         else:
-            if model is None or type(model) != str:
-                model = default_api_model
+            if model is not None and type(model) != str:
+                raise ValueError(f"Model must be a string identifier to be used in the API")
     
-            # All checks passed
-            self.model = model
+        # All checks passed
+        self.model = model
 
     def __call__(self):
         raise Exception("The base Task is not callable!")

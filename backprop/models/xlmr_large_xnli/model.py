@@ -1,11 +1,11 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from backprop.models import HuggingModel
+from backprop.models import HFModel
 
-class XLMRLargeXNLI(HuggingModel):
+class XLMRLargeXNLI(HFModel):
     def __init__(self, model_path="joeddav/xlm-roberta-large-xnli", tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
                 tokenizer_class=AutoTokenizer, device=None):
-        HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
+        HFModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device)
         self.name = "xlmr-large-xnli"
