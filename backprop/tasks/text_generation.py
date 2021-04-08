@@ -150,8 +150,15 @@ class TextGeneration(Task):
 
         step = step or self.step
 
+        dataset_params = {
+            "input": input_text,
+            "output": output_text,
+            "max_input_length": max_input_length,
+            "max_output_length": max_output_length
+        }
+
         print("Processing data...")
-        dataset = TextToTextDataset(inputs, outputs, self.model.process_text, max_input_length=max_input_length, max_output_length=max_output_length)
+        dataset = TextToTextDataset(dataset_params, task="text-generation", process_batch=self.model.process_batch, length=len(input_text))
 
         super().finetune(dataset=dataset, validation_split=validation_split, epochs=epochs,
                 batch_size=batch_size, optimal_batch_size=optimal_batch_size,

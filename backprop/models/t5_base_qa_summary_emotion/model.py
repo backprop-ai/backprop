@@ -90,6 +90,19 @@ class T5QASummaryEmotion(T5):
             input_text = self.process_qa(question, context, prev_qa)
         print(input_text)
         return self.generate(input_text, do_sample=False, max_length=96)
+    
+    def process_batch(self, params, task):
+        if task == "summarisation":
+            inp = f"summarise: {params['input']}"
+        elif task == "emotion":
+            inp = f"emotion: {params['input']}"
+        elif task == "qa":
+            inp = self.process_qa(params['question'], params['context'], params['prev_qa'])
+        
+        inp = self.encode_input(inp, params["max_input_length"])
+        out = self.encode_output(params["output"], params["max_output_length"])
+
+        return {**inp, **out}
         
     def process_summarisation(self, inp, out, max_input_length, max_output_length):
         inp = f"summarise: {inp}"
@@ -99,18 +112,13 @@ class T5QASummaryEmotion(T5):
 
         return inp, out
 
-    def process_qa(self, question, context, prev_qa, answer=None, max_input_length=256, max_output_length=32):
+    def process_qa(self, question, context, prev_qa):
         input_text = [f"q: {qa[0]} a: {qa[1]}" for qa in prev_qa]
         input_text.append(f"q: {question}")
         input_text.append(f"c: {context}")
         input_text = " ".join(input_text)
         
-        if answer:
-            input_text = self.encode_input(input_text, max_input_length)
-            answer = self.encode_output(answer, max_output_length)
-            return input_text, answer
-        else:
-            return input_text
+        return input_text
 
     def encode_input(self, inp, max_length):
         tokens = self.tokenizer(inp, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")

@@ -219,65 +219,28 @@ class MultiLabelImageClassificationDataset(Dataset):
         return image, target
 
 class TextToTextDataset(Dataset):
-    def __init__(self, inputs, outputs, process_text, max_input_length, max_output_length):
-        super().__init__()
-        
-        self.inputs = inputs
-        self.outputs = outputs
-        self.process_text = process_text
-        self.max_input_length = max_input_length
-        self.max_output_length = max_output_length
-
-    def __len__(self):
-        return len(self.inputs)
-    
-    def __getitem__(self, idx):
-        inputs = self.inputs[idx]
-        outputs = self.outputs[idx]
-
-        inputs, outputs = self.process_text(inputs, outputs, self.max_input_length, self.max_output_length)
-        if isinstance(inputs, torch.Tensor):
-            inputs = inputs.squeeze(0)
-            outputs = outputs.squeeze(0)
-        else:
-            inputs = {k: v.squeeze(0) for k, v in inputs.items()}
-            outputs = {k: v.squeeze(0) for k, v in outputs.items()}
-
-
-        return {**inputs, **outputs}
-
-class QADataset(Dataset):
-    def __init__(self, questions, contexts, prev_qas, answers, process_text, max_input_length, max_output_length):
-        super().__init__()
-        
-        self.questions = questions
-        self.contexts = contexts
-        self.prev_qas = prev_qas
-        self.answers = answers
-        self.max_input_length = max_input_length
-        self.max_output_length = max_output_length
-        self.process_text = process_text
+    def __init__(self, params, task, process_batch, length):
+        self.params = params
+        self.task = task
+        self.process_batch = process_batch
+        self.length = length
     
     def __len__(self):
-        return len(self.questions)
+        return self.length
     
     def __getitem__(self, idx):
-        question = self.questions[idx]
-        context = self.contexts[idx]
-        prev_qa = self.prev_qas[idx]
-        answer = self.answers[idx]
+        params = {k: (v if type(v) != list else v[idx]) for k,v in self.params.items()}
 
-        inp, out = self.process_text(question, context, prev_qa, answer=answer, max_input_length=self.max_input_length, max_output_length=self.max_output_length)
+        inp = self.process_batch(params, task=self.task)
 
         if isinstance(inp, torch.Tensor):
             inp = inp.squeeze(0)
-            out = out.squeeze(0)
+            # out = out.squeeze(0)
         else:
             inp = {k: v.squeeze(0) for k, v in inp.items()}
-            out = {k: v.squeeze(0) for k, v in out.items()}
-        
-        return {**inp, **out}
+            # out = {k: v.squeeze(0) for k, v in out.items()}
 
+        return {**inp}
 
 class SingleLabelTextClassificationDataset(Dataset):
     def __init__(self, texts, labels, process_text, max_input_length):

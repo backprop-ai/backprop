@@ -89,9 +89,16 @@ class Emotion(Task):
 
         step = step or self.step
         configure_optimizers = configure_optimizers or self.configure_optimizers
+        
+        dataset_params = {
+            "input": inputs,
+            "output": outputs,
+            "max_input_length": max_input_length,
+            "max_output_length": max_output_length
+        }
 
         print("Processing data...")
-        dataset = TextToTextDataset(inputs, outputs, self.model.process_emotion, max_input_length, max_output_length)
+        dataset = TextToTextDataset(dataset_params, task="emotion", process_batch=self.model.process_batch, length=len(inputs))
 
         super().finetune(dataset=dataset, validation_split=validation_split,
                         epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,

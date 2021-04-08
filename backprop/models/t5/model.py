@@ -45,17 +45,21 @@ class T5(TextGenerationModel):
                     return self.generate(text, **task_input)
         else:
             raise ValueError(f"Unsupported task: {task}")
+    
+    def process_batch(self, params, task):
+        inp = params["input"]
+        out = params.pop("output", None)
 
-    def process_text(self, input_text, output_text=None, max_input_length=128,
-                    max_output_length=32):
-        inp = self.encode_input(input_text, max_length=max_input_length)
+        inp = self.encode_input(inp, max_length=params["max_input_length"])
+
         processed = {**inp}
 
-        if output_text:
-            out = self.encode_output(output_text, max_length=max_output_length)
-            processed = {**processed, **out}
-
+        if out:
+            out = self.encode_output(out, max_length=params["max_output_length"])
+            processed = {**inp, **out}
+        
         return processed
+        
     
     def encode_input(self, text, max_length=128):
         tokens = self.tokenizer(text, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")

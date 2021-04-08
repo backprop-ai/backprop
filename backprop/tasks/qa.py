@@ -2,7 +2,7 @@ from typing import List, Tuple, Union, Dict
 from .base import Task
 from backprop.models import T5QASummaryEmotion, BaseModel
 from transformers.optimization import Adafactor
-from backprop.utils.datasets import QADataset
+from backprop.utils.datasets import TextToTextDataset
 
 import requests
 
@@ -167,8 +167,18 @@ class QA(Task):
         step = step or self.step
         configure_optimizers = configure_optimizers or self.configure_optimizers
 
+        dataset_params = {
+            "question": questions,
+            "context": contexts,
+            "prev_qa": prev_qas,
+            "output": answers,
+            "max_input_length": max_input_length,
+            "max_output_length": max_output_length
+        }
+
         print("Processing data...")
-        dataset = QADataset(questions, contexts, prev_qas, answers, self.model.process_qa, max_input_length, max_output_length)
+        # dataset = QADataset(questions, contexts, prev_qas, answers, self.model.process_qa, max_input_length, max_output_length)
+        dataset = TextToTextDataset(dataset_params, task="qa", process_batch=self.model.process_batch, length=len(questions))
         
         super().finetune(dataset=dataset, validation_split=validation_split,
                 epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,
