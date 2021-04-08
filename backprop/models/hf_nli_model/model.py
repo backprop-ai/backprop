@@ -1,15 +1,18 @@
+from typing import List, Dict
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from backprop.models import HFModel
 
 class HFNLIModel(HFModel):
-    def __init__(self, model_path=None, tokenizer_path=None,
+    def __init__(self, model_path=None, tokenizer_path=None, name: str = None,
+                description: str = None, tasks: List[str] = None, details: Dict = None,
                 model_class=AutoModelForSequenceClassification,
                 tokenizer_class=AutoTokenizer, device=None):
-        HFModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
+        tasks = tasks or ["text-classification"]
+        
+        HFModel.__init__(self, model_path, name=name, description=description,
+                    tasks=tasks, details=details, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device)
-
-        self.tasks = ["text-classification"]
 
     def __call__(self, task_input, task="text-classification"):
         if task == "text-classification":

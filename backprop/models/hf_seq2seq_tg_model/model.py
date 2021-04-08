@@ -1,33 +1,22 @@
-from typing import List, Tuple
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-from transformers.optimization import Adafactor
 import torch
-from torch.utils.data import DataLoader
-from random import shuffle
-import os
+from typing import List, Dict
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from backprop.models import HFTextGenerationModel
 
-from backprop.models import TextGenerationModel, Finetunable
+class HFSeq2SeqTGModel(HFTextGenerationModel):
+    def __init__(self, model_path=None, tokenizer_path=None, name: str = None,
+                description: str = None, details: Dict = None, tasks: List[str] = None,
+                model_class=AutoModelForSeq2SeqLM,
+                tokenizer_class=AutoTokenizer, device=None):
+        tasks = tasks or ["text-generation"]
+        
+        HFTextGenerationModel.__init__(self, model_path, name=name, description=description,
+                    tasks=tasks, details=details, tokenizer_path=tokenizer_path,
+                    model_class=model_class, tokenizer_class=tokenizer_class,
+                    device=device)
 
-class T5(TextGenerationModel):
-    """
-    Google's T5 model for text-generation.
 
-    Attributes:
-        args: args passed to :class:`backprop.models.generic_models.TextGenerationModel`
-        model_path: path to a T5 model on huggingface (t5-small, t5-base, t5-large)
-        kwargs: kwargs passed to :class:`backprop.models.generic_models.TextGenerationModel`
-    """
-    def __init__(self, *args, model_path="t5-small", **kwargs):
-        TextGenerationModel.__init__(self, model_path,
-                                *args, **kwargs)
-
-        self.tasks = ["text-generation"]
-        self.description = "This is the T5 model by Google."
-        self.name = "t5"
-        self.optimal_batch_size = 128
-
-    @torch.no_grad
+    @torch.no_grad()
     def __call__(self, task_input, task="text-generation"):
         """
         Uses the model for the text-generation task
@@ -42,7 +31,12 @@ class T5(TextGenerationModel):
             return self.generate(text, **task_input)
         else:
             raise ValueError(f"Unsupported task: {task}")
-    
+
+    @staticmethod
+    def list_models():
+        from .models_list import models
+
+        return models
 
     def training_step(self, task_input):
         return self.model(**task_input).loss

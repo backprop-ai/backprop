@@ -1,12 +1,12 @@
 import torch
 import pytorch_lightning as pl
-from transformers import XLNetForSequenceClassification, XLNetTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from transformers.optimization import AdamW
-from backprop.models import ClassificationModel, Finetunable
-from typing import List, Union
+from backprop.models import HFModel
+from typing import List, Union, Dict
 
 
-class XLNet(ClassificationModel, Finetunable):
+class HFSeqTCModel(HFModel):
     """
     CMU & Google Brain's XLNet model for text classification.
 
@@ -17,16 +17,24 @@ class XLNet(ClassificationModel, Finetunable):
 
     """
 
-    def __init__(self, *args, model_path="xlnet-base-cased", **kwargs):
-        Finetunable.__init__(self)
+    def __init__(self, model_path=None, tokenizer_path=None, name: str = None,
+                description: str = None, tasks: List[str] = None, details: Dict = None,
+                model_class=AutoModelForSequenceClassification,
+                tokenizer_class=AutoTokenizer, device=None):
+        tasks = tasks or ["text-classification"]
 
-        ClassificationModel.__init__(self, model_path, model_class=XLNetForSequenceClassification, 
-                                    tokenizer_class=XLNetTokenizer, *args, **kwargs)
+        HFModel.__init__(self, model_path, name=name, description=description,
+                    tasks=tasks, details=details, tokenizer_path=tokenizer_path,
+                    model_class=model_class, tokenizer_class=tokenizer_class,
+                    device=device)
 
-        self.tasks = ["text-classification"]
-        self.description = "XLNet"
-        self.name = "xlnet"
         self.pre_finetuning = self.init_pre_finetune
+
+    @staticmethod
+    def list_models():
+        from .models_list import models
+
+        return models
 
     def __call__(self, task_input, task="text-classification", train=False):
         """
@@ -65,6 +73,42 @@ class XLNet(ClassificationModel, Finetunable):
 
         else:
             raise ValueError(f"Unsupported task: {task}")
+
+    def calculate_probability(self, text, label, device):
+        hypothesis = f"This example is {label}."
+        features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
+                                    truncation=True).to(self._model_device)
+        logits = self.model(features)[0]
+        entail_contradiction_logits = logits[:, [0, 2]]
+        probs = entail_contradiction_logits.softmax(dim=1)
+        prob_label_is_true = probs[:, 1]
+        return prob_label_is_true.item()
+
+
+    def classify(self, text, labels):
+        """
+        Classifies text, given a set of labels.
+        """
+        if isinstance(text, list):
+            # Must have a consistent amount of examples
+            assert(len(text) == len(labels))
+            # TODO: implement proper batching
+            results_list = []
+            for text, labels in zip(text, labels):
+                results = {}
+                for label in labels:
+                    results[label] = self.calculate_probability(text, label, self._model_device)
+
+                results_list.append(results)
+
+            return results_list
+        else:
+            results = {}
+            for label in labels:
+                results[label] = self.calculate_probability(
+                    text, label, self._model_device)
+
+            return results
     
     def training_step(self, batch):
         return self.model(batch)[0]
@@ -84,4 +128,4 @@ class XLNet(ClassificationModel, Finetunable):
     def init_pre_finetune(self, labels):
         if not hasattr(self, "labels") or len(self.labels) != len(labels):
             self.labels = labels
-            self.model = XLNetForSequenceClassification.from_pretrained(self.model_path, num_labels=len(labels))
+            self.model = AutoModelForSequenceClassification.from_pretrained(self.model_path, num_labels=len(labels))

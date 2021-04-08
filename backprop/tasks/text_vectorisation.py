@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
 from .base import Task
-from backprop.models import MSMARCODistilrobertaBaseV2, DistiluseBaseMultilingualCasedV2, CLIP, BaseModel
+from backprop.models import AutoModel, BaseModel
 
 import requests
 import torch.nn.functional as F
@@ -13,19 +13,7 @@ from backprop.utils.datasets import TextGroupDataset, TextPairDataset
 from backprop.utils.samplers import SameGroupSampler
 from backprop.utils.losses.triplet_loss import TripletLoss
 
-DEFAULT_LOCAL_MODEL = MSMARCODistilrobertaBaseV2
-
-LOCAL_MODELS = {
-    "english": DEFAULT_LOCAL_MODEL,
-    "multilingual": DistiluseBaseMultilingualCasedV2,
-    "clip": CLIP
-}
-
-DEFAULT_API_MODEL = "english"
-
-API_MODELS = ["english", "multilingual", "clip"]
-
-FINETUNABLE_MODELS = ["english", "multilingual"]
+DEFAULT_LOCAL_MODEL = "msmarco-distilroberta-base-v2"
 
 class TextVectorisation(Task):
     """
@@ -33,10 +21,9 @@ class TextVectorisation(Task):
 
     Attributes:
         model:
-            1. Name of the model on Backprop's vectorisation endpoint (english, multilingual, clip or your own uploaded model)
-            2. Officially supported local models (english, multilingual, clip).
-            3. Model class of instance Backprop's TextVectorisationModel
-            4. Path/name of saved Backprop model
+            1. Model name
+            2. Model name on Backprop's text-vectorisation endpoint
+            3. Model object that implements the text-vectorisation task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -44,10 +31,12 @@ class TextVectorisation(Task):
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
 
+        task = "text-vectorisation"
+        models = AutoModel.list_models(task=task)
+
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
-                        default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        models=models, task=task,
+                        default_local_model=DEFAULT_LOCAL_MODEL)
     
     def __call__(self, text: Union[str, List[str]], return_tensor=False):
         """Vectorise input text.

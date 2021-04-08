@@ -1,24 +1,12 @@
 from typing import List, Tuple, Union, Dict
-from backprop.models import GPT2Large, T5QASummaryEmotion, BaseModel, T5
+from backprop.models import AutoModel, BaseModel
 from .base import Task
 from backprop.utils.datasets import TextToTextDataset
 
 import requests
 from transformers.optimization import Adafactor
 
-DEFAULT_LOCAL_MODEL = GPT2Large
-
-LOCAL_MODELS = {
-    "gpt2": DEFAULT_LOCAL_MODEL,
-    "t5-base-qa-summary-emotion": T5QASummaryEmotion,
-    "t5": T5
-}
-
-DEFAULT_API_MODEL = "gpt2-large"
-
-FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
-
-API_MODELS = ["gpt2-large", "t5-base-qa-summary-emotion"]
+DEFAULT_LOCAL_MODEL = "gpt2_large"
 
 class TextGeneration(Task):
     """
@@ -26,10 +14,9 @@ class TextGeneration(Task):
 
     Attributes:
         model:
-            1. Name of the model on Backprop's generation endpoint (gpt2-large, t5-base-qa-summary-emotion or your own uploaded model)
-            2. Officially supported local models (gpt2, t5-base-qa-summary-emotion).
-            3. Model object/class that inherits from backprop's TextGenerationModel
-            4. Path/name of saved Backprop model
+            1. Model name
+            2. Model name on Backprop's text-vectorisation endpoint
+            3. Model object that implements the text-vectorisation task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -37,10 +24,12 @@ class TextGeneration(Task):
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
 
+        task = "text-generation"
+        models = AutoModel.list_models(task=task)
+
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
-                        default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        models=models, task=task,
+                        default_local_model=DEFAULT_LOCAL_MODEL)
 
     
     def __call__(self, text: Union[str, List[str]], min_length: int = None, max_length: int = None, temperature: float = None,

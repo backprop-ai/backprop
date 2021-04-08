@@ -1,10 +1,9 @@
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 import torch
 
-from backprop.models import T5
+from backprop.models import HFSeq2SeqTGModel
 
-class T5QASummaryEmotion(T5):
+class T5QASummaryEmotion(HFSeq2SeqTGModel):
     """
     Initialises a T5 model that has been finetuned on qa, summarisation and emotion detection.
 
@@ -13,15 +12,14 @@ class T5QASummaryEmotion(T5):
         model_path: path to an appropriate T5 model on huggingface (kiri-ai/t5-base-qa-summary-emotion)
         kwargs: kwrags passed to :class:`backprop.models.t5.model.T5`
     """
-    def __init__(self, *args, model_path="kiri-ai/t5-base-qa-summary-emotion", **kwargs):
-        T5.__init__(self, model_path=model_path,
-                    *args, **kwargs)
+    def __init__(self, model_path=None, name: str = None,
+                description: str = None, details: Dict = None, device=None):
+        tasks = ["text-generation", "emotion", "summarisation", "qa"]
+        HFSeq2SeqTGModel.__init__(self, model_path=model_path, name=name,
+                                description=description, tasks=tasks, details=details,
+                                device=device)
 
-        self.tasks = ["text-generation", "emotion", "summarisation", "qa"]
-        self.description = "This is the T5 base model by Google, and has been finetuned further for Q&A, Summarisation, and Sentiment analysis (emotion detection)."
-        self.name = "t5-base-qa-summary-emotion"
-
-    @torch.no_grad
+    @torch.no_grad()
     def __call__(self, task_input, task="text-generation"):
         """
         Uses the model for the chosen task
@@ -62,6 +60,12 @@ class T5QASummaryEmotion(T5):
             return self.qa(task_input["question"], task_input["context"], prev_qa=prev_qa)
         else:
             raise ValueError(f"Unsupported task: {task}")
+
+    @staticmethod
+    def list_models():
+        from .models_list import models
+
+        return models
 
     def emote_or_summary(self, text, task_prefix):
         if isinstance(text, list):

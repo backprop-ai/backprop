@@ -5,10 +5,10 @@ import pytorch_lightning as pl
 import numpy as np
 
 from PIL import Image
-from typing import Union, List
+from typing import Union, List, Dict
 from functools import partial
 from . import clip, simple_tokenizer
-from backprop.models import BaseModel, Finetunable
+from backprop.models import BaseModel
 from backprop.utils import ImageTextGroupDataset, base64_to_img
 from backprop.utils.losses import TripletLoss
 
@@ -20,7 +20,9 @@ import os
 
 class CLIP(BaseModel):
     def __init__(self, model_path="ViT-B/32", init_model=clip.load,
-                init_tokenizer=simple_tokenizer.SimpleTokenizer, device=None):
+                init_tokenizer=simple_tokenizer.SimpleTokenizer, name: str = None,
+                description: str = None, tasks: List[str] = None, details: Dict = None,
+                device=None):
         BaseModel.__init__(self, None)
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
@@ -43,6 +45,12 @@ class CLIP(BaseModel):
         # Can't specify max_length
         self.max_length = None
         self.pre_finetuning = self.model.float
+
+    @staticmethod
+    def list_models():
+        from .models_list import models
+
+        return models
             
     def __call__(self, task_input, task="image-classification", return_tensor=False, preprocess=True, train=False):
         output = None
@@ -51,6 +59,9 @@ class CLIP(BaseModel):
         if task == "image-classification":
             image = task_input.get("image")
             labels = task_input.get("labels")
+
+            if labels is None:
+                raise ValueError("labels must be provided")
 
             if preprocess:
                 image = base64_to_img(image)

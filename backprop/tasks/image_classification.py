@@ -1,6 +1,6 @@
 from typing import List, Tuple, Union
-from ..models import BaseModel, ClassificationModel
-from backprop.models import CLIP, EfficientNet
+from ..models import BaseModel
+from backprop.models import AutoModel
 from backprop.utils.datasets import SingleLabelImageClassificationDataset, MultiLabelImageClassificationDataset
 from .base import Task
 from PIL import Image
@@ -12,39 +12,29 @@ import base64
 import requests
 from io import BytesIO
 
-DEFAULT_LOCAL_MODEL = CLIP
-
-LOCAL_MODELS = {
-    "english": CLIP,
-    "efficientnet": EfficientNet
-}
-
-DEFAULT_API_MODEL = "english"
-FINETUNABLE_MODELS = ["efficientnet"]
-
-API_MODELS = ["english"]
+DEFAULT_LOCAL_MODEL = "clip"
 
 class ImageClassification(Task):
     """
-    Task for classification.
+    Task for image classification.
 
     Attributes:
         model:
-            1. Name of the model on Backprop's image classification endpoint (english, efficientnet or your own uploaded model)
-            2. Officially supported local models (english, efficientnet).
-            3. Model class of instance Backprop's BaseModel that implements the image-classification task
-            4. Path/name of saved Backprop model
+            1. Model name
+            2. Model name on Backprop's image-classification endpoint
+            3. Model object that implements the image-classification task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
+        task = "image-classification"
+        models = AutoModel.list_models(task=task)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
-                        default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        models=models, task=task,
+                        default_local_model=DEFAULT_LOCAL_MODEL)
 
     
     def __call__(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None):

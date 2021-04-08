@@ -1,11 +1,11 @@
 import torch
 from PIL import Image
-from typing import Union, List
+from typing import Union, List, Dict
 from efficientnet_pytorch import EfficientNet as EfficientNet_pt
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from random import shuffle
-from backprop.models import PathModel, Finetunable
+from backprop.models import PathModel
 from backprop.utils.download import download
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.utils.data import DataLoader
@@ -29,9 +29,9 @@ class EfficientNet(PathModel):
         init_model: Callable that initialises the model from the model_path
         kwargs: kwrags passed to :class:`backprop.models.generic_models.PathModel`
     """
-    def __init__(self, model_path: str = "efficientnet-b0", init_model = None, **kwargs):
-        Finetunable.__init__(self)
-        
+    def __init__(self, model_path: str = "efficientnet-b0", init_model = None, name: str = None,
+                description: str = None, tasks: List[str] = None, details: Dict = None,
+                device=None):
         self.image_size = EfficientNet_pt.get_image_size(model_path)
         self.num_classes = 1000
 
@@ -49,14 +49,22 @@ class EfficientNet(PathModel):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ])
 
-        PathModel.__init__(self, model_path, init_model, **kwargs)
-        
-        self.name = model_path
-        self.description = "EfficientNet is an image classification model that achieves state-of-the-art accuracy while being an order-of-magnitude smaller and faster than previous models. Trained on ImageNet's 1000 categories."
-        self.tasks = ["image-classification"]
+        tasks = tasks or ["image-classification"]
+
         self.optimal_batch_size = 128
         self.process_image = self.tfms
+        
+        PathModel.__init__(self, model_path, name=name, description=description,
+                            details=details, tasks=tasks, init_model=init_model,
+                            device=device)
 
+
+    @staticmethod
+    def list_models():
+        from .models_list import models
+
+        return models
+    
     def __call__(self, task_input, task="image-classification", train=False):
         """
         Uses the model for the image-classification task
@@ -110,7 +118,7 @@ class EfficientNet(PathModel):
             dist = torch.softmax(logits, dim=1)
             probs = {}
             for idx in preds:
-                label = self.labels[idx]
+                label = self.labels[str(idx)]
                 prob = dist[0, idx].item()
 
                 probs[label] = prob

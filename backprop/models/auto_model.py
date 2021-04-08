@@ -1,4 +1,5 @@
-from backprop.models import HFNLIModel
+from backprop.models import HFNLIModel, STModel, HFSeq2SeqTGModel, T5QASummaryEmotion, \
+    HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP
 from backprop import load
 import torch
 
@@ -30,7 +31,8 @@ class AutoModel:
 
     @staticmethod
     def list_models(task=None):
-        models_classes = [HFNLIModel]
+        models_classes = [HFNLIModel, STModel, HFSeq2SeqTGModel, T5QASummaryEmotion,
+                          HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP]
 
         models_list = {}
         for model_class in models_classes:
