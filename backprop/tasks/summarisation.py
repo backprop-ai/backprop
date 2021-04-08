@@ -66,11 +66,9 @@ class Summarisation(Task):
 
             return res["summary"]
     
-    
     def step(self, batch, batch_idx):
-        outputs = self.model(batch, task="summarisation", train=True)
-        return outputs.loss
-    
+        return self.model.training_step(batch)
+        
     def configure_optimizers(self):
         return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
     
@@ -99,7 +97,6 @@ class Summarisation(Task):
 
         print("Processing data...")
         dataset = TextToTextDataset(dataset_params, task="summarisation", process_batch=self.model.process_batch, length=len(inputs))
-
 
         super().finetune(dataset=dataset, validation_split=validation_split,
                         epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,

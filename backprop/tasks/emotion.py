@@ -68,8 +68,7 @@ class Emotion(Task):
             return res["emotion"]
     
     def step(self, batch, batch_idx):
-        outputs = self.model(batch, task="emotion", train=True)
-        return outputs.loss
+        return self.model.training_step(batch)
     
     def configure_optimizers(self):
         return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)

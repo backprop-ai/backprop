@@ -27,6 +27,7 @@ class T5(TextGenerationModel):
         self.name = "t5"
         self.optimal_batch_size = 128
 
+    @torch.no_grad
     def __call__(self, task_input, task="text-generation", train=False):
         """
         Uses the model for the text-generation task
@@ -37,15 +38,15 @@ class T5(TextGenerationModel):
             task: text-generation, or a task you've tuned a T5 model on
         """
         if task == "text-generation":
-            with torch.set_grad_enabled(train):
-                if train:
-                    return self.model(**task_input)
-                else:
-                    text = task_input.pop("text")
-                    return self.generate(text, **task_input)
+            text = task_input.pop("text")
+            return self.generate(text, **task_input)
         else:
             raise ValueError(f"Unsupported task: {task}")
     
+
+    def training_step(self, task_input):
+        return self.model(**task_input).loss
+
     def process_batch(self, params, task):
         inp = params["input"]
         out = params.pop("output", None)
@@ -60,7 +61,6 @@ class T5(TextGenerationModel):
         
         return processed
         
-    
     def encode_input(self, text, max_length=128):
         tokens = self.tokenizer(text, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")
         return {"input_ids": tokens.input_ids[0], "attention_mask": tokens.attention_mask[0]}
