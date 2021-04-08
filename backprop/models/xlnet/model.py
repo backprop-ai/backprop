@@ -65,7 +65,9 @@ class XLNet(ClassificationModel, Finetunable):
 
         else:
             raise ValueError(f"Unsupported task: {task}")
-        
+    
+    def training_step(self, batch):
+        return self.model(batch)[0]
 
     def process_text(self, text, target, max_input_length):
         tokens = self.tokenizer(text, truncation=True, max_length=max_input_length, padding="max_length", return_tensors="pt")

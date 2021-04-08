@@ -94,9 +94,7 @@ class TextClassification(Task):
         return probabilities
 
     def step(self, batch, batch_idx):
-        outputs = self.model(batch, train=True)
-        loss = outputs[0]
-        return loss
+        return self.model.training_step(batch, train=True)
     
     def configure_optimizers(self):
         return AdamW(params=self.model.parameters(), lr=2e-5)
