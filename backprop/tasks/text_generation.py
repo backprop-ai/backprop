@@ -93,9 +93,7 @@ class TextGeneration(Task):
             return res["output"]
 
     def step(self, batch, batch_idx):
-        outputs = self.model(batch, task="text-generation", train=True)
-
-        return outputs.loss
+        return self.model.training_step(batch)
 
     def configure_optimizers(self):
         return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
@@ -158,7 +156,7 @@ class TextGeneration(Task):
         }
 
         print("Processing data...")
-        dataset = TextToTextDataset(dataset_params, task="text-generation", process_batch=self.model.process_batch, length=len(input_text))
+        dataset = TextToTextDataset(dataset_params, task="text-generation", process_batch=self.model.process_batch, length=len(input))
 
         super().finetune(dataset=dataset, validation_split=validation_split, epochs=epochs,
                 batch_size=batch_size, optimal_batch_size=optimal_batch_size,

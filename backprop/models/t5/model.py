@@ -28,7 +28,7 @@ class T5(TextGenerationModel):
         self.optimal_batch_size = 128
 
     @torch.no_grad
-    def __call__(self, task_input, task="text-generation", train=False):
+    def __call__(self, task_input, task="text-generation"):
         """
         Uses the model for the text-generation task
 
