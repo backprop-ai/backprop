@@ -169,7 +169,6 @@ class TextGroupDataset(Dataset):
 
         return text, group
 
-
 class SingleLabelImageClassificationDataset(Dataset):
     def __init__(self, images, labels, process_image):
         super().__init__()
@@ -218,3 +217,83 @@ class MultiLabelImageClassificationDataset(Dataset):
             target[i] = 1.
 
         return image, target
+
+class TextToTextDataset(Dataset):
+    def __init__(self, inputs, outputs, process_text, max_input_length, max_output_length):
+        super().__init__()
+        
+        self.inputs = inputs
+        self.outputs = outputs
+        self.process_text = process_text
+        self.max_input_length = max_input_length
+        self.max_output_length = max_output_length
+
+    def __len__(self):
+        return len(self.inputs)
+    
+    def __getitem__(self, idx):
+        inputs = self.inputs[idx]
+        outputs = self.outputs[idx]
+
+        inputs, outputs = self.process_text(inputs, outputs, self.max_input_length, self.max_output_length)
+        if isinstance(inputs, torch.Tensor):
+            inputs = inputs.squeeze(0)
+            outputs = outputs.squeeze(0)
+        else:
+            inputs = {k: v.squeeze(0) for k, v in inputs.items()}
+            outputs = {k: v.squeeze(0) for k, v in outputs.items()}
+
+
+        return {**inputs, **outputs}
+
+class QADataset(Dataset):
+    def __init__(self, questions, contexts, prev_qas, answers, process_text, max_input_length, max_output_length):
+        super().__init__()
+        
+        self.questions = questions
+        self.contexts = contexts
+        self.prev_qas = prev_qas
+        self.answers = answers
+        self.max_input_length = max_input_length
+        self.max_output_length = max_output_length
+        self.process_text = process_text
+    
+    def __len__(self):
+        return len(self.questions)
+    
+    def __getitem__(self, idx):
+        question = self.questions[idx]
+        context = self.contexts[idx]
+        prev_qa = self.prev_qas[idx]
+        answer = self.answers[idx]
+
+        inp, out = self.process_text(question, context, prev_qa, answer=answer, max_input_length=self.max_input_length, max_output_length=self.max_output_length)
+
+        if isinstance(inp, torch.Tensor):
+            inp = inp.squeeze(0)
+            out = out.squeeze(0)
+        else:
+            inp = {k: v.squeeze(0) for k, v in inp.items()}
+            out = {k: v.squeeze(0) for k, v in out.items()}
+        
+        return {**inp, **out}
+
+
+class SingleLabelTextClassificationDataset(Dataset):
+    def __init__(self, texts, labels, process_text, max_input_length):
+        super().__init__()
+
+        self.texts = texts
+        self.labels = labels
+        self.label_to_idx = {label: i for i, label in enumerate(set(labels))}
+        self.max_input_length = max_input_length
+        self.process_text = process_text
+    
+    def __len__(self):
+        return len(self.texts)
+    
+    def __getitem__(self, idx):
+        target = self.label_to_idx[self.labels[idx]]
+        inp = self.process_text(self.texts[idx], target, self.max_input_length)
+
+        return inp
