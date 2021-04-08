@@ -1,6 +1,8 @@
 from typing import List, Tuple, Union, Dict
 from .base import Task
 from backprop.models import T5QASummaryEmotion, BaseModel
+from transformers.optimization import Adafactor
+from backprop.utils.datasets import QADataset
 
 import requests
 
@@ -55,9 +57,18 @@ class QA(Task):
         prev_q = []
         prev_a = []
         if prev_qa != [] and type(prev_qa[0]) == list:
-            for prev_qa in prev_qa:
-                prev_q += [q for q, a in prev_qa]
-                prev_a += [a for q, a in prev_qa]
+            for pqa in prev_qa:
+                if len(pqa) == 0:
+                    prev_q.append([])
+                    prev_a.append([])
+                else:
+                    q = []
+                    a = []
+                    for x in pqa:
+                        q.append(x[0])
+                        a.append(x[1])
+                    prev_q.append(q)
+                    prev_a.append(a)
         else:
             prev_q = [q for q, a in prev_qa]
             prev_a = [a for q, a in prev_qa]
@@ -81,53 +92,87 @@ class QA(Task):
 
             return res["answer"]
     
-    def finetune(self, params: Dict, *args, **kwargs):
-        """
-        Passes args and kwargs to the model's finetune method.
-        Input orderings must match.
+    # def finetune(self, params: Dict, *args, **kwargs):
+    #     """
+    #     Passes args and kwargs to the model's finetune method.
+    #     Input orderings must match.
 
-        Args:
-            params: dictionary of lists: 'questions', 'answers', 'contexts'.
-                    Optionally includes 'prev_qas': list of list of (q, a) tuples to prepend to context.
+    #     Args:
+    #         params: dictionary of lists: 'questions', 'answers', 'contexts'.
+    #                 Optionally includes 'prev_qas': list of list of (q, a) tuples to prepend to context.
         
-        Examples::
+    #     Examples::
 
-            import backprop
+    #         import backprop
             
-            # Initialise task
-            qa = backprop.QA(backprop.models.T5)
+    #         # Initialise task
+    #         qa = backprop.QA(backprop.models.T5)
 
-            questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
-            answers = ["A library that trains models", "Python", "1964"]
-            contexts = ["Backprop is a Python library that makes training and using models easier.", 
-                        "Backprop is a Python library that makes training and using models easier.",
-                        "Bob Moog was a physicist. He invented the Moog synthesizer in 1964."]
+    #         questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
+    #         answers = ["A library that trains models", "Python", "1964"]
+    #         contexts = ["Backprop is a Python library that makes training and using models easier.", 
+    #                     "Backprop is a Python library that makes training and using models easier.",
+    #                     "Bob Moog was a physicist. He invented the Moog synthesizer in 1964."]
             
-            prev_qas = [[], 
-                        [("What's Backprop?", "A library that trains models")],
-                        []]
+    #         prev_qas = [[], 
+    #                     [("What's Backprop?", "A library that trains models")],
+    #                     []]
 
-            params = {"questions": questions,
-                      "answers": answers,
-                      "contexts": contexts,
-                      "prev_qas": prev_qas}
+    #         params = {"questions": questions,
+    #                   "answers": answers,
+    #                   "contexts": contexts,
+    #                   "prev_qas": prev_qas}
 
-            # Finetune
-            qa.finetune(params=params)
-        """
-        # params = kwargs["params"]
-        print(params)
-        if not "questions" in params:
-            print("Params requires key: 'questions' (list of questions)")
-            return
-        if not "answers" in params:
-            print("Params requires key: 'answers' (list of answers)")
-            return
-        if not "contexts" in params:
-            print("Params requires key: 'contexts' (list of question contexts)")
-            return
+    #         # Finetune
+    #         qa.finetune(params=params)
+    #     """
+    #     # params = kwargs["params"]
+    #     print(params)
+    #     if not "questions" in params:
+    #         print("Params requires key: 'questions' (list of questions)")
+    #         return
+    #     if not "answers" in params:
+    #         print("Params requires key: 'answers' (list of answers)")
+    #         return
+    #     if not "contexts" in params:
+    #         print("Params requires key: 'contexts' (list of question contexts)")
+    #         return
 
-        try:
-            return self.model.finetune(params=params, task="qa", *args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+    #     try:
+    #         return self.model.finetune(params=params, task="qa", *args, **kwargs)
+    #     except NotImplementedError:
+    #         raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+
+    def step(self, batch, batch_idx):
+        outputs = self.model(batch, task="summarisation", train=True)
+        return outputs.loss
+
+    def configure_optimizers(self):
+        return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
+
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
+                  max_input_length: int=256, max_output_length: int=32,
+                  epochs: int=20, batch_size: int=None,
+                  optimal_batch_size: int=None, early_stopping_epochs: int=1,
+                  train_dataloader=None, val_dataloader=None, step=None,
+                  configure_optimizers=None):
+        
+        questions = params["questions"]
+        contexts = params["contexts"]
+        answers = params["answers"]
+        prev_qas = params["prev_qas"]
+        
+        assert len(questions) == len(answers) and len(questions) == len(contexts)
+    
+        step = step or self.step
+        configure_optimizers = configure_optimizers or self.configure_optimizers
+
+        print("Processing data...")
+        dataset = QADataset(questions, contexts, prev_qas, answers, self.model.process_qa, max_input_length, max_output_length)
+        
+        super().finetune(dataset=dataset, validation_split=validation_split,
+                epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,
+                early_stopping_epochs=early_stopping_epochs,
+                train_dataloader=train_dataloader, val_dataloader=val_dataloader,
+                step=step, configure_optimizers=configure_optimizers)
+        

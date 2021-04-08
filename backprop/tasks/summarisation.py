@@ -66,25 +66,6 @@ class Summarisation(Task):
 
             return res["summary"]
     
-    # def finetune(self, params: Dict, *args, **kwargs):
-    #     """
-    #     Passes args and kwargs to the model's finetune method
-        
-    #     Args:
-    #         params: dictionary of 'input_text' and 'output_text' lists.
-    #     """
-
-    #     if not "input_text" in params:
-    #         print("Params requires key: 'input_text' (list of inputs)")
-    #         return
-    #     if not "output_text" in params:
-    #         print("Params requires key: 'output_text' (list of outputs)")
-    #         return
-
-    #     try:
-    #         return self.model.finetune(params, task="summarisation", *args, **kwargs)
-    #     except NotImplementedError:
-    #         raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
     
     def step(self, batch, batch_idx):
         outputs = self.model(batch, task="summarisation", train=True)

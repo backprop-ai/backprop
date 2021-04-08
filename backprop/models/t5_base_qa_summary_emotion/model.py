@@ -32,26 +32,47 @@ class T5QASummaryEmotion(T5):
         if train:
             return self.model(**task_input)
         else:
-            if task in ["text-generation", "generation"]:
-                text = task_input.pop("text")
-                return self.generate(text, **task_input)
-            elif task == "emotion":
-                return self.emotion(task_input["text"])
-            elif task == "summarisation":
-                # text = f"summarise: {task_input['text']}"
-                return self.summarise(task_input["text"])
-            elif task == "qa":
-                prev_q = task_input.get("prev_q", [])
-                prev_a = task_input.get("prev_a", [])
-                prev_qa = []
+            with torch.set_grad_enabled(train):
+                if task in ["text-generation", "generation"]:
+                    text = task_input.pop("text")
+                    return self.generate(text, **task_input)
+                elif task == "emotion":
+                    return self.emote_or_summary(task_input["text"], "emotion")
+                elif task == "summarisation":
+                    return self.emote_or_summary(task_input["text"], "summarise")
+                elif task == "qa":
+                    prev_q = task_input.get("prev_q", [])
+                    prev_a = task_input.get("prev_a", [])
+                    prev_qa = []
 
-                if len(prev_q) != 0:
-                    prev_qa = list(zip(prev_q, prev_a))
-                return self.qa(task_input["question"], task_input["context"], prev_qa=prev_qa)
-            else:
-                raise ValueError(f"Unsupported task: {task}")
+                    if len(prev_q) != 0:
+                        if type(prev_q[0]) != list:
+                            qas = []
+                            for x in range(len(prev_q)):
+                                qas.append((prev_q[x], prev_a[x]))
+                            prev_qa.append(qas)
+                        else:
+                            for pqa in zip(prev_q, prev_a):
+                                if len(pqa[0]) == 0:
+                                    prev_qa.append([])
+                                else:
+                                    qas = []
+                                    for x in range(len(pqa[0])):
+                                        pair = (pqa[0][x], pqa[1][x])
+                                        qas.append(pair)
+                                    prev_qa.append(qas)
 
+                    return self.qa(task_input["question"], task_input["context"], prev_qa=prev_qa)
+                else:
+                    raise ValueError(f"Unsupported task: {task}")
 
+    def emote_or_summary(self, text, task_prefix):
+        if isinstance(text, list):
+            text = [f"{task_prefix}: {t}" for t in text]
+        else:
+            text = f"{task_prefix}: {text}"
+        
+        return self.generate(text, do_sample=False, max_length=96)
 
     def qa(self, question, context, prev_qa: List[Tuple[str, str]] = []):
         if isinstance(question, list):
@@ -67,19 +88,9 @@ class T5QASummaryEmotion(T5):
                           for q, c, p in zip(question, context, prev_qa)]
         else:
             input_text = self.process_qa(question, context, prev_qa)
-
+        print(input_text)
         return self.generate(input_text, do_sample=False, max_length=96)
         
-    def summarise(self, text):
-        if isinstance(text, list):
-            # Process according to the model used
-            text = [self.process_summarisation(item) for item in text]
-        else:
-            text = self.process_summarisation(text)
-
-        return self.generate(text, do_sample=False, max_length=96)
-
-
     def process_summarisation(self, inp, out, max_input_length, max_output_length):
         inp = f"summarise: {inp}"
         
@@ -87,14 +98,19 @@ class T5QASummaryEmotion(T5):
         out = self.encode_output(out, max_output_length)
 
         return inp, out
-    
-    def process_qa(self, question, context, prev_qa):
+
+    def process_qa(self, question, context, prev_qa, answer=None, max_input_length=256, max_output_length=32):
         input_text = [f"q: {qa[0]} a: {qa[1]}" for qa in prev_qa]
         input_text.append(f"q: {question}")
         input_text.append(f"c: {context}")
         input_text = " ".join(input_text)
         
-        return input_text
+        if answer:
+            input_text = self.encode_input(input_text, max_input_length)
+            answer = self.encode_output(answer, max_output_length)
+            return input_text, answer
+        else:
+            return input_text
 
     def encode_input(self, inp, max_length):
         tokens = self.tokenizer(inp, truncation=True, max_length=max_length, padding="max_length", return_tensors="pt")
@@ -105,15 +121,10 @@ class T5QASummaryEmotion(T5):
         return {"labels": tokens.input_ids[0], "decoder_attention_mask": tokens.attention_mask[0]}
 
     
-    def process_emotion(self, text):
-        return f"emotion: {text}"
+    def process_emotion(self, inp, out, max_input_length, max_output_length):
+        inp = f"emotion: {inp}"
 
-    
-    def emotion(self, text):
-        if isinstance(text, list):
-            # Process according to the model used
-            text = [self.process_emotion(item) for item in text]
-        else:
-            text = self.process_emotion(text)
+        inp = self.encode_input(inp, max_input_length)
+        out = self.encode_output(out, max_output_length)
 
-        return self.generate(text, do_sample=False, max_length=96)
+        return inp, out

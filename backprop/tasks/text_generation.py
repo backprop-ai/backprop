@@ -1,6 +1,7 @@
 from typing import List, Tuple, Union, Dict
 from backprop.models import GPT2Large, T5QASummaryEmotion, BaseModel, T5
 from .base import Task
+from backprop.utils.datasets import TextToTextDataset
 
 import requests
 from transformers.optimization import Adafactor
@@ -150,10 +151,7 @@ class TextGeneration(Task):
         step = step or self.step
 
         print("Processing data...")
-        dataset = zip(input_text, output_text)
-        dataset = [self.model.process_text(r[0], output_text=r[1],
-                    max_input_length=max_input_length,
-                    max_output_length=max_output_length) for r in dataset]
+        dataset = TextToTextDataset(inputs, outputs, self.model.process_text, max_input_length=max_input_length, max_output_length=max_output_length)
 
         super().finetune(dataset=dataset, validation_split=validation_split, epochs=epochs,
                 batch_size=batch_size, optimal_batch_size=optimal_batch_size,

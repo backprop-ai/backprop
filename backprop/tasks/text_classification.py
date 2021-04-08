@@ -3,6 +3,7 @@ from backprop.models import BartLargeMNLI, XLMRLargeXNLI, BaseModel
 from .base import Task
 import torch
 from transformers.optimization import AdamW
+from backprop.utils.datasets import SingleLabelTextClassificationDataset
 
 import requests
 
@@ -136,8 +137,10 @@ class TextClassification(Task):
 
 
         print("Processing data...")
-        dataset = zip(inputs, output_classes)
-        dataset = [self.model.process_text(r[0], r[1], max_input_length) for r in dataset]
+        # dataset = zip(inputs, output_classes)
+        # dataset = [self.model.process_text(r[0], r[1], max_input_length) for r in dataset]
+
+        dataset = SingleLabelTextClassificationDataset(inputs, outputs, self.model.process_text, max_input_length)
 
         super().finetune(dataset=dataset, validation_split=validation_split, 
                         epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size, 
