@@ -179,7 +179,7 @@ class PathModel(BaseModel):
         return self.model(*args, **kwargs)
 
 
-class HuggingModel(PathModel):
+class HFModel(PathModel):
     """
     Class for models which are initialised from a local path or huggingface
 
@@ -291,12 +291,12 @@ class TextVectorisationModel(PathModel):
         return AdamW(params=self.model.parameters(), lr=2e-5, eps=1e-6, correct_bias=False)
 
 
-class TextGenerationModel(HuggingModel):
+class TextGenerationModel(HFModel):
     """
     Class for models which are initialised from a local path or Huggingface
 
     Attributes:
-        *args and **kwargs are passed to HuggingModel's __init__
+        *args and **kwargs are passed to HFModel's __init__
     """
     def generate(self, text, **kwargs):
         """
@@ -368,7 +368,7 @@ class TextGenerationModel(HuggingModel):
         return output
 
 
-class ClassificationModel(HuggingModel):
+class ClassificationModel(HFModel):
     """
     Class for classification models which are initialised from a local path or huggingface
 

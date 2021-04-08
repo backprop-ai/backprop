@@ -1,26 +1,33 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from backprop.models import HuggingModel
+from backprop.models import HFModel
 
-class BartLargeMNLI(HuggingModel):
-    def __init__(self, model_path="facebook/bart-large-mnli", tokenizer_path=None,
+class HFNLIModel(HFModel):
+    def __init__(self, model_path=None, tokenizer_path=None,
                 model_class=AutoModelForSequenceClassification,
                 tokenizer_class=AutoTokenizer, device=None):
-        HuggingModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
+        HFModel.__init__(self, model_path, tokenizer_path=tokenizer_path,
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device)
 
-        self.name = "bart-large-mnli"
-        self.description = "Facebook's large version of BART, finetuned on the Multi-Genre Natural Language Inference dataset. This training results in a robust zero-shot classification system."
         self.tasks = ["text-classification"]
 
     def __call__(self, task_input, task="text-classification"):
-        if task in ["text-classification", "classification"]:
+        if task == "text-classification":
             text = task_input.get("text")
             labels = task_input.get("labels")
+
+            if labels == None:
+                raise ValueError("labels must be provided")
+
             return self.classify(text, labels)
         else:
             raise ValueError(f"Unsupported task: {task}")
 
+    @staticmethod
+    def list_models():
+        from .models_list import models
+
+        return models
 
     def calculate_probability(self, text, label, device):
         hypothesis = f"This example is {label}."

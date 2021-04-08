@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union, Optional
-from backprop.models import BartLargeMNLI, XLMRLargeXNLI, BaseModel
+from backprop.models import BaseModel, AutoModel
 from .base import Task
 import torch
 from transformers.optimization import AdamW
@@ -7,18 +7,7 @@ from backprop.utils.datasets import SingleLabelTextClassificationDataset
 
 import requests
 
-DEFAULT_LOCAL_MODEL = BartLargeMNLI
-
-LOCAL_MODELS = {
-    "english": DEFAULT_LOCAL_MODEL,
-    "multilingual": XLMRLargeXNLI
-}
-
-DEFAULT_API_MODEL = "english"
-
-FINETUNABLE_MODELS = ["xlnet"]
-
-API_MODELS = ["english", "multilingual"]
+DEFAULT_LOCAL_MODEL = "bart-large-mnli"
 
 class TextClassification(Task):
     """
@@ -26,21 +15,21 @@ class TextClassification(Task):
 
     Attributes:
         model:
-            1. Name of the model on Backprop's classification endpoint (english, multilingual or your own uploaded model)
-            2. Officially supported local models (english, multilingual).
-            3. Model class of instance Backprop's TextClassificationModel
-            4. Path/name of saved Backprop model
+            1. Model name
+            2. Model name on Backprop's text-classification endpoint
+            3. Model object that implements the text-classification task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
+        task = "text-classification"
+        models = AutoModel.list_models(task=task)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
-                        default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        models=models, task=task,
+                        default_local_model=DEFAULT_LOCAL_MODEL)
 
     
     def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None):
@@ -70,9 +59,11 @@ class TextClassification(Task):
         else:
             body = {
                 "text": text,
-                "labels": labels,
-                "model": self.model,
+                "labels": labels
             }
+
+            if self.model:
+                body["model"] = self.model
 
             res = requests.post("https://api.backprop.co/text-classification", json=body,
                                 headers={"x-api-key": self.api_key}).json()
