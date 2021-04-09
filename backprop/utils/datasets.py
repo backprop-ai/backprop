@@ -229,7 +229,7 @@ class TextToTextDataset(Dataset):
         return self.length
     
     def __getitem__(self, idx):
-        params = {k: (v if type(v) != list else v[idx]) for k,v in self.params.items()}
+        params = {k: (v if type(v) != list else v[idx]) for k, v in self.params.items()}
 
         inp = self.process_batch(params, task=self.task)
 
@@ -243,20 +243,19 @@ class TextToTextDataset(Dataset):
         return {**inp}
 
 class SingleLabelTextClassificationDataset(Dataset):
-    def __init__(self, texts, labels, process_text, max_input_length):
+    def __init__(self, params, proces_batch, length):
         super().__init__()
 
-        self.texts = texts
-        self.labels = labels
-        self.label_to_idx = {label: i for i, label in enumerate(set(labels))}
-        self.max_input_length = max_input_length
-        self.process_text = process_text
+        self.params = params
+        self.process_batch = process_batch
+        self.length = length
     
     def __len__(self):
-        return len(self.texts)
+        return self.length
     
     def __getitem__(self, idx):
-        target = self.label_to_idx[self.labels[idx]]
-        inp = self.process_text(self.texts[idx], target, self.max_input_length)
 
-        return inp
+        params = {k: (v if type(v) != list else v[idx]) for k, v in self.params.items()}
+        inp = self.process_batch(params)
+
+        return {**inp}

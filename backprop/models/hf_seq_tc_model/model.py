@@ -113,8 +113,12 @@ class HFSeqTCModel(HFModel):
     def training_step(self, batch):
         return self.model(batch)[0]
 
-    def process_text(self, text, target, max_input_length):
-        tokens = self.tokenizer(text, truncation=True, max_length=max_input_length, padding="max_length", return_tensors="pt")
+    def process_batch(self, params):
+        text = params["inputs"]
+        class_to_idx = params["class_to_idx"]
+        target = class_to_idx[params["labels"]]
+
+        tokens = self.tokenizer(text, truncation=True, max_length=params["max_input_length"], padding="max_length", return_tensors="pt")
         return {
             "input_ids": tokens.input_ids[0],
             "attention_mask": tokens.attention_mask[0],

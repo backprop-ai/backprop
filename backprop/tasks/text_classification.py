@@ -124,12 +124,16 @@ class TextClassification(Task):
         if hasattr(self.model, "pre_finetuning"):
             self.model.pre_finetuning(labels)
 
-
         print("Processing data...")
-        # dataset = zip(inputs, output_classes)
-        # dataset = [self.model.process_text(r[0], r[1], max_input_length) for r in dataset]
 
-        dataset = SingleLabelTextClassificationDataset(inputs, outputs, self.model.process_text, max_input_length)
+        dataset_params = {
+            "inputs": inputs
+            "labels": outputs
+            "class_to_idx": class_to_idx,
+            "max_input_length": max_input_length
+        }
+        
+        dataset = SingleLabelTextClassificationDataset(dataset_params, process_batch=self.model.process_batch, length=len(inputs))
 
         super().finetune(dataset=dataset, validation_split=validation_split, 
                         epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size, 
