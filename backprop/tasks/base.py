@@ -41,6 +41,10 @@ class Task(pl.LightningModule):
             if model is not None and type(model) != str:
                 raise ValueError(f"Model must be a string identifier to be used in the API")
     
+            # API uses default model
+            if model is None:
+                model = ""
+
         # All checks passed
         self.model = model
 

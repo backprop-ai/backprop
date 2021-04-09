@@ -11,6 +11,7 @@ import base64
 
 import requests
 from io import BytesIO
+from backprop.utils.helpers import img_to_base64, path_to_img
 
 TASK = "image-classification"
 
@@ -45,54 +46,38 @@ class ImageClassification(Task):
         return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
 
     
-    def __call__(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None):
+    def __call__(self, image: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None,
+                top_k: int = 0, top_p: int = 1.0, multi_label: bool = False):
         """Classify image according to given labels.
 
         Args:
-            image_path: path to image or list of paths to image
+            image: image or list of images to vectorise. Can be both PIL Image objects or paths to images.
             labels: list of strings or list of labels (for zero shot classification)
+            top_k: return probabilities only for top_k predictions. Use 0 to get all.
+            top_p: return probabilities that sum to top_p (between 0 and 1). Use 1.0 to get all.
+            multi_label: allow multiple true labels. Not all models support this.
 
         Returns:
             dict where each key is a label and value is probability between 0 and 1 or list of dicts
         """
 
-        is_list = False
-
-        if type(image_path) == list:
-            is_list = True
-
-        if not is_list:
-            image_path = [image_path]
-
-        image = []
-        for img in image_path:
-            if not isinstance(img, Image.Image):
-                with open(img, "rb") as image_file:
-                    img = base64.b64encode(image_file.read())
-            else:
-                buffered = BytesIO()
-                img.save(buffered, format=img.format)
-                img = base64.b64encode(buffered.getvalue())
+        image = path_to_img(image)
             
-            image.append(img)
+        task_input = {
+            "image": image,
+            "labels": labels,
+            "top_k": top_k,
+            "top_p": top_p,
+            "multi_label": multi_label
+        }
 
-        if not is_list:
-            image = image[0]
-            
         if self.local:
-            task_input = {
-                "image": image,
-                "labels": labels
-            }
             return self.model(task_input, task=TASK)
         else:
-            body = {
-                "image": image,
-                "labels": labels,
-                "model": self.model,
-            }
+            task_input["image"] = img_to_base64(task_input["image"])
+            task_input["model"] = self.model
 
-            res = requests.post("https://api.backprop.co/image-classification", json=body,
+            res = requests.post("https://api.backprop.co/image-classification", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):

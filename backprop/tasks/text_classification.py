@@ -42,35 +42,34 @@ class TextClassification(Task):
     def list_models(return_dict=False, display=False, limit=None):
         return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
     
-    def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None):
+    def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None,
+                top_k: int = 0, top_p: int = 1.0, multi_label: bool = False):
         """Classify input text based on previous training (user-tuned models) or according to given list of labels (zero-shot)
 
         Args:
             text: string or list of strings to be classified
             labels: list of labels for zero-shot classification (on our out-of-the-box models).
                     If using a user-trained model (e.g. XLNet), this is not used.
+            top_k: return probabilities only for top_k predictions. Use 0 to get all.
+            top_p: return probabilities that sum to top_p (between 0 and 1). Use 1.0 to get all.
+            multi_label: allow multiple true labels. Not all models support this.
 
         Returns:
             dict where each key is a label and value is probability between 0 and 1, or list of dicts.
         """
-        if self.local:            
-            task_input = {
-                "text": text,
-                "labels": labels
-            }
-            
+        task_input = {
+            "text": text,
+            "labels": labels,
+            "top_k": top_k,
+            "top_p": top_p,
+            "multi_label": multi_label
+        }
+        if self.local:               
             return self.model(task_input, task=TASK)
-
         else:
-            body = {
-                "text": text,
-                "labels": labels
-            }
+            task_input["model"] = self.model
 
-            if self.model:
-                body["model"] = self.model
-
-            res = requests.post("https://api.backprop.co/text-classification", json=body,
+            res = requests.post("https://api.backprop.co/text-classification", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):
