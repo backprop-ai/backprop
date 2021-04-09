@@ -1,3 +1,4 @@
+from typing import Dict
 from backprop.models import HFNLIModel, STModel, HFSeq2SeqTGModel, T5QASummaryEmotion, \
     HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP
 from backprop import load
@@ -5,7 +6,7 @@ import torch
 
 class AutoModel:
     @staticmethod
-    def from_pretrained(model_name, device=None):
+    def from_pretrained(model_name: str, aliases: Dict = None, device: str = None):
         if device == None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -14,6 +15,14 @@ class AutoModel:
         models = AutoModel.list_models(return_dict=True)
         model_config = models.get(model_name)
 
+        # Try to find by alias
+        if model_config == None and aliases:
+            name_from_alias = aliases.get(model_name)
+
+            if name_from_alias:
+                model_config = models.get(name_from_alias)
+
+        # Try to load from local saved model
         if model_config == None:
             try:
                 model = load(model_name)
@@ -25,7 +34,12 @@ class AutoModel:
             model_class = model_config["class"]
             init_kwargs = model_config["init_kwargs"]
 
-            model = model_config["class"](**init_kwargs, device=device)
+            model = model_config["class"](**init_kwargs,
+                    description=model_config["description"],
+                    tasks=model_config["tasks"],
+                    name=model_config["name"],
+                    details=model_config.get("details"),
+                    device=device)
 
         return model
 

@@ -6,7 +6,13 @@ from backprop.utils.datasets import TextToTextDataset
 
 import requests
 
+TASK = "summarisation"
+
 DEFAULT_LOCAL_MODEL = "t5-base-qa-summary-emotion"
+
+LOCAL_ALIASES = {
+    "english": "t5-base-qa-summary-emotion"
+}
 
 class Summarisation(Task):
     """
@@ -23,16 +29,15 @@ class Summarisation(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
-        task = "summarisation"
-        models = AutoModel.list_models(task=task)
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        models=models, task=task,
+                        models=models, task=TASK,
                         default_local_model=DEFAULT_LOCAL_MODEL)
     
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task="summarisation", return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
 
     def __call__(self, text: Union[str, List[str]]):
         """Perform summarisation on input text.
@@ -89,7 +94,7 @@ class Summarisation(Task):
         }
 
         print("Processing data...")
-        dataset = TextToTextDataset(dataset_params, task="summarisation", process_batch=self.model.process_batch, length=len(inputs))
+        dataset = TextToTextDataset(dataset_params, task=TASK, process_batch=self.model.process_batch, length=len(inputs))
 
         super().finetune(dataset=dataset, validation_split=validation_split,
                         epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,

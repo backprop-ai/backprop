@@ -16,7 +16,8 @@ class Task(pl.LightningModule):
     def __init__(self, model, local=False, api_key=None,
                 task: str = None,
                 device: str = None, models: Dict = None,
-                default_local_model: str = None):
+                default_local_model: str = None,
+                local_aliases: Dict = None):
         super().__init__()
 
         if api_key == None:
@@ -31,7 +32,7 @@ class Task(pl.LightningModule):
                 model = default_local_model
 
             if type(model) == str:
-                model = AutoModel.from_pretrained(model, device=device)
+                model = AutoModel.from_pretrained(model, aliases=local_aliases, device=device)
 
             if task not in model.tasks:
                 raise ValueError(f"Model does not support the '{task}' task")

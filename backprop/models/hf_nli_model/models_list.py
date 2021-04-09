@@ -10,25 +10,11 @@ bart_large_mnli = {
             "languages": ["eng"],
             "description": "Performs zero-shot classification.",
             "zero_shot": True,
-            "speed": {
-                "score": 2,
-                "description": "Many parameters"
-            },
             "accuracy": {
                 "score": 4,
-                "description": "Score of xx on the xx dataset."
+                # "description": "Score of xx on the xx dataset."
             }
-        },
-        "credits": [
-            {
-                "name": "Facebook AI",
-                "url": ""
-            },
-            {
-                "name": "Hugging Face",
-                "url": ""
-            }
-        ]
+        }
     }
 }
 
@@ -45,28 +31,13 @@ xlmr_large_xnli = {
             "description": "Performs zero-shot classification.",
             "required_optional_params": ["labels"],
             "supported_optional_params": ["allow_multiple"],
-            "speed": {
-                "score": 2,
-                "description": "Many parameters"
-            },
             "accuracy": {
                 "score": 4,
-                "description": "Score of xx on the xx dataset."
+                # "description": "Score of xx on the xx dataset."
             }
-        },
-        "credits": [
-            {
-                "name": "Facebook AI",
-                "url": ""
-            },
-            {
-                "name": "Hugging Face",
-                "url": ""
-            }
-        ]
+        }
     }
 }
-
 
 models = {
     "bart-large-mnli": bart_large_mnli,

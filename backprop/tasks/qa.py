@@ -6,7 +6,13 @@ from backprop.utils.datasets import TextToTextDataset
 
 import requests
 
+TASK = "qa"
+
 DEFAULT_LOCAL_MODEL = "t5-base-qa-summary-emotion"
+
+LOCAL_ALIASES = {
+    "english": "t5-base-qa-summary-emotion"
+}
 
 
 class QA(Task):
@@ -24,16 +30,16 @@ class QA(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
-        task = "qa"
-        models = AutoModel.list_models(task=task)
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        models=models, task=task,
-                        default_local_model=DEFAULT_LOCAL_MODEL)
+                        models=models, task=TASK,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        local_aliases=LOCAL_ALIASES)
     
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task="qa", return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
 
     def __call__(self, question: Union[str, List[str]], context: Union[str, List[str]],
                 prev_qa: Union[List[Tuple[str, str]], List[List[Tuple[str, str]]]] = []):
@@ -171,7 +177,7 @@ class QA(Task):
 
         print("Processing data...")
         # dataset = QADataset(questions, contexts, prev_qas, answers, self.model.process_qa, max_input_length, max_output_length)
-        dataset = TextToTextDataset(dataset_params, task="qa", process_batch=self.model.process_batch, length=len(questions))
+        dataset = TextToTextDataset(dataset_params, task=TASK, process_batch=self.model.process_batch, length=len(questions))
         
         super().finetune(dataset=dataset, validation_split=validation_split,
                 epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,
