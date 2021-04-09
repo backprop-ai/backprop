@@ -130,12 +130,12 @@ class TextClassification(Task):
         print("Processing data...")
 
         dataset_params = {
-            "inputs": inputs
-            "labels": outputs
+            "inputs": inputs,
+            "labels": outputs,
             "class_to_idx": class_to_idx,
             "max_input_length": max_input_length
         }
-        
+
         dataset = SingleLabelTextClassificationDataset(dataset_params, process_batch=self.model.process_batch, length=len(inputs))
 
         super().finetune(dataset=dataset, validation_split=validation_split, 
