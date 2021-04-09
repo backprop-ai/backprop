@@ -23,15 +23,11 @@ class CLIP(BaseModel):
                 init_tokenizer=simple_tokenizer.SimpleTokenizer, name: str = None,
                 description: str = None, tasks: List[str] = None, details: Dict = None,
                 device=None):
-        BaseModel.__init__(self, None)
+        BaseModel.__init__(self, None, name=name, description=description, tasks=tasks, details=details)
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path
         self._model_device = device
-
-        self.name = "clip"
-        self.description = "OpenAI's recently released CLIP model — when supplied with a list of labels and an image, CLIP can accurately predict which labels best fit the provided image."
-        self.tasks = ["image-classification", "image-vectorisation", "text-vectorisation", "image-text-vectorisation"]
 
         if self._model_device is None:
             self._model_device = "cuda" if torch.cuda.is_available() else "cpu"

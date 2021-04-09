@@ -67,7 +67,7 @@ class PathModel(BaseModel):
                 description: str = None, tasks: List[str] = None,
                 details: Dict = None, tokenizer_path=None,
                 init_tokenizer=None, device=None):
-        BaseModel.__init__(self, None, name=name, description=description, tasks=tasks)
+        BaseModel.__init__(self, None, name=name, description=description, tasks=tasks, details=details)
         self.init_model = init_model
         self.init_tokenizer = init_tokenizer
         self.model_path = model_path

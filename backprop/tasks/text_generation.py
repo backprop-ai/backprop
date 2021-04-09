@@ -6,7 +6,14 @@ from backprop.utils.datasets import TextToTextDataset
 import requests
 from transformers.optimization import Adafactor
 
-DEFAULT_LOCAL_MODEL = "gpt2_large"
+TASK = "text-generation"
+
+DEFAULT_LOCAL_MODEL = "gpt2-medium"
+
+LOCAL_ALIASES = {
+    "english": "gpt2-medium",
+    "gpt2": "gpt2-medium"
+}
 
 class TextGeneration(Task):
     """
@@ -23,17 +30,16 @@ class TextGeneration(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
-
-        task = "text-generation"
-        models = AutoModel.list_models(task=task)
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        models=models, task=task,
-                        default_local_model=DEFAULT_LOCAL_MODEL)
+                        models=models, task=TASK,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        local_aliases=LOCAL_ALIASES)
 
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task="text-generation", return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
 
     
     def __call__(self, text: Union[str, List[str]], min_length: int = None, max_length: int = None, temperature: float = None,
@@ -73,7 +79,7 @@ class TextGeneration(Task):
         # Ignore None to let the model decide optimal values
         task_input = {k: v for k, v in params if v != None}
         if self.local:
-            return self.model(task_input, task="text-generation")
+            return self.model(task_input, task=TASK)
         else:
             task_input["model"] = self.model 
 
@@ -149,7 +155,7 @@ class TextGeneration(Task):
         }
 
         print("Processing data...")
-        dataset = TextToTextDataset(dataset_params, task="text-generation", process_batch=self.model.process_batch, length=len(input))
+        dataset = TextToTextDataset(dataset_params, task=TASK, process_batch=self.model.process_batch, length=len(input))
 
         super().finetune(dataset=dataset, validation_split=validation_split, epochs=epochs,
                 batch_size=batch_size, optimal_batch_size=optimal_batch_size,

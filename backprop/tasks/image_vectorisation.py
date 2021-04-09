@@ -16,7 +16,11 @@ from backprop.utils.datasets import ImageGroupDataset, ImagePairDataset
 from torch.utils.data.dataloader import DataLoader
 import os
 
+TASK = "image-vectorisation"
+
 DEFAULT_LOCAL_MODEL = "clip"
+
+LOCAL_ALIASES = {}
 
 class ImageVectorisation(Task):
     """
@@ -33,16 +37,16 @@ class ImageVectorisation(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
-        task = "image-vectorisation"
-        models = AutoModel.list_models(task=task)
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        models=models, task=task,
-                        default_local_model=DEFAULT_LOCAL_MODEL)
+                        models=models, task=TASK,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        local_aliases=LOCAL_ALIASES)
     
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task="image-text-vectorisation", return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
     
     def __call__(self, image: Union[Union[str, Image.Image], Union[List[str], List[Image.Image]]],
                 return_tensor=False):
@@ -64,7 +68,7 @@ class ImageVectorisation(Task):
             task_input = {
                 "image": image
             }
-            vector = self.model(task_input, task="image-vectorisation",
+            vector = self.model(task_input, task=TASK,
                                 return_tensor=return_tensor)
         else:
             image = img_to_base64(image)
@@ -93,7 +97,7 @@ class ImageVectorisation(Task):
     def step_triplet(self, batch, batch_idx):
         image, group = batch
 
-        img_vecs_norm = self.model({"image": image}, task="image-vectorisation",
+        img_vecs_norm = self.model({"image": image}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
 
         loss = self.criterion(img_vecs_norm, group)
@@ -103,9 +107,9 @@ class ImageVectorisation(Task):
     def step_cosine(self, batch, batch_idx):
         imgs1, imgs2, similarity_scores = batch
 
-        img_vecs1_norm = self.model({"image": imgs1}, task="image-vectorisation",
+        img_vecs1_norm = self.model({"image": imgs1}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
-        img_vecs2_norm = self.model({"image": imgs2}, task="image-vectorisation",
+        img_vecs2_norm = self.model({"image": imgs2}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
 
         loss = torch.cosine_similarity(img_vecs1_norm, img_vecs2_norm)
@@ -163,7 +167,6 @@ class ImageVectorisation(Task):
             self.dl_sampler = SameGroupSampler
             self.criterion = TripletLoss(self._model_device)
 
-            # TODO: Move to base task
             # Set model to float() for CLIP
             if hasattr(self.model, "pre_finetuning"):
                 self.model.pre_finetuning()

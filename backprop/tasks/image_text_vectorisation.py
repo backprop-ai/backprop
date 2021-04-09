@@ -17,7 +17,11 @@ from torch.utils.data.dataloader import DataLoader
 import os
 import numpy as np
 
+TASK = "image-text-vectorisation"
+
 DEFAULT_LOCAL_MODEL = "clip"
+
+LOCAL_ALIASES = {}
 
 class ImageTextVectorisation(Task):
     """
@@ -34,16 +38,16 @@ class ImageTextVectorisation(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
-        task = "image-text-vectorisation"
-        models = AutoModel.list_models(task=task)
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        models=models, task=task,
-                        default_local_model=DEFAULT_LOCAL_MODEL)
+                        models=models, task=TASK,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        local_aliases=LOCAL_ALIASES)
     
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task="image-text-vectorisation", return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
 
     def __call__(self, image: Union[str, List[str]], text: Union[str, List[str]], return_tensor=False):
         """Vectorise input image and text pairs.
@@ -64,7 +68,7 @@ class ImageTextVectorisation(Task):
                 "image": image,
                 "text": text
             }
-            vector = self.model(task_input, task="image-text-vectorisation",
+            vector = self.model(task_input, task=TASK,
                                 return_tensor=return_tensor)
         else:
             raise NotImplementedError("This task is not yet implemented in the API")
@@ -95,7 +99,7 @@ class ImageTextVectorisation(Task):
     def step_triplet(self, batch, batch_idx):
         image, text, group = batch
 
-        img_text_vecs_norm = self.model({"image": image, "text": text}, task="image-text-vectorisation",
+        img_text_vecs_norm = self.model({"image": image, "text": text}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
 
         loss = self.criterion(img_text_vecs_norm, group)
@@ -105,9 +109,9 @@ class ImageTextVectorisation(Task):
     def step_cosine(self, batch, batch_idx):
         texts1, imgs1, texts2, imgs2, similarity_scores = batch
 
-        img_text_vecs1_norm = self.model({"image": imgs1, "text": texts1}, task="image-text-vectorisation",
+        img_text_vecs1_norm = self.model({"image": imgs1, "text": texts1}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
-        img_text_vecs2_norm = self.model({"image": imgs2, "text": texts2}, task="image-text-vectorisation",
+        img_text_vecs2_norm = self.model({"image": imgs2, "text": texts2}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
 
         loss = torch.cosine_similarity(img_text_vecs1_norm, img_text_vecs2_norm)

@@ -13,7 +13,11 @@ from backprop.utils.datasets import TextGroupDataset, TextPairDataset
 from backprop.utils.samplers import SameGroupSampler
 from backprop.utils.losses.triplet_loss import TripletLoss
 
+TASK = "text-vectorisation"
+
 DEFAULT_LOCAL_MODEL = "msmarco-distilroberta-base-v2"
+
+LOCAL_ALIASES = {}
 
 class TextVectorisation(Task):
     """
@@ -30,17 +34,16 @@ class TextVectorisation(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
-
-        task = "text-vectorisation"
-        models = AutoModel.list_models(task=task)
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        models=models, task=task,
-                        default_local_model=DEFAULT_LOCAL_MODEL)
+                        models=models, task=TASK,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        local_aliases=LOCAL_ALIASES)
 
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task="image-vectorisation", return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
     
     def __call__(self, text: Union[str, List[str]], return_tensor=False):
         """Vectorise input text.
@@ -57,7 +60,7 @@ class TextVectorisation(Task):
             task_input = {
                 "text": text
             }
-            vector = self.model(task_input, task="text-vectorisation")
+            vector = self.model(task_input, task=TASK)
         else:
             body = {
                 "text": text,
@@ -83,7 +86,7 @@ class TextVectorisation(Task):
     def step_triplet(self, batch, batch_idx):
         text, group = batch
 
-        text_vecs_norm = self.model({"text": text}, task="text-vectorisation",
+        text_vecs_norm = self.model({"text": text}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
 
         loss = self.criterion(text_vecs_norm, group)
@@ -93,9 +96,9 @@ class TextVectorisation(Task):
     def step_cosine(self, batch, batch_idx):
         texts1, texts2, similarity_scores = batch
 
-        text_vecs1_norm = self.model({"text": texts1}, task="text-vectorisation",
+        text_vecs1_norm = self.model({"text": texts1}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
-        text_vecs2_norm = self.model({"text": texts2}, task="text-vectorisation",
+        text_vecs2_norm = self.model({"text": texts2}, task=TASK,
                     return_tensor=True, preprocess=False, train=True)
 
         loss = torch.cosine_similarity(text_vecs1_norm, text_vecs2_norm)

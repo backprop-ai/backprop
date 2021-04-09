@@ -13,8 +13,9 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
         kwargs: kwrags passed to :class:`backprop.models.t5.model.T5`
     """
     def __init__(self, model_path=None, name: str = None,
-                description: str = None, details: Dict = None, device=None):
-        tasks = ["text-generation", "emotion", "summarisation", "qa"]
+                description: str = None, details: Dict = None, tasks: List[str] = None,
+                device=None):
+        tasks = tasks or ["text-generation", "emotion", "summarisation", "qa"]
         HFSeq2SeqTGModel.__init__(self, model_path=model_path, name=name,
                                 description=description, tasks=tasks, details=details,
                                 device=device)

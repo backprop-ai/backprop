@@ -7,7 +7,14 @@ from backprop.utils.datasets import SingleLabelTextClassificationDataset
 
 import requests
 
+TASK = "text-classification"
+
 DEFAULT_LOCAL_MODEL = "bart-large-mnli"
+
+LOCAL_ALIASES = {
+    "english": "bart-large-mnli",
+    "multilingual": "xlmr-large-xnli"
+}
 
 class TextClassification(Task):
     """
@@ -24,16 +31,16 @@ class TextClassification(Task):
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
-        task = "text-classification"
-        models = AutoModel.list_models(task=task)
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        models=models, task=task,
-                        default_local_model=DEFAULT_LOCAL_MODEL)
+                        models=models, task=TASK,
+                        default_local_model=DEFAULT_LOCAL_MODEL,
+                        local_aliases=LOCAL_ALIASES)
 
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task="text-classification", return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
     
     def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None):
         """Classify input text based on previous training (user-tuned models) or according to given list of labels (zero-shot)
@@ -46,15 +53,13 @@ class TextClassification(Task):
         Returns:
             dict where each key is a label and value is probability between 0 and 1, or list of dicts.
         """
-        if self.local:
-            task = "text-classification"
-            
+        if self.local:            
             task_input = {
                 "text": text,
                 "labels": labels
             }
             
-            return self.model(task_input, task=task)
+            return self.model(task_input, task=TASK)
 
         else:
             body = {
