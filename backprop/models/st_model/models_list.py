@@ -6,29 +6,7 @@ msmarco_distilroberta_base_v2 = {
         "max_length": 512
     },
     "details": {
-        "num_parameters": 559893507,
-        # "text-vectorisation": {
-        #     "languages": ["eng"],
-        #     "description": "Performs zero-shot classification.",
-        #     "speed": {
-        #         "score": 2,
-        #         "description": "Many parameters"
-        #     },
-        #     "accuracy": {
-        #         "score": 4,
-        #         "description": "Score of xx on the xx dataset."
-        #     }
-        # },
-        # "credits": [
-        #     {
-        #         "name": "Facebook AI",
-        #         "url": ""
-        #     },
-        #     {
-        #         "name": "Hugging Face",
-        #         "url": ""
-        #     }
-        # ]
+        "num_parameters": 82118400,
     }
 }
 
@@ -40,7 +18,7 @@ distiluse_base_multilingual_cased_v2 = {
         "max_length": 512
     },
     "details": {
-        "num_parameters": 559893507,
+        "num_parameters": 135127808,
     }
 }
 

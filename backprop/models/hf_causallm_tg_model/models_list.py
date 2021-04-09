@@ -5,7 +5,7 @@ gpt2_large = {
         "model_path": "gpt2-large"
     },
     "details": {
-        "num_parameters": 407344131,
+        "num_parameters": 774030080,
     }
 }
 
@@ -16,12 +16,24 @@ gpt2_medium = {
         "model_path": "gpt2-medium"
     },
     "details": {
-        "num_parameters": 407344131,
+        "num_parameters": 354823168,
+    }
+}
+
+distilgpt2 = {
+    "description": "A distilled (82M parameter) version of OpenAI's GPT-2 model.",
+    "tasks": ["text-generation"],
+    "init_kwargs": {
+        "model_path": "distilgpt2"
+    },
+    "details": {
+        "num_parameters": 81912576,
     }
 }
 
 
 models = {
     "gpt2-large": gpt2_large,
-    "gpt2-medium": gpt2_medium
+    "gpt2-medium": gpt2_medium,
+    "distilgpt2": distilgpt2
 }

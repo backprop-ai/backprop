@@ -3,6 +3,9 @@ xlnet_base_cased = {
     "tasks": ["text-classification"],
     "init_kwargs": {
         "model_path": "xlnet-base-cased"
+    },
+    "details": {
+        "num_parameters": 117310466
     }
 }
 

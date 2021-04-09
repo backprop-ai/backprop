@@ -21,6 +21,8 @@ class AutoModel:
 
             if name_from_alias:
                 model_config = models.get(name_from_alias)
+                if model_config:
+                    model_name = name_from_alias
 
         # Try to load from local saved model
         if model_config == None:
@@ -37,7 +39,7 @@ class AutoModel:
             model = model_config["class"](**init_kwargs,
                     description=model_config["description"],
                     tasks=model_config["tasks"],
-                    name=model_config["name"],
+                    name=model_name,
                     details=model_config.get("details"),
                     device=device)
 

@@ -5,7 +5,7 @@ t5_base_qa_summary_emotion = {
         "model_path": "kiri-ai/t5-base-qa-summary-emotion"
     },
     "details": {
-        "num_parameters": 407344131,
+        "num_parameters": 222903552,
     }
 }
 
