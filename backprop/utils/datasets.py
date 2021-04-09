@@ -170,29 +170,27 @@ class TextGroupDataset(Dataset):
         return text, group
 
 class SingleLabelImageClassificationDataset(Dataset):
-    def __init__(self, images, labels, process_image):
+    def __init__(self, images, labels, process_batch):
         super().__init__()
 
         self.images = images
         self.labels = labels
         self.label_to_idx = {label: i for i, label in enumerate(set(labels))}
 
-        self.process_image = process_image
+        self.process_batch = process_batch
         
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
-        image = Image.open(self.images[idx])
-        image = self.process_image(image).squeeze(0)
-
+        image = self.process_batch({"image": images[idx]}, task="image-classification")
         target = torch.tensor(self.label_to_idx[self.labels[idx]])
 
         return image, target
 
 
 class MultiLabelImageClassificationDataset(Dataset):
-    def __init__(self, images, labels, process_image):
+    def __init__(self, images, labels, process_batch):
         super().__init__()
 
         self.images = images
@@ -201,15 +199,13 @@ class MultiLabelImageClassificationDataset(Dataset):
         self.all_labels = set(all_labels)
         self.label_to_idx = {label: i for i, label in enumerate(self.all_labels)}
 
-        self.process_image = process_image
+        self.process_batch = process_batch
         
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
-        image = Image.open(self.images[idx])
-        image = self.process_image(image).squeeze(0)
-
+        image = self.process_batch({"image": images[idx]}, task="image-classification")
         target = torch.zeros(len(self.all_labels))
 
         for label in self.labels[idx]:
@@ -229,6 +225,9 @@ class TextToTextDataset(Dataset):
         return self.length
     
     def __getitem__(self, idx):
+
+        # self.params is a dict containig lists (inputs, outputs) and fixed values (e.g. max_input_length)
+        # Line here gets [idx] of lists, as well as fixed values, as a dict to be passed to model for processing.
         params = {k: (v if type(v) != list else v[idx]) for k, v in self.params.items()}
 
         inp = self.process_batch(params, task=self.task)
@@ -254,7 +253,8 @@ class SingleLabelTextClassificationDataset(Dataset):
         return self.length
     
     def __getitem__(self, idx):
-
+        # self.params is a dict containig lists (inputs, outputs) and fixed values (e.g. max_input_length)
+        # Line here gets [idx] of lists, as well as fixed values, as a dict to be passed to model for processing.
         params = {k: (v if type(v) != list else v[idx]) for k, v in self.params.items()}
         inp = self.process_batch(params)
 

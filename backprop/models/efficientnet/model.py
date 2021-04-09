@@ -130,6 +130,12 @@ class EfficientNet(PathModel):
 
         return probabilities
 
+    def process_batch(self, params, task="image-classification"):
+        image = params["image"]
+        image = Image.open(image)
+        image = self.process_image(image).squeeze(0)
+        return image
+
     def configure_optimizers(self):
         return torch.optim.SGD(params=self.model.parameters(), lr=1e-1, weight_decay=1e-4)
 
