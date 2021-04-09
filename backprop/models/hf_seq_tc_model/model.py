@@ -36,6 +36,7 @@ class HFSeqTCModel(HFModel):
 
         return models
 
+    @torch.zero_grad()
     def __call__(self, task_input, task="text-classification", train=False):
         """
         Uses the model for text classification.
@@ -46,33 +47,48 @@ class HFSeqTCModel(HFModel):
             task_input: input dictionary according to the ``text-classification`` task specification
             task: text-classification
         """
-    
         if task == "text-classification":
-            if not train:
-                with torch.set_grad_enabled(train):
-                    text = task_input.pop("text")
+            text = task_input.pop("text")
 
-                    is_list = type(text) == list
-                    
-                    text = text if is_list else [text]
-                    
-                    outputs = []
-                    for t in text:
-                        tokens = self.tokenizer(t, truncation=True, padding="max_length", return_tensors="pt")
-                        input_ids = tokens.input_ids[0].unsqueeze(0).to(self._model_device)
-                        mask = tokens.attention_mask[0].unsqueeze(0).to(self._model_device)
-                        
-                        output = self.model(input_ids=input_ids, attention_mask=mask)
-                        outputs.append(output)
-                    
-                    outputs = outputs if is_list else outputs[0]
+            is_list = type(text) == list
+            
+            text = text if is_list else [text]
 
-                    return outputs, self.labels
-            else:
-                return self.model(**task_input)
-
+            outputs = []
+            for t in text:
+                tokens = self.tokenizer(t, truncation=True, padding="max_length", return_tensors="pt")
+                input_ids = tokens.input_ids[0].unsqueeze(0).to(self._model_device)
+                mask = tokens.attention_mask[0].unsqueeze(0).to(self._model_device)
+                
+                output = self.model(input_ids=input_ids, attention_mask=mask)
+                outputs.append(output)
+            
+            outputs = outputs if is_list else outputs[0]
+            
+            return self.get_label_probabilities(outputs)
         else:
             raise ValueError(f"Unsupported task: {task}")
+
+
+    def get_label_probabilities(self, outputs):
+        is_list = type(outputs) == list
+
+        outputs = outputs if is_list else [outputs]
+
+        probabilities = []
+        for o in outputs:
+            logits = o[0]
+            predictions = torch.softmax(logits, dim=1).detach().squeeze(0).tolist()
+            probs = {}
+            for idx, pred in enumerate(predictions):
+                label = self.labels[idx]
+                probs[label] = pred
+
+            probabilities.append(probs)
+        
+        probabilities = probabilities if is_list else probabilities[0]
+
+        return probabilities
 
     def calculate_probability(self, text, label, device):
         hypothesis = f"This example is {label}."
