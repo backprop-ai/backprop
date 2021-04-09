@@ -1,6 +1,6 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 from .base import Task
-from backprop.models import CLIP, BaseModel
+from backprop.models import AutoModel, BaseModel
 from backprop.utils import path_to_img, img_to_base64
 from backprop.utils import ImageTextGroupDataset, base64_to_img, ImageTextPairDataset
 from backprop.utils.losses import TripletLoss
@@ -17,40 +17,34 @@ from torch.utils.data.dataloader import DataLoader
 import os
 import numpy as np
 
-DEFAULT_LOCAL_MODEL = CLIP
-
-LOCAL_MODELS = {
-    "clip": DEFAULT_LOCAL_MODEL,
-}
-
-DEFAULT_API_MODEL = "clip"
-
-API_MODELS = ["clip"]
-
-FINETUNABLE_MODELS = []
+DEFAULT_LOCAL_MODEL = "clip"
 
 class ImageTextVectorisation(Task):
     """
-    Task for combined imag-text vectorisation.
+    Task for combined image-text vectorisation.
 
     Attributes:
         model:
-            1. Name of the model on Backprop's vectorisation endpoint (clip or your own uploaded model)
-            2. Officially supported local models (clip).
-            3. Model class of instance Backprop's BaseModel (that supports the task)
-            4. Path/name of saved Backprop model
+            1. Model name
+            2. Model name on Backprop's image-text-vectorisation endpoint
+            3. Model object that implements the image-text-vectorisation task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
+        task = "image-text-vectorisation"
+        models = AutoModel.list_models(task=task)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
-                        default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        models=models, task=task,
+                        default_local_model=DEFAULT_LOCAL_MODEL)
     
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        return AutoModel.list_models(task="image-text-vectorisation", return_dict=return_dict, display=display, limit=limit)
+
     def __call__(self, image: Union[str, List[str]], text: Union[str, List[str]], return_tensor=False):
         """Vectorise input image and text pairs.
 

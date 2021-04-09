@@ -1,6 +1,6 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 from .base import Task
-from backprop.models import CLIP, BaseModel
+from backprop.models import BaseModel, AutoModel
 import base64
 from PIL import Image
 from io import BytesIO
@@ -16,39 +16,33 @@ from backprop.utils.datasets import ImageGroupDataset, ImagePairDataset
 from torch.utils.data.dataloader import DataLoader
 import os
 
-DEFAULT_LOCAL_MODEL = CLIP
-
-LOCAL_MODELS = {
-    "clip": DEFAULT_LOCAL_MODEL,
-}
-
-DEFAULT_API_MODEL = "clip"
-
-API_MODELS = ["clip"]
-
-FINETUNABLE_MODELS = []
+DEFAULT_LOCAL_MODEL = "clip"
 
 class ImageVectorisation(Task):
     """
-    Task for text vectorisation.
+    Task for image vectorisation.
 
     Attributes:
         model:
-            1. Name of the model on Backprop's vectorisation endpoint (clip or your own uploaded model)
-            2. Officially supported local models (clip).
-            3. Model class of instance Backprop's BaseModel (that supports the task)
-            4. Path/name of saved Backprop model
+            1. Model name
+            2. Model name on Backprop's image-vectorisation endpoint
+            3. Model object that implements the image-vectorisation task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
+        task = "image-vectorisation"
+        models = AutoModel.list_models(task=task)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
-                        default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        models=models, task=task,
+                        default_local_model=DEFAULT_LOCAL_MODEL)
+    
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        return AutoModel.list_models(task="image-text-vectorisation", return_dict=return_dict, display=display, limit=limit)
     
     def __call__(self, image: Union[Union[str, Image.Image], Union[List[str], List[Image.Image]]],
                 return_tensor=False):

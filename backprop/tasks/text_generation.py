@@ -15,8 +15,8 @@ class TextGeneration(Task):
     Attributes:
         model:
             1. Model name
-            2. Model name on Backprop's text-vectorisation endpoint
-            3. Model object that implements the text-vectorisation task
+            2. Model name on Backprop's text-generation endpoint
+            3. Model object that implements the text-generation task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
@@ -30,6 +30,10 @@ class TextGeneration(Task):
         super().__init__(model, local=local, api_key=api_key, device=device,
                         models=models, task=task,
                         default_local_model=DEFAULT_LOCAL_MODEL)
+
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        return AutoModel.list_models(task="text-generation", return_dict=return_dict, display=display, limit=limit)
 
     
     def __call__(self, text: Union[str, List[str]], min_length: int = None, max_length: int = None, temperature: float = None,

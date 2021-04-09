@@ -36,6 +36,10 @@ class ImageClassification(Task):
                         models=models, task=task,
                         default_local_model=DEFAULT_LOCAL_MODEL)
 
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        return AutoModel.list_models(task="image-classification", return_dict=return_dict, display=display, limit=limit)
+
     
     def __call__(self, image_path: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None):
         """Classify image according to given labels.

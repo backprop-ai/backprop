@@ -37,6 +37,10 @@ class TextVectorisation(Task):
         super().__init__(model, local=local, api_key=api_key, device=device,
                         models=models, task=task,
                         default_local_model=DEFAULT_LOCAL_MODEL)
+
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        return AutoModel.list_models(task="image-vectorisation", return_dict=return_dict, display=display, limit=limit)
     
     def __call__(self, text: Union[str, List[str]], return_tensor=False):
         """Vectorise input text.

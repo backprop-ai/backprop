@@ -31,6 +31,9 @@ class TextClassification(Task):
                         models=models, task=task,
                         default_local_model=DEFAULT_LOCAL_MODEL)
 
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        return AutoModel.list_models(task="text-classification", return_dict=return_dict, display=display, limit=limit)
     
     def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None):
         """Classify input text based on previous training (user-tuned models) or according to given list of labels (zero-shot)

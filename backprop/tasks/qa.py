@@ -1,22 +1,13 @@
 from typing import List, Tuple, Union, Dict
 from .base import Task
-from backprop.models import T5QASummaryEmotion, BaseModel
+from backprop.models import BaseModel, AutoModel
 from transformers.optimization import Adafactor
 from backprop.utils.datasets import TextToTextDataset
 
 import requests
 
-DEFAULT_LOCAL_MODEL = T5QASummaryEmotion
+DEFAULT_LOCAL_MODEL = "t5-base-qa-summary-emotion"
 
-LOCAL_MODELS = {
-    "english": DEFAULT_LOCAL_MODEL
-}
-
-DEFAULT_API_MODEL = "english"
-
-FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
-
-API_MODELS = ["english"]
 
 class QA(Task):
     """
@@ -24,23 +15,26 @@ class QA(Task):
 
     Attributes:
         model:
-            1. Name of the model on Backprop's qa endpoint (english or your own uploaded model)
-            2. Officially supported local models (english).
-            3. Model class of instance Backprop's BaseModel that implements the qa task
-            4. Path/name of saved Backprop model
-        model_class (optional): The model class to use when supplying a path for the model.
+            1. Model name
+            2. Model name on Backprop's qa endpoint
+            3. Model object that implements the qa task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
+        task = "qa"
+        models = AutoModel.list_models(task=task)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
-                        default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        models=models, task=task,
+                        default_local_model=DEFAULT_LOCAL_MODEL)
     
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        return AutoModel.list_models(task="qa", return_dict=return_dict, display=display, limit=limit)
+
     def __call__(self, question: Union[str, List[str]], context: Union[str, List[str]],
                 prev_qa: Union[List[Tuple[str, str]], List[List[Tuple[str, str]]]] = []):
         """Perform QA, either on docstore or on provided context.

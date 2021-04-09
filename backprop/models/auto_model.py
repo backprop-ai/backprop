@@ -11,7 +11,7 @@ class AutoModel:
 
         model = None
 
-        models = AutoModel.list_models()
+        models = AutoModel.list_models(return_dict=True)
         model_config = models.get(model_name)
 
         if model_config == None:
@@ -30,17 +30,45 @@ class AutoModel:
         return model
 
     @staticmethod
-    def list_models(task=None):
+    def list_models(task=None, return_dict=False, display=False, limit=None):
         models_classes = [HFNLIModel, STModel, HFSeq2SeqTGModel, T5QASummaryEmotion,
                           HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP]
 
-        models_list = {}
+        if display:
+            return_dict = False
+
+        models_dict = {}
+        models_list = []
+        output = None
+
+        num_models = 0
+
         for model_class in models_classes:
             models = model_class.list_models()
             
             for model_name, model_config in models.items():
                 if not task or task in model_config.get("tasks"):
-                    model_config["class"] = model_class
-                    models_list[model_name] = model_config
+                    
+                    if limit and num_models >= limit:
+                        break
 
-        return models_list
+                    if return_dict:
+                        model_config["class"] = model_class
+                        models_dict[model_name] = model_config
+                        output = models_dict
+                    else:
+                        model_config["name"] = model_name
+                        models_list.append(model_config)
+                        output = models_list
+                    
+                    num_models += 1
+
+        if display:
+            for model in models_list:
+
+                print(f"{'Name' :25s}{model['name']}")
+                print(f"{'Description' :25s}{model['description']}")
+                print(f"{'Supported tasks' :25s}{model['tasks']}")
+                print("----------")
+        else:
+            return output
