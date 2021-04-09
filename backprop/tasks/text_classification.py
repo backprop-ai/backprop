@@ -53,11 +53,8 @@ class TextClassification(Task):
                 "text": text,
                 "labels": labels
             }
-            if labels:
-                return self.model(task_input, task=task)
-            else:
-                outputs, labels = self.model(task_input, task=task)
-                return self.get_label_probabilities(outputs, labels)
+            
+            return self.model(task_input, task=task)
 
         else:
             body = {
@@ -76,25 +73,6 @@ class TextClassification(Task):
 
             return res["probabilities"]
     
-    def get_label_probabilities(self, outputs, labels):
-        is_list = type(outputs) == list
-
-        outputs = outputs if is_list else [outputs]
-
-        probabilities = []
-        for o in outputs:
-            logits = o[0]
-            predictions = torch.softmax(logits, dim=1).detach().squeeze(0).tolist()
-            probs = {}
-            for idx, pred in enumerate(predictions):
-                label = labels[idx]
-                probs[label] = pred
-
-            probabilities.append(probs)
-        
-        probabilities = probabilities if is_list else probabilities[0]
-
-        return probabilities
 
     def step(self, batch, batch_idx):
         return self.model.training_step(batch, train=True)
