@@ -64,7 +64,7 @@ class EfficientNet(PathModel):
 
         return models
     
-    @torch.no_grad
+    @torch.no_grad()
     def __call__(self, task_input, task="image-classification"):
         """
         Uses the model for the image-classification task

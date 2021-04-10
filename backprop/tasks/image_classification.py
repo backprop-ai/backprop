@@ -128,7 +128,7 @@ class ImageClassification(Task):
             if hasattr(self.model, "pre_finetuning"):
                 self.model.pre_finetuning(labels=labels_dict, num_classes=len(labels_set))
 
-            dataset = SingleLabelImageClassificationDataset(images, labels, self.model.process_image)
+            dataset = SingleLabelImageClassificationDataset(images, labels, self.model.process_batch)
 
             self.criterion = nn.CrossEntropyLoss()
         elif variant == "multi_label":
