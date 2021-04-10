@@ -50,7 +50,7 @@ class STModel(PathModel):
             else:
                 text = [text]
 
-            features = self.tokenizer(text, truncation=True, padding=True).to(self._model_device)
+            features = self.model.tokenizer(text, truncation=True, padding=True, return_tensors="pt").to(self._model_device)
 
             text_vecs = self.vectorise(features)
 
@@ -66,7 +66,7 @@ class STModel(PathModel):
         else:
             raise ValueError(f"Unsupported task '{task}'")
     
-    def training_step(self, params):
+    def training_step(self, params, task="text-vectorisation"):
         text = params["text"]
         return self.vectorise(text)
 
@@ -76,7 +76,7 @@ class STModel(PathModel):
             if max_length > self.max_length:
                 raise ValueError(f"This model has a max_length limit of {self.max_length}")
             text = params["text"]
-            return self.model.tokenizer(text, truncation=True, padding="max_length")
+            return self.model.tokenizer(text, truncation=True, padding="max_length", return_tensors="pt")
                 
     def vectorise(self, features):
         return self.model.forward(features)["sentence_embedding"]
