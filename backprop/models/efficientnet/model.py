@@ -17,6 +17,7 @@ import os
 
 from io import BytesIO
 import base64
+from backprop.utils.helpers import base64_to_img
 
 IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/backprop-ai/backprop/main/backprop/models/efficientnet/imagenet_labels.txt"
 
@@ -40,6 +41,7 @@ class EfficientNet(PathModel):
         
         with open(download(IMAGENET_LABELS_URL, "efficientnet"), "r") as f:
             self.labels = json.load(f)
+            self.labels = {int(k): v for k, v in self.labels.items()}
 
         self.tfms = transforms.Compose([
                 transforms.Resize(self.image_size, interpolation=Image.BICUBIC),
@@ -73,10 +75,15 @@ class EfficientNet(PathModel):
             task_input: input dictionary according to the ``image-classification`` task specification
             task: image-classification
         """
-        if task == "image-classification":
-            image_base64 = task_input.get("image")
 
-            return self.image_classification(image_base64=image_base64)
+        if task == "image-classification":
+            image = task_input.get("image")
+            top_k = task_input.get("top_k")
+            multi_label = task_input.get("multi_label")
+
+            image = base64_to_img(image)
+
+            return self.image_classification(image=image, top_k=top_k, multi_label=multi_label)
 
     def pre_finetuning(self, labels=None, num_classes=None):
         self.labels = labels
@@ -88,35 +95,34 @@ class EfficientNet(PathModel):
     def training_step(self, batch, task="image-classification"):
         return self.model(batch)
 
-    def image_classification(self, image_base64: Union[str, List[str]], top_k=10):
+    def image_classification(self, image, top_k=10000, multi_label=False):
         # TODO: Proper batching
         is_list = False
 
-        if type(image_base64) == list:
+        if type(image) == list:
             is_list = True
 
         if not is_list:
-            image_base64 = [image_base64]
+            image = [image]
         
         probabilities = []
 
-        for image_base64 in image_base64:
-
-            # Not bytes
-            if type(image_base64) == str:
-                image_base64 = image_base64.split(",")[-1]
-
-            image = BytesIO(base64.b64decode(image_base64))
-            image = Image.open(image)
-
+        for image in image:
             image = self.tfms(image).unsqueeze(0).to(self._model_device)
 
             logits = self.model(image)
-            preds = torch.topk(logits, k=top_k).indices.squeeze(0).tolist()
-            dist = torch.softmax(logits, dim=1)
+
+            dist = None
+            if multi_label:
+                dist = torch.sigmoid(logits)
+            else:
+                dist = torch.softmax(logits, dim=1)
+
+            preds = torch.topk(dist, k=top_k, sorted=True).indices.squeeze(0).tolist()
+            
             probs = {}
             for idx in preds:
-                label = self.labels[str(idx)]
+                label = self.labels[idx]
                 prob = dist[0, idx].item()
 
                 probs[label] = prob

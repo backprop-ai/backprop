@@ -62,6 +62,10 @@ class TextClassification(Task):
             "top_k": top_k,
             "multi_label": multi_label
         }
+
+        if top_k == 0:
+            task_input.pop("top_k")
+
         if self.local:               
             return self.model(task_input, task=TASK)
         else:
