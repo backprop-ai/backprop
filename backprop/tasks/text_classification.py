@@ -81,7 +81,7 @@ class TextClassification(Task):
     
 
     def step(self, batch, batch_idx):
-        return self.model.training_step(batch, train=True)
+        return self.model.training_step(batch)
     
     def configure_optimizers(self):
         return AdamW(params=self.model.parameters(), lr=2e-5)
@@ -110,8 +110,6 @@ class TextClassification(Task):
 
         if hasattr(self.model, "pre_finetuning"):
             self.model.pre_finetuning(labels)
-
-        print("Processing data...")
 
         dataset_params = {
             "inputs": inputs,

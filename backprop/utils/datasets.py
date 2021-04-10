@@ -242,7 +242,7 @@ class TextToTextDataset(Dataset):
         return {**inp}
 
 class SingleLabelTextClassificationDataset(Dataset):
-    def __init__(self, params, proces_batch, length):
+    def __init__(self, params, process_batch, length):
         super().__init__()
 
         self.params = params
