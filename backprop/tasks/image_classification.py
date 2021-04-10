@@ -139,7 +139,7 @@ class ImageClassification(Task):
             if hasattr(self.model, "pre_finetuning"):
                 self.model.pre_finetuning(labels=labels_dict, num_classes=len(all_labels))
 
-            dataset = MultiLabelImageClassificationDataset(images, labels, self.model.process_image)
+            dataset = MultiLabelImageClassificationDataset(images, labels, self.model.process_batch)
 
             # Sigmoid and BCE
             self.criterion = nn.BCEWithLogitsLoss()
