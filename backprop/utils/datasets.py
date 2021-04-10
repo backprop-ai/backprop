@@ -66,7 +66,7 @@ class ImagePairDataset(Dataset):
 
 class TextPairDataset(Dataset):
     def __init__(self, texts1, texts2, similarity_scores,
-                process_batch):
+                process_batch, max_length=None):
         super().__init__()
 
         self.texts1 = texts1
@@ -76,12 +76,14 @@ class TextPairDataset(Dataset):
 
         self.process_batch = process_batch
 
+        self.max_length = max_length
+
     def __len__(self):
         return len(self.similarity_scores)
     
     def __getitem__(self, idx):
-        texts1 = self.process_batch({"text": self.texts1[idx]}, task="text-vectorisation")
-        texts2 = self.process_batch({"text": self.texts2[idx]}, task="text-vectorisation")
+        texts1 = self.process_batch({"text": self.texts1[idx], "max_length": self.max_length}, task="text-vectorisation")
+        texts2 = self.process_batch({"text": self.texts2[idx], "max_length": self.max_length}, task="text-vectorisation")
 
         if isinstance(texts1, torch.Tensor):
             texts1 = texts1.squeeze(0)
@@ -144,19 +146,20 @@ class ImageGroupDataset(Dataset):
         return image, group
 
 class TextGroupDataset(Dataset):
-    def __init__(self, texts, groups, process_batch):
+    def __init__(self, texts, groups, process_batch, max_length=None):
         super().__init__()
 
         self.texts = texts
         self.groups = groups
 
         self.process_batch = process_batch
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.texts)
 
     def __getitem__(self, idx):
-        text = self.process_batch({"text": self.texts[idx]})
+        text = self.process_batch({"text": self.texts[idx], "max_length": self.max_length})
 
         if isinstance(text, torch.Tensor):
             text = text.squeeze(0)

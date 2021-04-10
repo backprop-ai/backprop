@@ -145,13 +145,15 @@ class TextVectorisation(Task):
             dataset_train = TextGroupDataset(
                 [texts[i] for i in train_idx],
                 [groups[i] for i in train_idx],
-                process_batch,
+                process_batch=process_batch,
+                max_length=max_length
             )
 
             dataset_valid = TextGroupDataset(
                 [texts[i] for i in val_idx],
                 [groups[i] for i in val_idx],
-                process_batch,
+                process_batch=process_batch,
+                max_length=max_length
             )
 
             self.dl_sampler = SameGroupSampler
@@ -179,7 +181,7 @@ class TextVectorisation(Task):
             step = step or self.step_cosine
 
             dataset = TextPairDataset(texts1, texts2, similarity_scores,
-                    process_batch)
+                    process_batch=process_batch, max_length=max_length)
 
             # Set model to float() for CLIP
             if hasattr(self.model, "pre_finetuning"):

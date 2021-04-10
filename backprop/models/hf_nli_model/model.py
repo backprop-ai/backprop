@@ -1,6 +1,7 @@
 from typing import List, Dict
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from backprop.models import HFModel
+import torch
 
 class HFNLIModel(HFModel):
     def __init__(self, model_path=None, tokenizer_path=None, name: str = None,
@@ -14,6 +15,7 @@ class HFNLIModel(HFModel):
                     model_class=model_class, tokenizer_class=tokenizer_class,
                     device=device)
 
+    @torch.no_grad()
     def __call__(self, task_input, task="text-classification"):
         if task == "text-classification":
             text = task_input.get("text")

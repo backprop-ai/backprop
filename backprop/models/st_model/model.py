@@ -36,27 +36,23 @@ class STModel(PathModel):
 
         return models
 
-    def __call__(self, task_input, task="text-vectorisation", return_tensor=False, preprocess=True, train=False):
+    @torch.no_grad()
+    def __call__(self, task_input, task="text-vectorisation", return_tensor=False):
         is_list = False
         if task == "text-vectorisation":
             input_ids = None
-            attention_mask = None
+            attention_mask = None            
+            
+            text = task_input.get("text")
 
-            if preprocess:
-                text = task_input.get("text")
-
-                if type(text) == list:
-                    is_list = True
-                else:
-                    text = [text]
-
-                features = self.process_text(text).to(self._model_device)
-            else:
-                features = task_input.get("text")
+            if type(text) == list:
                 is_list = True
+            else:
+                text = [text]
 
-            with torch.set_grad_enabled(train):
-                text_vecs = self.vectorise(features)
+            features = self.tokenizer(text, truncation=True, padding=True).to(self._model_device)
+
+            text_vecs = self.vectorise(features)
 
             if not return_tensor:
                 text_vecs = text_vecs.tolist()
@@ -69,18 +65,19 @@ class STModel(PathModel):
             return output
         else:
             raise ValueError(f"Unsupported task '{task}'")
+    
+    def training_step(self, params):
+        text = params["text"]
+        return self.vectorise(text)
 
-    def process_text(self, input_text, max_length=None, padding=True):
-        max_length = max_length or self.max_length
-
-        if max_length > self.max_length:
-            raise ValueError(f"This model has a max_length limit of {self.max_length}")
-
-        processed = self.model.tokenizer(input_text, truncation=True, padding=padding,
-                    return_tensors="pt", max_length=max_length)
-
-        return processed
-
+    def process_batch(self, params, task="text-vectorisation"):
+        if task == "text-vectorisation":
+            max_length = params["max_length"] or self.max_length
+            if max_length > self.max_length:
+                raise ValueError(f"This model has a max_length limit of {self.max_length}")
+            text = params["text"]
+            return self.model.tokenizer(text, truncation=True, padding="max_length")
+                
     def vectorise(self, features):
         return self.model.forward(features)["sentence_embedding"]
 
