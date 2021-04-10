@@ -40,10 +40,10 @@ class TextClassification(Task):
 
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit, aliases=LOCAL_ALIASES)
     
     def __call__(self, text: Union[str, List[str]], labels: Optional[Union[List[str], List[List[str]]]] = None,
-                top_k: int = 0, top_p: int = 1.0, multi_label: bool = False):
+                top_k: int = 0, multi_label: bool = False):
         """Classify input text based on previous training (user-tuned models) or according to given list of labels (zero-shot)
 
         Args:
@@ -51,7 +51,6 @@ class TextClassification(Task):
             labels: list of labels for zero-shot classification (on our out-of-the-box models).
                     If using a user-trained model (e.g. XLNet), this is not used.
             top_k: return probabilities only for top_k predictions. Use 0 to get all.
-            top_p: return probabilities that sum to top_p (between 0 and 1). Use 1.0 to get all.
             multi_label: allow multiple true labels. Not all models support this.
 
         Returns:
@@ -61,9 +60,12 @@ class TextClassification(Task):
             "text": text,
             "labels": labels,
             "top_k": top_k,
-            "top_p": top_p,
             "multi_label": multi_label
         }
+
+        if top_k == 0:
+            task_input.pop("top_k")
+
         if self.local:               
             return self.model(task_input, task=TASK)
         else:
@@ -79,7 +81,7 @@ class TextClassification(Task):
     
 
     def step(self, batch, batch_idx):
-        return self.model.training_step(batch, train=True)
+        return self.model.training_step(batch)
     
     def configure_optimizers(self):
         return AdamW(params=self.model.parameters(), lr=2e-5)
@@ -108,8 +110,6 @@ class TextClassification(Task):
 
         if hasattr(self.model, "pre_finetuning"):
             self.model.pre_finetuning(labels)
-
-        print("Processing data...")
 
         dataset_params = {
             "inputs": inputs,

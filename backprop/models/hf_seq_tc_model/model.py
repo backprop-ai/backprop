@@ -127,9 +127,9 @@ class HFSeqTCModel(HFModel):
             return results
     
     def training_step(self, batch, task="text-classification"):
-        return self.model(batch)[0]
+        return self.model(**batch)[0]
 
-    def process_batch(self, params):
+    def process_batch(self, params, task="text-classification"):
         text = params["inputs"]
         class_to_idx = params["class_to_idx"]
         target = class_to_idx[params["labels"]]

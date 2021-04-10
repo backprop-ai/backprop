@@ -9,6 +9,9 @@ efficientnet_b0 = {
     },
     "details": {
         "num_parameters": 5288548,
+        "image-classification": {
+            "finetunable": True
+        }
     }
 }
 
@@ -20,6 +23,9 @@ efficientnet_b4 = {
     },
     "details": {
         "num_parameters": 19341616,
+        "image-classification": {
+            "finetunable": True
+        }
     }
 }
 
@@ -31,6 +37,9 @@ efficientnet_b7 = {
     },
     "details": {
         "num_parameters": 66347960,
+        "image-classification": {
+            "finetunable": True
+        }
     }
 }
 

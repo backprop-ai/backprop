@@ -20,7 +20,9 @@ TASK = "image-vectorisation"
 
 DEFAULT_LOCAL_MODEL = "clip"
 
-LOCAL_ALIASES = {}
+LOCAL_ALIASES = {
+    "clip": "clip-vit-b32"
+}
 
 class ImageVectorisation(Task):
     """
@@ -46,7 +48,7 @@ class ImageVectorisation(Task):
     
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit, aliases=LOCAL_ALIASES)
     
     def __call__(self, image: Union[Union[str, Image.Image], Union[List[str], List[Image.Image]]],
                 return_tensor=False):

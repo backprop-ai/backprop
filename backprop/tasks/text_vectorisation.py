@@ -17,7 +17,9 @@ TASK = "text-vectorisation"
 
 DEFAULT_LOCAL_MODEL = "msmarco-distilroberta-base-v2"
 
-LOCAL_ALIASES = {}
+LOCAL_ALIASES = {
+    "clip": "clip-vit-b32"
+}
 
 class TextVectorisation(Task):
     """
@@ -43,7 +45,7 @@ class TextVectorisation(Task):
 
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit, aliases=LOCAL_ALIASES)
     
     def __call__(self, text: Union[str, List[str]], return_tensor=False):
         """Vectorise input text.
