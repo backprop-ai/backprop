@@ -158,6 +158,21 @@ class CLIP(BaseModel):
 
         return output
 
+    def process_batch(self, params, task):
+        if task == "image-classification":
+            image = params["image"]
+            image = Image.open(image)
+            return self.process_image(image).squeeze(0)
+        elif task == "text-classification":
+            text = params["text"]
+            return self.tokenizer(text)
+        elif task == "image-vectorisation":
+            pass
+        elif task == "text-vectorisation":
+            pass
+        elif task == "image-text-vectorisation":
+            pass
+
     def process_text(self, input_text, max_length=None, padding=True):
         if max_length:
             raise ValueError(f"This model does not support specifying max_length")

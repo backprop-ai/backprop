@@ -58,14 +58,14 @@ class EfficientNet(PathModel):
                             details=details, tasks=tasks, init_model=init_model,
                             device=device)
 
-
     @staticmethod
     def list_models():
         from .models_list import models
 
         return models
     
-    def __call__(self, task_input, task="image-classification", train=False):
+    @torch.no_grad
+    def __call__(self, task_input, task="image-classification"):
         """
         Uses the model for the image-classification task
 
@@ -74,13 +74,9 @@ class EfficientNet(PathModel):
             task: image-classification
         """
         if task == "image-classification":
-            with torch.set_grad_enabled(train):
-                if train:
-                    return self.model(task_input)
-                else:
-                    image_base64 = task_input.get("image")
+            image_base64 = task_input.get("image")
 
-                    return self.image_classification(image_base64=image_base64)
+            return self.image_classification(image_base64=image_base64)
 
     def pre_finetuning(self, labels=None, num_classes=None):
         self.labels = labels
@@ -89,6 +85,8 @@ class EfficientNet(PathModel):
             self.num_classes = num_classes
             self.model = EfficientNet_pt.from_pretrained(self.model_path, num_classes=num_classes)
 
+    def training_step(self, batch, task="image-classification"):
+        return self.model(batch)
 
     def image_classification(self, image_base64: Union[str, List[str]], top_k=10):
         # TODO: Proper batching
@@ -129,6 +127,12 @@ class EfficientNet(PathModel):
             probabilities = probabilities[0]
 
         return probabilities
+
+    def process_batch(self, params, task="image-classification"):
+        image = params["image"]
+        image = Image.open(image)
+        image = self.process_image(image).squeeze(0)
+        return image
 
     def configure_optimizers(self):
         return torch.optim.SGD(params=self.model.parameters(), lr=1e-1, weight_decay=1e-4)
