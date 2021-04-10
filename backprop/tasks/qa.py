@@ -39,7 +39,7 @@ class QA(Task):
     
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit, aliases=LOCAL_ALIASES)
 
     def __call__(self, question: Union[str, List[str]], context: Union[str, List[str]],
                 prev_qa: Union[List[Tuple[str, str]], List[List[Tuple[str, str]]]] = []):
