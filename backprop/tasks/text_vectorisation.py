@@ -88,8 +88,7 @@ class TextVectorisation(Task):
     def step_triplet(self, batch, batch_idx):
         text, group = batch
 
-        text_vecs_norm = self.model({"text": text}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
+        text_vecs_norm = self.model.training_step({"text": text}, task=TASK)
 
         loss = self.criterion(text_vecs_norm, group)
 
@@ -98,10 +97,8 @@ class TextVectorisation(Task):
     def step_cosine(self, batch, batch_idx):
         texts1, texts2, similarity_scores = batch
 
-        text_vecs1_norm = self.model({"text": texts1}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
-        text_vecs2_norm = self.model({"text": texts2}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
+        text_vecs1_norm = self.model.training_step({"text": texts1}, task=TASK)
+        text_vecs2_norm = self.model.training_step({"text": texts2}, task=TASK)
 
         loss = torch.cosine_similarity(text_vecs1_norm, text_vecs2_norm)
         loss = F.mse_loss(loss, similarity_scores.view(-1))
@@ -128,7 +125,7 @@ class TextVectorisation(Task):
 
         configure_optimizers = configure_optimizers or self.configure_optimizers
 
-        process_text = partial(self.model.process_text, max_length=max_length)
+        process_batch = self.model.process_batch
 
         if variant == "triplet":
             texts = params["texts"]
@@ -148,13 +145,13 @@ class TextVectorisation(Task):
             dataset_train = TextGroupDataset(
                 [texts[i] for i in train_idx],
                 [groups[i] for i in train_idx],
-                process_text,
+                process_batch,
             )
 
             dataset_valid = TextGroupDataset(
                 [texts[i] for i in val_idx],
                 [groups[i] for i in val_idx],
-                process_text,
+                process_batch,
             )
 
             self.dl_sampler = SameGroupSampler
@@ -182,7 +179,7 @@ class TextVectorisation(Task):
             step = step or self.step_cosine
 
             dataset = TextPairDataset(texts1, texts2, similarity_scores,
-                    process_text)
+                    process_batch)
 
             # Set model to float() for CLIP
             if hasattr(self.model, "pre_finetuning"):

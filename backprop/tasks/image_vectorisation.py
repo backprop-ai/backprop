@@ -95,8 +95,7 @@ class ImageVectorisation(Task):
     def step_triplet(self, batch, batch_idx):
         image, group = batch
 
-        img_vecs_norm = self.model({"image": image}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
+        img_vecs_norm = self.model.training_step({"image": image}, task=TASK)
 
         loss = self.criterion(img_vecs_norm, group)
 
@@ -105,10 +104,8 @@ class ImageVectorisation(Task):
     def step_cosine(self, batch, batch_idx):
         imgs1, imgs2, similarity_scores = batch
 
-        img_vecs1_norm = self.model({"image": imgs1}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
-        img_vecs2_norm = self.model({"image": imgs2}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
+        img_vecs1_norm = self.model.training_step({"image": imgs1}, task=TASK)
+        img_vecs2_norm = self.model.training_step({"image": imgs2}, task=TASK)
 
         loss = torch.cosine_similarity(img_vecs1_norm, img_vecs2_norm)
         loss = F.mse_loss(loss, similarity_scores.view(-1))
@@ -153,13 +150,13 @@ class ImageVectorisation(Task):
             dataset_train = ImageGroupDataset(
                 [images[i] for i in train_idx],
                 [groups[i] for i in train_idx],
-                self.model.process_image,
+                self.model.process_batch,
             )
 
             dataset_valid = ImageGroupDataset(
                 [images[i] for i in val_idx],
                 [groups[i] for i in val_idx],
-                self.model.process_image,
+                self.model.process_batch,
             )
 
             self.dl_sampler = SameGroupSampler
@@ -187,7 +184,7 @@ class ImageVectorisation(Task):
             step = step or self.step_cosine
 
             dataset = ImagePairDataset(imgs1, imgs2, similarity_scores,
-                    self.model.process_image)
+                    self.model.process_batch)
 
             # Set model to float() for CLIP
             if hasattr(self.model, "pre_finetuning"):
