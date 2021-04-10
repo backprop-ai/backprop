@@ -110,8 +110,8 @@ class ImageTextVectorisation(Task):
     def step_cosine(self, batch, batch_idx):
         texts1, imgs1, texts2, imgs2, similarity_scores = batch
 
-        img_text_vecs1_norm = self.model({"image": imgs1, "text": texts1}, task=TASK)
-        img_text_vecs2_norm = self.model({"image": imgs2, "text": texts2}, task=TASK)
+        img_text_vecs1_norm = self.model.training_step({"image": imgs1, "text": texts1}, task=TASK)
+        img_text_vecs2_norm = self.model.training_step({"image": imgs2, "text": texts2}, task=TASK)
 
         loss = torch.cosine_similarity(img_text_vecs1_norm, img_text_vecs2_norm)
         loss = F.mse_loss(loss, similarity_scores.view(-1))
@@ -192,8 +192,7 @@ class ImageTextVectorisation(Task):
 
             step = step or self.step_cosine
 
-            dataset = ImageTextPairDataset(img_text_pairs1, img_text_pairs2, similarity_scores,
-                    self.model.process_image, self.model.process_text)
+            dataset = ImageTextPairDataset(img_text_pairs1, img_text_pairs2, similarity_scores, self.model.process_batch)
 
             # Set model to float() for CLIP
             if hasattr(self.model, "pre_finetuning"):
