@@ -88,7 +88,7 @@ class ImageClassification(Task):
     
     def step_single_label(self, batch, batch_idx):
         images, targets = batch
-        outputs = self.model(images, task=TASK, train=True)
+        outputs = self.model.training_step(images, task=TASK)
 
         loss = self.criterion(outputs, targets)
         return loss

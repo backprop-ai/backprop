@@ -256,6 +256,6 @@ class SingleLabelTextClassificationDataset(Dataset):
         # self.params is a dict containig lists (inputs, outputs) and fixed values (e.g. max_input_length)
         # Line here gets [idx] of lists, as well as fixed values, as a dict to be passed to model for processing.
         params = {k: (v if type(v) != list else v[idx]) for k, v in self.params.items()}
-        inp = self.process_batch(params)
-
+        inp = self.process_batch(params, task="text-classification")
+        
         return {**inp}
