@@ -118,7 +118,7 @@ class TextVectorisation(Task):
             sampler=self.dl_sampler(self.dataset_valid))
 
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]] = 0.15,
-                max_length: int = None, variant: str = "triplet", epochs: int = 20, batch_size: int = None,
+                max_length: int = None, variant: str = "cosine_similarity", epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping_epochs: int = 1,
                 train_dataloader = None, val_dataloader = None, step = None, configure_optimizers = None):
         optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)

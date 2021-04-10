@@ -57,6 +57,8 @@ class CLIP(BaseModel):
             image = task_input.get("image")
             labels = task_input.get("labels")
 
+            image = base64_to_img(image)
+
             if labels is None:
                 raise ValueError("labels must be provided")
 
@@ -64,15 +66,23 @@ class CLIP(BaseModel):
             if not is_list:
                 image = [image]
                 labels = [labels]
+
+            image = [self.process_image(img).unsqueeze(0).to(self._model_device) for img in image]
+            text = [self.process_text(l).to(self._model_device) for l in labels]
             
             output = self.image_classification(image=image, text=text, labels=labels)
 
         elif task == "image-vectorisation":
             image = task_input.get("image")
 
+            image = base64_to_img(image)
+
             is_list = type(image) == list
             if not is_list:
                 image = [image]
+
+            image = [self.process_image(img) for img in image]
+            image = torch.stack(image).to(self._model_device)
 
             img_vecs = self.image_vectorisation(image=image) 
 
@@ -88,6 +98,8 @@ class CLIP(BaseModel):
             if not is_list:
                 text = [text]
 
+            text = self.tokenizer(text).to(self._model_device)
+
             text_vecs = self.text_vectorisation(text=text)
 
             if not return_tensor:
@@ -98,11 +110,17 @@ class CLIP(BaseModel):
         elif task == "image-text-vectorisation":
             image = task_input.get("image")
             text = task_input.get("text")
+
+            image = base64_to_img(image)
             
             is_list = type(image) == list
             if not is_list:
                 image = [image]
                 text = [text]
+
+            text = self.tokenizer(text).to(self._model_device)
+            image = [self.process_image(img) for img in image]
+            image = torch.stack(image).to(self._model_device)
 
             img_text_vecs = self.image_text_vectorisation(image, text)
 
@@ -158,7 +176,7 @@ class CLIP(BaseModel):
 
         return text
 
-    def image_text_vectorisation(self, image: List[Image.Image], text: List[str]):
+    def image_text_vectorisation(self, image: torch.TensorType, text: torch.TensorType):
         image_vecs = self.model.encode_image(image)
         text_vecs = self.model.encode_text(text)
 
