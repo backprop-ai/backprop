@@ -183,7 +183,7 @@ class SingleLabelImageClassificationDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-        image = self.process_batch({"image": images[idx]}, task="image-classification")
+        image = self.process_batch({"image": self.images[idx]}, task="image-classification")
         target = torch.tensor(self.label_to_idx[self.labels[idx]])
 
         return image, target
@@ -257,5 +257,5 @@ class SingleLabelTextClassificationDataset(Dataset):
         # Line here gets [idx] of lists, as well as fixed values, as a dict to be passed to model for processing.
         params = {k: (v if type(v) != list else v[idx]) for k, v in self.params.items()}
         inp = self.process_batch(params, task="text-classification")
-        
+
         return {**inp}
