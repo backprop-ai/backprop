@@ -56,7 +56,7 @@ class HFSeqTCModel(HFModel):
 
             outputs = []
             for t in text:
-                tokens = self.tokenizer(t, truncation=True, padding="max_length", return_tensors="pt")
+                tokens = self.tokenizer(t, truncation=True, padding=True, return_tensors="pt")
                 input_ids = tokens.input_ids[0].unsqueeze(0).to(self._model_device)
                 mask = tokens.attention_mask[0].unsqueeze(0).to(self._model_device)
                 
