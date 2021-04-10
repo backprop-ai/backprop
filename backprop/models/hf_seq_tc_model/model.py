@@ -36,7 +36,7 @@ class HFSeqTCModel(HFModel):
 
         return models
 
-    @torch.zero_grad()
+    @torch.no_grad()
     def __call__(self, task_input, task="text-classification", train=False):
         """
         Uses the model for text classification.

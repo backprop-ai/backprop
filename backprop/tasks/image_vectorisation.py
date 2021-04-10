@@ -63,22 +63,18 @@ class ImageVectorisation(Task):
         vector = None
         image = path_to_img(image)
 
-        if self.local:
+        task_input = {
+            "image": image
+        }
 
-            task_input = {
-                "image": image
-            }
+        if self.local:
             vector = self.model(task_input, task=TASK,
                                 return_tensor=return_tensor)
         else:
-            image = img_to_base64(image)
+            task_input["image"] = img_to_base64(task_input["image"])
+            task_input["model"] = self.model
 
-            body = {
-                "image": image,
-                "model": self.model
-            }
-
-            res = requests.post("https://api.backprop.co/image-vectorisation", json=body,
+            res = requests.post("https://api.backprop.co/image-vectorisation", json=task_input,
                                 headers={"x-api-key": self.api_key}).json()
 
             if res.get("message"):

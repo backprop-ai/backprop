@@ -5,7 +5,7 @@ clip = {
         "model_path": "ViT-B/32"
     },
     "details": {
-        "num_parameters": 407344131,
+        "num_parameters": 151277313,
     }
 }
 
