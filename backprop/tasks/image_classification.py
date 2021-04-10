@@ -85,7 +85,6 @@ class ImageClassification(Task):
 
             return res["probabilities"]
 
-    
     def step_single_label(self, batch, batch_idx):
         images, targets = batch
         outputs = self.model.training_step(images, task=TASK)
@@ -95,12 +94,11 @@ class ImageClassification(Task):
 
     def step_multi_label(self, batch, batch_idx):
         images, targets = batch
-        outputs = self.model(images, task=TASK, train=True)
+        outputs = self.model.training_step(images, task=TASK)
 
         loss = self.criterion(outputs, targets)
         return loss
     
-
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
                  variant: str = "single_label",
                  epochs: int=20, batch_size: int=None, optimal_batch_size: int=None,
