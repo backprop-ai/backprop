@@ -7,6 +7,9 @@ msmarco_distilroberta_base_v2 = {
     },
     "details": {
         "num_parameters": 82118400,
+        "text-vectorisation": {
+            "finetunable": True
+        }
     }
 }
 
@@ -19,6 +22,9 @@ distiluse_base_multilingual_cased_v2 = {
     },
     "details": {
         "num_parameters": 135127808,
+        "text-vectorisation": {
+            "finetunable": True
+        }
     }
 }
 

@@ -23,6 +23,7 @@ class Task(pl.LightningModule):
         if api_key == None:
             local = True
         
+        self.task = task
         self.local = local
         self.api_key = api_key
 
@@ -84,6 +85,11 @@ class Task(pl.LightningModule):
                 early_stopping_epochs: int = 1, train_dataloader = None, val_dataloader = None,
                 dataset_train: Dataset = None, dataset_valid: Dataset = None, step = None, configure_optimizers = None):
         self.batch_size = batch_size or 1
+
+        model_task_details = self.model.details.get(self.task)
+
+        if not model_task_details or not model_task_details.get("finetunable"):
+            raise NotImplementedError(f"Finetuning has not been implemented for model '{self.model.name}' for task '{self.task}'")
 
         if not torch.cuda.is_available():
             raise Exception("You need a cuda capable (Nvidia) GPU for finetuning")

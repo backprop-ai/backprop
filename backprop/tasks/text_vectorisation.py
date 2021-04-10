@@ -17,7 +17,9 @@ TASK = "text-vectorisation"
 
 DEFAULT_LOCAL_MODEL = "msmarco-distilroberta-base-v2"
 
-LOCAL_ALIASES = {}
+LOCAL_ALIASES = {
+    "clip": "clip-vit-b32"
+}
 
 class TextVectorisation(Task):
     """

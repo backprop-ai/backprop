@@ -6,6 +6,9 @@ t5_base_qa_summary_emotion = {
     },
     "details": {
         "num_parameters": 222903552,
+        "text-generation": {
+            "finetunable": True
+        }
     }
 }
 

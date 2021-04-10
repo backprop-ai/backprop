@@ -6,6 +6,9 @@ t5_small = {
     },
     "details": {
         "num_parameters": 60506624,
+        "text-generation": {
+            "finetunable": True
+        }
     }
 }
 
@@ -17,6 +20,9 @@ t5_base = {
     },
     "details": {
         "num_parameters": 222903552,
+        "text-generation": {
+            "finetunable": True
+        }
     }
 }
 

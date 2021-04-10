@@ -17,7 +17,10 @@ TASK = "image-classification"
 
 DEFAULT_LOCAL_MODEL = "clip"
 
-LOCAL_ALIASES = {}
+LOCAL_ALIASES = {
+    "clip": "clip-vit-b32",
+    "efficientnet": "efficientnet-b0"
+}
 
 class ImageClassification(Task):
     """
@@ -43,18 +46,17 @@ class ImageClassification(Task):
 
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
-        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit)
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit, aliases=LOCAL_ALIASES)
 
     
     def __call__(self, image: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None,
-                top_k: int = 0, top_p: int = 1.0, multi_label: bool = False):
+                top_k: int = 0, multi_label: bool = False):
         """Classify image according to given labels.
 
         Args:
             image: image or list of images to vectorise. Can be both PIL Image objects or paths to images.
             labels: list of strings or list of labels (for zero shot classification)
             top_k: return probabilities only for top_k predictions. Use 0 to get all.
-            top_p: return probabilities that sum to top_p (between 0 and 1). Use 1.0 to get all.
             multi_label: allow multiple true labels. Not all models support this.
 
         Returns:
@@ -67,7 +69,6 @@ class ImageClassification(Task):
             "image": image,
             "labels": labels,
             "top_k": top_k,
-            "top_p": top_p,
             "multi_label": multi_label
         }
 
