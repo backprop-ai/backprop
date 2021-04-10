@@ -175,7 +175,6 @@ class QA(Task):
             "max_output_length": max_output_length
         }
 
-        print("Processing data...")
         # dataset = QADataset(questions, contexts, prev_qas, answers, self.model.process_qa, max_input_length, max_output_length)
         dataset = TextToTextDataset(dataset_params, task=TASK, process_batch=self.model.process_batch, length=len(questions))
         

@@ -68,7 +68,7 @@ class CLIP(BaseModel):
                 labels = [labels]
 
             image = [self.process_image(img).unsqueeze(0).to(self._model_device) for img in image]
-            text = [self.process_text(l).to(self._model_device) for l in labels]
+            text = [self.tokenizer(l).to(self._model_device) for l in labels]
             
             output = self.image_classification(image=image, text=text, labels=labels)
 

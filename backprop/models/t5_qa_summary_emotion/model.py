@@ -101,7 +101,6 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
                           for q, c, p in zip(question, context, prev_qa)]
         else:
             input_text = self.process_qa(question, context, prev_qa)
-        print(input_text)
         return self.generate(input_text, do_sample=False, max_length=96)
     
     def process_batch(self, params, task):
