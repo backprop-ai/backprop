@@ -48,7 +48,8 @@ class CLIP(BaseModel):
 
         return models
             
-    def __call__(self, task_input, task="image-classification", return_tensor=False, preprocess=True, train=False):
+    @torch.no_grad()
+    def __call__(self, task_input, task="image-classification", return_tensor=False):
         output = None
         is_list = False
         
@@ -59,44 +60,21 @@ class CLIP(BaseModel):
             if labels is None:
                 raise ValueError("labels must be provided")
 
-            if preprocess:
-                image = base64_to_img(image)
-
-                if type(image) == list:
-                    is_list = True
-                else:
-                    image = [image]
-                    labels = [labels]
+            is_list = type(image) == list
+            if not is_list:
+                image = [image]
+                labels = [labels]
             
-                assert len(image) == len(labels), "images and labels lists must be the same size"
-
-                image = [self.process_image(img).unsqueeze(0).to(self._model_device) for img in image]
-
-                text = [self.process_text(l).to(self._model_device) for l in labels]
-            else:
-                is_list = True
-            
-            with torch.set_grad_enabled(train):
-                output = self.image_classification(image=image, text=text, labels=labels)
+            output = self.image_classification(image=image, text=text, labels=labels)
 
         elif task == "image-vectorisation":
             image = task_input.get("image")
 
-            if preprocess:
-                image = base64_to_img(image)
-                
-                if type(image) == list:
-                    is_list = True
-                else:
-                    image = [image]
+            is_list = type(image) == list
+            if not is_list:
+                image = [image]
 
-                image = [self.process_image(img) for img in image]
-                image = torch.stack(image).to(self._model_device)
-            else:
-                is_list = True
-
-            with torch.set_grad_enabled(train):
-                img_vecs = self.image_vectorisation(image=image) 
+            img_vecs = self.image_vectorisation(image=image) 
 
             if not return_tensor:
                 img_vecs = img_vecs.tolist()
@@ -106,18 +84,11 @@ class CLIP(BaseModel):
         elif task == "text-vectorisation":
             text = task_input.get("text")
 
-            if preprocess:
-                if type(text) == list:
-                    is_list = True
-                else:
-                    text = [text]
+            is_list = type(text) == list
+            if not is_list:
+                text = [text]
 
-                text = self.tokenizer(text).to(self._model_device)
-            else:
-                is_list = True
-
-            with torch.set_grad_enabled(train):
-                text_vecs = self.text_vectorisation(text=text)
+            text_vecs = self.text_vectorisation(text=text)
 
             if not return_tensor:
                 text_vecs = text_vecs.tolist()
@@ -127,26 +98,13 @@ class CLIP(BaseModel):
         elif task == "image-text-vectorisation":
             image = task_input.get("image")
             text = task_input.get("text")
+            
+            is_list = type(image) == list
+            if not is_list:
+                image = [image]
+                text = [text]
 
-            if preprocess:
-                image = base64_to_img(image)
-
-                if type(image) == list:
-                    is_list = True
-                else:
-                    image = [image]
-                    text = [text]
-
-                assert len(image) == len(text), "image and text lists must be the same size"
-
-                text = self.tokenizer(text).to(self._model_device)
-                image = [self.process_image(img) for img in image]
-                image = torch.stack(image).to(self._model_device)
-            else:
-                is_list = True
-
-            with torch.set_grad_enabled(train):
-                img_text_vecs = self.image_text_vectorisation(image, text)
+            img_text_vecs = self.image_text_vectorisation(image, text)
 
             if not return_tensor:
                 img_text_vecs = img_text_vecs.tolist()
@@ -158,30 +116,26 @@ class CLIP(BaseModel):
 
         return output
 
-    def process_batch(self, params, task):
-        if task == "image-classification":
+    def training_step(self, params, task):
+        if task == "image-vectorisation":
             image = params["image"]
-            image = Image.open(image)
-            return self.process_image(image).squeeze(0)
-        elif task == "text-classification":
+            return self.image_vectorisation(image)
+        elif task == "text-vectorisation":
+            text = params["text"]
+            return self.text_vectorisation(text)
+        elif task == "image-text-vectorisation":
+            image = params["image"]
+            text = params["text"]
+            return self.image_text_vectorisation(image, text)
+
+    def process_batch(self, params, task):
+        if task == "image-vectorisation":
+            image = params["image"]
+            return self.process_image(Image.open(image)).squeeze(0)
+        elif task == "text-vectorisation":
             text = params["text"]
             return self.tokenizer(text)
-        elif task == "image-vectorisation":
-            pass
-        elif task == "text-vectorisation":
-            pass
-        elif task == "image-text-vectorisation":
-            pass
-
-    def process_text(self, input_text, max_length=None, padding=True):
-        if max_length:
-            raise ValueError(f"This model does not support specifying max_length")
-
-        processed = self.tokenizer(input_text)
-
-        return processed
-
-
+    
     def image_classification(self, image: torch.TensorType, text: torch.TensorType, labels):
         probabilities = []
         inputs = zip(image, text, labels)

@@ -99,8 +99,7 @@ class ImageTextVectorisation(Task):
     def step_triplet(self, batch, batch_idx):
         image, text, group = batch
 
-        img_text_vecs_norm = self.model({"image": image, "text": text}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
+        img_text_vecs_norm = self.model.training_step({"image": image, "text": text}, task=TASK)
 
         loss = self.criterion(img_text_vecs_norm, group)
 
@@ -109,10 +108,8 @@ class ImageTextVectorisation(Task):
     def step_cosine(self, batch, batch_idx):
         texts1, imgs1, texts2, imgs2, similarity_scores = batch
 
-        img_text_vecs1_norm = self.model({"image": imgs1, "text": texts1}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
-        img_text_vecs2_norm = self.model({"image": imgs2, "text": texts2}, task=TASK,
-                    return_tensor=True, preprocess=False, train=True)
+        img_text_vecs1_norm = self.model({"image": imgs1, "text": texts1}, task=TASK)
+        img_text_vecs2_norm = self.model({"image": imgs2, "text": texts2}, task=TASK)
 
         loss = torch.cosine_similarity(img_text_vecs1_norm, img_text_vecs2_norm)
         loss = F.mse_loss(loss, similarity_scores.view(-1))
@@ -159,16 +156,14 @@ class ImageTextVectorisation(Task):
                 [images[i] for i in train_idx],
                 [texts[i] for i in train_idx],
                 [groups[i] for i in train_idx],
-                self.model.process_image,
-                self.model.process_text
+                self.model.process_batch
             )
 
             dataset_valid = ImageTextGroupDataset(
                 [images[i] for i in val_idx],
                 [texts[i] for i in val_idx],
                 [groups[i] for i in val_idx],
-                self.model.process_image,
-                self.model.process_text
+                self.model.process_batch
             )
 
             self.dl_sampler = SameGroupSampler

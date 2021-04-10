@@ -4,8 +4,7 @@ from PIL import Image
 import numpy as np
 
 class ImageTextPairDataset(Dataset):
-    def __init__(self, img_text_pairs1, img_text_pairs2, similarity_scores,
-                transform_img, tokenize_text):
+    def __init__(self, img_text_pairs1, img_text_pairs2, similarity_scores, process_batch):
         super().__init__()
         self.texts1 = [t1 for i1, t1 in img_text_pairs1]
         self.texts2 = [t2 for i2, t2 in img_text_pairs2]
@@ -15,15 +14,14 @@ class ImageTextPairDataset(Dataset):
 
         self.similarity_scores = similarity_scores
 
-        self.transform_img = transform_img
-        self.tokenize_text = tokenize_text
+        self.process_batch = process_batch
 
     def __len__(self):
         return len(self.similarity_scores)
     
     def __getitem__(self, idx):
-        texts1 = self.tokenize_text(self.texts1[idx])
-        texts2 = self.tokenize_text(self.texts2[idx])
+        texts1 = self.process_batch({"text": self.texts1[idx]}, task="text-vectorisation")
+        texts2 = self.process_batch({"text": self.texts2[idx]}, task="text-vectorisation")
 
         if isinstance(texts1, torch.Tensor):
             texts1 = texts1.squeeze(0)
@@ -35,8 +33,8 @@ class ImageTextPairDataset(Dataset):
         else:
             texts2 = {k: v.squeeze(0) for k, v in texts2.items()}
 
-        imgs1 = self.transform_img(Image.open(self.imgs1[idx])).squeeze(0)
-        imgs2 = self.transform_img(Image.open(self.imgs2[idx])).squeeze(0)
+        imgs1 = self.process_batch({"image": self.imgs1[idx]}, task="image-vectorisation")
+        imgs2 = self.process_batch({"image": self.imgs2[idx]}, task="image-vectorisation")
 
         similarity_scores = torch.tensor(self.similarity_scores[idx])
 
@@ -44,7 +42,7 @@ class ImageTextPairDataset(Dataset):
 
 class ImagePairDataset(Dataset):
     def __init__(self, imgs1, imgs2, similarity_scores,
-                transform_img):
+                process_batch):
         super().__init__()
 
         self.imgs1 = imgs1
@@ -52,15 +50,15 @@ class ImagePairDataset(Dataset):
 
         self.similarity_scores = similarity_scores
 
-        self.transform_img = transform_img
+        self.process_batch = process_batch
 
     def __len__(self):
         return len(self.similarity_scores)
     
     def __getitem__(self, idx):
 
-        imgs1 = self.transform_img(Image.open(self.imgs1[idx])).squeeze(0)
-        imgs2 = self.transform_img(Image.open(self.imgs2[idx])).squeeze(0)
+        imgs1 = self.process_batch({"image": self.imgs1[idx]}, task="image-vectorisation")
+        imgs2 = self.process_batch({"image": self.imgs2[idx]}, task="image-vectorisation")
 
         similarity_scores = torch.tensor(self.similarity_scores[idx])
 
@@ -68,7 +66,7 @@ class ImagePairDataset(Dataset):
 
 class TextPairDataset(Dataset):
     def __init__(self, texts1, texts2, similarity_scores,
-                tokenize_text):
+                process_batch):
         super().__init__()
 
         self.texts1 = texts1
@@ -76,14 +74,14 @@ class TextPairDataset(Dataset):
 
         self.similarity_scores = similarity_scores
 
-        self.tokenize_text = tokenize_text
+        self.process_batch = process_batch
 
     def __len__(self):
         return len(self.similarity_scores)
     
     def __getitem__(self, idx):
-        texts1 = self.tokenize_text(self.texts1[idx])
-        texts2 = self.tokenize_text(self.texts2[idx])
+        texts1 = self.process_batch({"text": self.texts1[idx]}, task="text-vectorisation")
+        texts2 = self.process_batch({"text": self.texts2[idx]}, task="text-vectorisation")
 
         if isinstance(texts1, torch.Tensor):
             texts1 = texts1.squeeze(0)
@@ -100,22 +98,22 @@ class TextPairDataset(Dataset):
         return texts1, texts2, similarity_scores
 
 class ImageTextGroupDataset(Dataset):
-    def __init__(self, images, texts, groups, transform_img, tokenize_text):
+    def __init__(self, images, texts, groups, process_batch):
         super().__init__()
 
         self.images = images
         self.texts = texts
         self.groups = groups
 
-        self.transform_img = transform_img
-        self.tokenize_text = tokenize_text
+        self.process_batch = process_batch
 
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
-        image = self.transform_img(Image.open(self.images[idx])).squeeze(0)
-        text = self.tokenize_text(self.texts[idx])
+        
+        image = self.process_batch({"image": self.images[idx]}, task="image-vectorisation")
+        text = self.process_batch({"text": self.texts[idx]}, task="text-vectorisation")
 
         if isinstance(text, torch.Tensor):
             text = text.squeeze(0)
@@ -127,38 +125,38 @@ class ImageTextGroupDataset(Dataset):
         return image, text, group
 
 class ImageGroupDataset(Dataset):
-    def __init__(self, images, groups, transform_img):
+    def __init__(self, images, groups, process_batch):
         super().__init__()
 
         self.images = images
         self.groups = groups
 
-        self.transform_img = transform_img
+        self.process_batch = process_batch
 
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
-        image = self.transform_img(Image.open(self.images[idx])).squeeze(0)
+        image = self.process_batch({"image": self.images[idx]}, task="image-vectorisation")
 
         group = torch.tensor(self.groups[idx])
 
         return image, group
 
 class TextGroupDataset(Dataset):
-    def __init__(self, texts, groups, tokenize_text):
+    def __init__(self, texts, groups, process_batch):
         super().__init__()
 
         self.texts = texts
         self.groups = groups
 
-        self.tokenize_text = tokenize_text
+        self.process_batch = process_batch
 
     def __len__(self):
         return len(self.texts)
 
     def __getitem__(self, idx):
-        text = self.tokenize_text(self.texts[idx])
+        text = self.process_batch({"text": self.texts[idx]})
 
         if isinstance(text, torch.Tensor):
             text = text.squeeze(0)
@@ -166,7 +164,6 @@ class TextGroupDataset(Dataset):
             text = {k: v.squeeze(0) for k, v in text.items()}
 
         group = torch.tensor(self.groups[idx])
-
         return text, group
 
 class SingleLabelImageClassificationDataset(Dataset):
