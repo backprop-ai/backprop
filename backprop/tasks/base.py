@@ -1,6 +1,6 @@
 from typing import Dict, List, Union, Tuple
 import logging
-from backprop import load
+import backprop
 from backprop.models import AutoModel
 import pytorch_lightning as pl
 from torch.utils.data.dataloader import DataLoader
@@ -63,6 +63,31 @@ class Task(pl.LightningModule):
 
     def __call__(self):
         raise Exception("The base Task is not callable!")
+
+    def save(self, name: str, description: str = None, details: Dict = None):
+        """
+        Saves the model used by task to ``~/.cache/backprop/name``
+
+        Args:
+            name: string identifier for the model. Lowercase letters and numbers.
+                No spaces/special characters except dashes.
+            description: String description of the model.
+            details: Valid json dictionary of additional details about the model
+        """
+        return backprop.save(self.model, name=name, description=description, details=details)
+
+    def upload(self, name: str, description: str = None, details: Dict = None, api_key: str = None):
+        """
+        Saves the model used by task to ``~/.cache/backprop/name`` and deploys to backprop
+
+        Args:
+            name: string identifier for the model. Lowercase letters and numbers.
+                No spaces/special characters except dashes.
+            description: String description of the model.
+            details: Valid json dictionary of additional details about the model
+            api_key: Backprop API key
+        """
+        return backprop.upload(self.model, name=name, description=description, details=details, api_key=api_key)
 
     def configure_optimizers(self):
         """
