@@ -272,7 +272,7 @@ based on group numbers. A given "anchor" image is compared to a positive match (
 distance between the anchor vector and the positive match vector, while also maximising the distance between the anchor vector and negative match vector.
 
 For cosine similarity, the schema is different. It requires keys "imgs1", "imgs2", and "similarity_scores". When training on row *x*, this variant
-vectorises `imgs1[x]` and `imgs2[x]`, with the target cosine similarity being the value at `similarity_scores[x]`.
+vectorises ``imgs1[x]`` and ``imgs2[x]``, with the target cosine similarity being the value at ``similarity_scores[x]``.
 
 .. code-block:: python
 
@@ -371,7 +371,7 @@ When finetuning text vectorisation, the task input determines on the loss varian
 Like with image vectorisation, this can be either "triplet" or "cosine_similarity".
 
 The default is cosine_similarity. It requires keys "texts1", "texts2", and "similarity_scores". When training on row *x*, this variant
-vectorises `texts1[x]` and `texts2[x]`, with the target cosine similarity being the value at `similarity_scores[x]`.
+vectorises ``texts1[x]`` and ``texts2[x]``, with the target cosine similarity being the value at ``similarity_scores[x]``.
 
 Triplet is different. This schema requires keys "texts" (input texts), and "groups" (group in which each piece of text falls). This variant uses a distinct sampling strategy,
 based on group numbers. A given "anchor" text is compared to a positive match (same group number) and a negative match (different group number). The goal is to minimise the
@@ -404,3 +404,64 @@ Finetuning text vectorisation also accepts the keyword argument ``max_length`` w
 Check the example `Text Vectorisation Notebook <https://github.com/backprop-ai/backprop/blob/main/examples/TextVectorisation.ipynb>`_ with code.
 
 See the :ref:`Text Vectorisation Task Reference <text-vectorisation>`.
+
+Image-Text Vectorisation
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Image-Text Vectorisation takes an associated text/image pair, and returns a normalized vector output.
+
+This task could be used for making a robust image search system, that takes into account both input text and similar images.
+
+Inference
+*********
+
+.. code-block:: python
+    import backprop
+
+    itv = backprop.ImageTextVectorisation()
+
+    image = "images/iphone/iphone-12-128GB.jpg"
+    text = "iPhone 12 128GB"
+
+    tv(image=image, text=text)
+    [0.82514237, 0.35281924, ...]
+
+
+Finetuning
+**********
+Similar to the other vectorisation tasks (text & image separately), this task has both triplet and cosine similarity loss variants. The variant determines the input
+data schema.
+
+The default is triplet. This params dict requires keys "images" (input images), "texts" (input texts) and "groups" (group in which each image/text pair falls). 
+This variant uses a distinct sampling strategy, based on group numbers. A given "anchor" image/text pair is compared to a positive match (same group number) and a 
+negative match (different group number). The goal is to minimise the distance between the anchor vector and the positive match vector, 
+while also maximising the distance between the anchor vector and negative match vector.
+
+For cosine similarity, a few things are needed. It requires keys "imgs1", "imgs2", "texts1", "texts2", and "similarity_scores". When training on row *x*, this variant
+gets a normalized vector for ``imgs1[x]`` and ``texts[x]``, as well as one for and ``imgs2[x]`` and ``texts2[x]``. 
+The target cosine similarity between both normalized vectors is the value at ``similarity_scores[x]``.
+
+
+.. code-block:: python
+    
+    import backprop
+
+    itv = backprop.ImageTextVectorisation()
+
+    # Prep training data & finetune (triplet variant)
+    images = ["product_images/crowbars/photo.jpg", "product_images/crowbars/photo1.jpg", "product_images/mugs/photo.jpg"]
+    texts = ["Steel crowbar with angled beak, 300mm", "Crowbar tempered steel 300m angled", "Sturdy ceramic mug, microwave-safe"]
+    groups = [0, 0, 1]
+    params = {"images": images, "texts": texts, "groups": groups}
+
+    itv.finetune(params, variant="triplet")
+
+    # Prep training data & finetune (cosine_similarity variant)
+    imgs1 = ["product_images/crowbars/photo.jpg", "product_images/mugs/photo.jpg"]
+    texts1 = ["Steel crowbar with angled beak, 300mm", "Sturdy ceramic mug, microwave-safe"]
+    imgs2 = ["product_images/crowbars/photo1.jpg", "product_images/hats/photo.jpg]
+    texts2 = ["Crowbar tempered steel 300m angled", "Dad hat with funny ghost picture on the front"]
+    similarity_scores = [1.0, 0.0]
+    params = {"imgs1": imgs1, "imgs2": imgs2, "texts1": texts1, "texts2": texts2, "similarity_scores": similarity_scores}
+
+    itv.finetune(params, variant="cosine_similarity")
