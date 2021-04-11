@@ -116,12 +116,12 @@ class EfficientNet(PathModel):
 
             logits = self.model(image)
 
+            # TODO: Handle multi label
             dist = torch.softmax(logits, dim=1).squeeze(0).tolist()
             
             probs = {}
-            for idx in dist:
+            for idx, prob in enumerate(dist):
                 label = self.labels[idx]
-                prob = dist[idx].item()
 
                 probs[label] = prob
 
