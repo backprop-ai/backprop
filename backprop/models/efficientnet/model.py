@@ -79,11 +79,10 @@ class EfficientNet(PathModel):
         if task == "image-classification":
             image = task_input.get("image")
             top_k = task_input.get("top_k")
-            multi_label = task_input.get("multi_label")
 
             image = base64_to_img(image)
 
-            return self.image_classification(image=image, top_k=top_k, multi_label=multi_label)
+            return self.image_classification(image=image, top_k=top_k)
 
     def pre_finetuning(self, labels=None, num_classes=None):
         self.labels = labels
@@ -95,7 +94,7 @@ class EfficientNet(PathModel):
     def training_step(self, batch, task="image-classification"):
         return self.model(batch)
 
-    def image_classification(self, image, top_k=10000, multi_label=False):
+    def image_classification(self, image, top_k=10000):
         # TODO: Proper batching
         is_list = False
 
@@ -107,16 +106,15 @@ class EfficientNet(PathModel):
         
         probabilities = []
 
+        # Don't exceed the number of labels
+        top_k = min(len(self.labels), top_k)
+
         for image in image:
             image = self.tfms(image).unsqueeze(0).to(self._model_device)
 
             logits = self.model(image)
 
-            dist = None
-            if multi_label:
-                dist = torch.sigmoid(logits)
-            else:
-                dist = torch.softmax(logits, dim=1)
+            dist = torch.softmax(logits, dim=1)
 
             preds = torch.topk(dist, k=top_k, sorted=True).indices.squeeze(0).tolist()
             
