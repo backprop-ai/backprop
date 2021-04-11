@@ -1,14 +1,22 @@
 .. _efficientnet:
 
 backprop.models.efficientnet
-======================
+====================================
 
 
-EfficientNet
-------------
+backprop.models.efficientnet.model
+-----------------------------------------
 
-.. autoclass:: backprop.models.efficientnet.model.EfficientNet
-   :members: finetune
+.. automodule:: backprop.models.efficientnet.model
+   :members:
    :undoc-members:
    :special-members: __call__
+   :show-inheritance:
+
+backprop.models.efficientnet.models\_list
+------------------------------------------------
+
+.. automodule:: backprop.models.efficientnet.models_list
+   :members:
+   :undoc-members:
    :show-inheritance:

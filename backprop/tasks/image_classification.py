@@ -46,6 +46,14 @@ class ImageClassification(Task):
 
     @staticmethod
     def list_models(return_dict=False, display=False, limit=None):
+        """
+        Returns the list of models that can be used and finetuned with this task.
+
+        Args:
+            return_dict: Default False. True if you want to return in dict form. Otherwise returns list form.
+            display: Default False. True if you want output printed directly (overrides return_dict, and returns nothing).
+            limit: Default None. Maximum number of models to return -- leave None to get all models.
+        """
         return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit, aliases=LOCAL_ALIASES)
 
     
@@ -154,7 +162,7 @@ class ImageClassification(Task):
             params = {"images": images, "labels": labels}
 
             # Finetune
-            ic.finetune(params)
+            ic.finetune(params, variant="single_label")
         """
         optimal_batch_size = optimal_batch_size or getattr(self.model, "optimal_batch_size", 128)
 
