@@ -35,6 +35,8 @@ The params dictionary for Q&A training consists of contexts, questions, answers,
 
 The ``prev_qa`` parameter is used to make a Q&A system conversational -- that is to say, it can infer the meaning of words in a new question, based on previous questions.
 
+Finetuning Q&A also accepts keyword arguments ``max_input_length`` and ``max_output_length``, which specify the maximum token length for inputs and outputs.
+
 .. code-block:: python
     import backprop
                 
@@ -96,6 +98,8 @@ Supplying parameters for text classification is straightforward: the params dict
 The values of these keys are lists of input texts and the labels to which they are assigned. 
 When you finetune, Backprop will automatically set up a model with the correct number of outputs (based on the unique labels passed in).
 
+Finetuning text classification also accepts the keyword argument ``max_length``, which specifoes the maximum token length for inputs.
+
 .. code-block:: python
     import backprop
 
@@ -138,6 +142,8 @@ Sentiment detection finetuning is currently a generative task. This will likely 
 The schema will remain the same, however: the emotion task params dict contains the keys "input_text" and "output_text".
 The inputs are the strings to be analysed, and the outputs are the emotions corresponding to those inputs.
 
+Finetuning this task also accepts keyword arguments ``max_input_length`` and ``max_output_length``, which specify the maximum token length for inputs and outputs.
+
 .. code-block:: python
     import backprop
             
@@ -175,6 +181,8 @@ Finetuning
 **********
 The summarisation input schema is a params dict with "input_text" and "output_text" keys. Inputs would be longer pieces of text, and the corresponding outputs are
 summarised versions of the same text.
+
+Finetuning sumamrisation also accepts keyword arguments ``max_input_length`` and ``max_output_length``, which specify the maximum token length for inputs and outputs.
 
 .. code-block:: python
 
@@ -313,10 +321,11 @@ Inference
 
 Finetuning
 **********
-Text generation requires a params dict with an "input_text" key, and optionally an "output_text" key. The values here are simply lists of strings.
+Text generation requires a params dict with keys "input_text" and "output_text". The values here are simply lists of strings.
 
-If no output text is provided, the model will be trained on generating text that is 'similar' to the input. This can be used for fully generative tasks, such as story generation.
-If output *is* provided, the model will learn expected outputs for a given context -- this is how tasks such as generative sentiment detection or text summary can be trained.
+When trained, the model will learn expected outputs for a given context -- this is how tasks such as generative sentiment detection or text summary can be trained.
+
+Finetuning text generation also accepts keyword arguments ``max_input_length`` and ``max_output_length``, which specify the maximum token length for inputs and outputs.
 
 .. code-block:: python
 
@@ -367,6 +376,9 @@ vectorises `texts1[x]` and `texts2[x]`, with the target cosine similarity being 
 Triplet is different. This schema requires keys "texts" (input texts), and "groups" (group in which each piece of text falls). This variant uses a distinct sampling strategy,
 based on group numbers. A given "anchor" text is compared to a positive match (same group number) and a negative match (different group number). The goal is to minimise the
 distance between the anchor vector and the positive match vector, while also maximising the distance between the anchor vector and negative match vector.
+
+
+Finetuning text vectorisation also accepts the keyword argument ``max_length`` which specifies the maximum token length for encoded text.
 
 .. code-block:: python
     
