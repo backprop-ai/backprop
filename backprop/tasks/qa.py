@@ -1,20 +1,19 @@
 from typing import List, Tuple, Union, Dict
 from .base import Task
-from backprop.models import T5QASummaryEmotion, BaseModel
+from backprop.models import BaseModel, AutoModel
+from transformers.optimization import Adafactor
+from backprop.utils.datasets import TextToTextDataset
 
 import requests
 
-DEFAULT_LOCAL_MODEL = T5QASummaryEmotion
+TASK = "qa"
 
-LOCAL_MODELS = {
-    "english": DEFAULT_LOCAL_MODEL
+DEFAULT_LOCAL_MODEL = "t5-base-qa-summary-emotion"
+
+LOCAL_ALIASES = {
+    "english": "t5-base-qa-summary-emotion"
 }
 
-DEFAULT_API_MODEL = "english"
-
-FINETUNABLE_MODELS = ["t5", "t5-base-qa-summary-emotion"]
-
-API_MODELS = ["english"]
 
 class QA(Task):
     """
@@ -22,23 +21,34 @@ class QA(Task):
 
     Attributes:
         model:
-            1. Name of the model on Backprop's qa endpoint (english or your own uploaded model)
-            2. Officially supported local models (english).
-            3. Model class of instance Backprop's BaseModel that implements the qa task
-            4. Path/name of saved Backprop model
-        model_class (optional): The model class to use when supplying a path for the model.
+            1. Model name
+            2. Model name on Backprop's qa endpoint
+            3. Model object that implements the qa task
         local (optional): Run locally. Defaults to False
         api_key (optional): Backprop API key for non-local inference
         device (optional): Device to run inference on. Defaults to "cuda" if available.
     """
     def __init__(self, model: Union[str, BaseModel] = None,
                 local: bool = False, api_key: str = None, device: str = None):
+        models = AutoModel.list_models(task=TASK)
 
         super().__init__(model, local=local, api_key=api_key, device=device,
-                        local_models=LOCAL_MODELS, api_models=API_MODELS,
+                        models=models, task=TASK,
                         default_local_model=DEFAULT_LOCAL_MODEL,
-                        default_api_model=DEFAULT_API_MODEL)
+                        local_aliases=LOCAL_ALIASES)
     
+    @staticmethod
+    def list_models(return_dict=False, display=False, limit=None):
+        """
+        Returns the list of models that can be used and finetuned with this task.
+
+        Args:
+            return_dict: Default False. True if you want to return in dict form. Otherwise returns list form.
+            display: Default False. True if you want output printed directly (overrides return_dict, and returns nothing).
+            limit: Default None. Maximum number of models to return -- leave None to get all models.
+        """
+        return AutoModel.list_models(task=TASK, return_dict=return_dict, display=display, limit=limit, aliases=LOCAL_ALIASES)
+
     def __call__(self, question: Union[str, List[str]], context: Union[str, List[str]],
                 prev_qa: Union[List[Tuple[str, str]], List[List[Tuple[str, str]]]] = []):
         """Perform QA, either on docstore or on provided context.
@@ -55,9 +65,18 @@ class QA(Task):
         prev_q = []
         prev_a = []
         if prev_qa != [] and type(prev_qa[0]) == list:
-            for prev_qa in prev_qa:
-                prev_q += [q for q, a in prev_qa]
-                prev_a += [a for q, a in prev_qa]
+            for pqa in prev_qa:
+                if len(pqa) == 0:
+                    prev_q.append([])
+                    prev_a.append([])
+                else:
+                    q = []
+                    a = []
+                    for x in pqa:
+                        q.append(x[0])
+                        a.append(x[1])
+                    prev_q.append(q)
+                    prev_a.append(a)
         else:
             prev_q = [q for q, a in prev_qa]
             prev_a = [a for q, a in prev_qa]
@@ -80,23 +99,57 @@ class QA(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["answer"]
-    
-    def finetune(self, params: Dict, *args, **kwargs):
+
+    def step(self, batch, batch_idx):
         """
-        Passes args and kwargs to the model's finetune method.
-        Input orderings must match.
+        Performs a training step and returns loss.
+
+        Args:
+            batch: Batch output from the dataloader
+            batch_idx: Batch index.
+        """
+        return self.model.training_step(batch)
+        
+    def configure_optimizers(self):
+        """
+        Returns default optimizer for Q&A (AdaFactor, learning rate 1e-3)
+        """
+        return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
+
+    def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
+                  max_input_length: int=256, max_output_length: int=32,
+                  epochs: int=20, batch_size: int=None,
+                  optimal_batch_size: int=None, early_stopping_epochs: int=1,
+                  train_dataloader=None, val_dataloader=None, step=None,
+                  configure_optimizers=None):
+        """
+        Finetunes a model for Q&A tasks.
 
         Args:
             params: dictionary of lists: 'questions', 'answers', 'contexts'.
-                    Optionally includes 'prev_qas': list of list of (q, a) tuples to prepend to context.
+                    Optionally includes 'prev_qas': list of lists containing (q, a) tuples to prepend to context.
+            max_input_length: Maximum number of tokens (1 token ~ 1 word) in input. Anything higher will be truncated. Max 512.
+            max_output_length: Maximum number of tokens (1 token ~ 1 word) in output. Anything higher will be truncated. Max 512.
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation.
+            epochs: Integer specifying how many training iterations to run
+            batch_size: Batch size when training. Leave as None to automatically determine batch size.
+            optimal_batch_size: Optimal batch size for the model being trained -- defaults to model settings.
+            early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss.
+            train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
+            val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
+            step: Function determining how to call model for a training step. Defaults to step defined in this task class.
+            configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class. 
         
+
         Examples::
 
             import backprop
             
             # Initialise task
-            qa = backprop.QA(backprop.models.T5)
+            qa = backprop.QA()
 
+            # Set up training data for QA. Note that repeated contexts are needed, along with empty prev_qas to match.
+            # Input must be completely 1:1, each question has an associated answer, context, and prev_qa (if prev_qa is to be used).
             questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
             answers = ["A library that trains models", "Python", "1964"]
             contexts = ["Backprop is a Python library that makes training and using models easier.", 
@@ -115,19 +168,31 @@ class QA(Task):
             # Finetune
             qa.finetune(params=params)
         """
-        # params = kwargs["params"]
-        print(params)
-        if not "questions" in params:
-            print("Params requires key: 'questions' (list of questions)")
-            return
-        if not "answers" in params:
-            print("Params requires key: 'answers' (list of answers)")
-            return
-        if not "contexts" in params:
-            print("Params requires key: 'contexts' (list of question contexts)")
-            return
+        questions = params["questions"]
+        contexts = params["contexts"]
+        answers = params["answers"]
+        prev_qas = params["prev_qas"]
+        
+        assert len(questions) == len(answers) and len(questions) == len(contexts)
+    
+        step = step or self.step
+        configure_optimizers = configure_optimizers or self.configure_optimizers
 
-        try:
-            return self.model.finetune(params=params, task="qa", *args, **kwargs)
-        except NotImplementedError:
-            raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
+        dataset_params = {
+            "question": questions,
+            "context": contexts,
+            "prev_qa": prev_qas,
+            "output": answers,
+            "max_input_length": max_input_length,
+            "max_output_length": max_output_length
+        }
+
+        # dataset = QADataset(questions, contexts, prev_qas, answers, self.model.process_qa, max_input_length, max_output_length)
+        dataset = TextToTextDataset(dataset_params, task=TASK, process_batch=self.model.process_batch, length=len(questions))
+        
+        super().finetune(dataset=dataset, validation_split=validation_split,
+                epochs=epochs, batch_size=batch_size, optimal_batch_size=optimal_batch_size,
+                early_stopping_epochs=early_stopping_epochs,
+                train_dataloader=train_dataloader, val_dataloader=val_dataloader,
+                step=step, configure_optimizers=configure_optimizers)
+        

@@ -1,5 +1,5 @@
 backprop
-============
+================
 
 
 .. toctree::
@@ -10,7 +10,7 @@ backprop
    backprop.utils
 
 Submodules
-----------
+---------------
 
 .. automodule:: backprop
    :members:

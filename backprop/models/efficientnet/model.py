@@ -1,11 +1,11 @@
 import torch
 from PIL import Image
-from typing import Union, List
+from typing import Union, List, Dict
 from efficientnet_pytorch import EfficientNet as EfficientNet_pt
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from random import shuffle
-from backprop.models import PathModel, Finetunable
+from backprop.models import PathModel
 from backprop.utils.download import download
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.utils.data import DataLoader
@@ -17,21 +17,27 @@ import os
 
 from io import BytesIO
 import base64
+from backprop.utils.helpers import base64_to_img
 
 IMAGENET_LABELS_URL = "https://raw.githubusercontent.com/backprop-ai/backprop/main/backprop/models/efficientnet/imagenet_labels.txt"
 
-class EfficientNet(PathModel, Finetunable):
+class EfficientNet(PathModel):
     """
     EfficientNet is a very efficient image-classification model. Trained on ImageNet.
 
     Attributes:
         model_path: Any efficientnet model (smaller to bigger) from efficientnet-b0 to efficientnet-b7
         init_model: Callable that initialises the model from the model_path
-        kwargs: kwrags passed to :class:`backprop.models.generic_models.PathModel`
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
+        device: Device for model. Defaults to "cuda" if available.
     """
-    def __init__(self, model_path: str = "efficientnet-b0", init_model = None, **kwargs):
-        Finetunable.__init__(self)
-        
+    def __init__(self, model_path: str = "efficientnet-b0", init_model = None, name: str = None,
+                description: str = None, tasks: List[str] = None, details: Dict = None,
+                device=None):
         self.image_size = EfficientNet_pt.get_image_size(model_path)
         self.num_classes = 1000
 
@@ -40,6 +46,7 @@ class EfficientNet(PathModel, Finetunable):
         
         with open(download(IMAGENET_LABELS_URL, "efficientnet"), "r") as f:
             self.labels = json.load(f)
+            self.labels = {int(k): v for k, v in self.labels.items()}
 
         self.tfms = transforms.Compose([
                 transforms.Resize(self.image_size, interpolation=Image.BICUBIC),
@@ -49,12 +56,22 @@ class EfficientNet(PathModel, Finetunable):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ])
 
-        PathModel.__init__(self, model_path, init_model, **kwargs)
-        
-        self.name = model_path
-        self.description = "EfficientNet is an image classification model that achieves state-of-the-art accuracy while being an order-of-magnitude smaller and faster than previous models. Trained on ImageNet's 1000 categories."
-        self.tasks = ["image-classification"]
+        tasks = tasks or ["image-classification"]
 
+        self.optimal_batch_size = 128
+        self.process_image = self.tfms
+        
+        PathModel.__init__(self, model_path, name=name, description=description,
+                            details=details, tasks=tasks, init_model=init_model,
+                            device=device)
+
+    @staticmethod
+    def list_models():
+        from .models_list import models
+
+        return models
+    
+    @torch.no_grad()
     def __call__(self, task_input, task="image-classification"):
         """
         Uses the model for the image-classification task
@@ -63,44 +80,53 @@ class EfficientNet(PathModel, Finetunable):
             task_input: input dictionary according to the ``image-classification`` task specification
             task: image-classification
         """
+
         if task == "image-classification":
-            image_base64 = task_input.get("image")
+            image = task_input.get("image")
+            top_k = task_input.get("top_k", 10000)
 
-            return self.image_classification(image_base64=image_base64)
+            image = base64_to_img(image)
 
-    @torch.no_grad()
-    def image_classification(self, image_base64: Union[str, List[str]], top_k=10):
+            return self.image_classification(image=image, top_k=top_k)
+
+    def pre_finetuning(self, labels=None, num_classes=None):
+        self.labels = labels
+        
+        if self.num_classes != num_classes:
+            self.num_classes = num_classes
+            self.model = EfficientNet_pt.from_pretrained(self.model_path, num_classes=num_classes)
+
+    def training_step(self, batch, task="image-classification"):
+        return self.model(batch)
+
+    def image_classification(self, image, top_k=10000):
         # TODO: Proper batching
         is_list = False
 
-        if type(image_base64) == list:
+        if type(image) == list:
             is_list = True
 
         if not is_list:
-            image_base64 = [image_base64]
+            image = [image]
         
         probabilities = []
 
-        for image_base64 in image_base64:
-
-            # Not bytes
-            if type(image_base64) == str:
-                image_base64 = image_base64.split(",")[-1]
-
-            image = BytesIO(base64.b64decode(image_base64))
-            image = Image.open(image)
-
+        for image in image:
             image = self.tfms(image).unsqueeze(0).to(self._model_device)
 
             logits = self.model(image)
-            preds = torch.topk(logits, k=top_k).indices.squeeze(0).tolist()
-            dist = torch.softmax(logits, dim=1)
+
+            # TODO: Handle multi label
+            dist = torch.softmax(logits, dim=1).squeeze(0).tolist()
+            
             probs = {}
-            for idx in preds:
-                label = self.labels[str(idx)]
-                prob = dist[0, idx].item()
+            for idx, prob in enumerate(dist):
+                label = self.labels[idx]
 
                 probs[label] = prob
+
+            probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
+            probs = {k: v for k, v in probs[:top_k]}
 
             probabilities.append(probs)                
 
@@ -109,73 +135,12 @@ class EfficientNet(PathModel, Finetunable):
 
         return probabilities
 
+    def process_batch(self, params, task="image-classification"):
+        image = params["image"]
+        image = Image.open(image)
+        image = self.process_image(image).squeeze(0)
+        return image
+
     def configure_optimizers(self):
         return torch.optim.SGD(params=self.model.parameters(), lr=1e-1, weight_decay=1e-4)
 
-    def training_step(self, batch, batch_idx):
-        inputs, targets = batch
-        outputs = self.model(inputs)
-        loss = F.cross_entropy(outputs, targets)
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        return loss
-    
-    def validation_step(self, batch, batch_idx):
-        inputs, targets = batch
-        outputs = self.model(inputs)
-        loss = F.cross_entropy(outputs, targets)
-        self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
-        return loss
-
-    def finetune(self, image_dir: str, validation_split: float = 0.15, epochs: int = 20,
-                batch_size: int = None, early_stopping: bool = True,
-                trainer: pl.Trainer = None):
-        """
-        Finetunes EfficientNet for the image-classification task.
-        
-        Note:
-            ``image_dir`` has a strict structure that must be followed:
-
-            .. code-block:: text
-            
-                Images
-                ├── Cool_Dog
-                │   ├── dog1.jpg
-                │   └── dog2.jpg
-                └── Amazing_Dog
-                    ├── dog1.jpg
-                    └── dog2.jpg
-        
-            In the example above, our ``image_dir`` is called Images. It contains two classes, each of which have 2 training examples.
-            Every class must have its own folder, every folder must have some images as examples.
-
-        Args:
-            image_dir: Path to your training data
-            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
-            epochs: Integer that specifies how many iterations of training to do
-            batch_size: Leave as None to determine the batch size automatically
-            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
-            trainer: Your custom pytorch_lightning trainer
-
-        Examples::
-
-            import backprop
-            
-            # Initialise model
-            model = backprop.models.EfficientNet()
-
-            # Finetune with path to your images
-            model.finetune("my_image_dir")
-        """
-        OPTIMAL_BATCH_SIZE = 128
-        
-        dataset = ImageFolder(image_dir, transform=self.tfms)
-        self.labels = {str(v): k for k, v in dataset.class_to_idx.items()}
-        num_classes = len(dataset.classes)
-
-        if self.num_classes != num_classes:
-            self.num_classes = num_classes
-            self.model = EfficientNet_pt.from_pretrained(self.model_path, num_classes=num_classes)
-
-        Finetunable.finetune(self, dataset, validation_split=validation_split,
-            epochs=epochs, optimal_batch_size=OPTIMAL_BATCH_SIZE, batch_size=batch_size,
-            early_stopping=early_stopping, trainer=trainer)

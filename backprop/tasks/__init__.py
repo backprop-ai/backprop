@@ -8,3 +8,4 @@ from .text_generation import TextGeneration
 from .emotion import Emotion
 from .image_classification import ImageClassification
 from .image_vectorisation import ImageVectorisation
+from .image_text_vectorisation import ImageTextVectorisation

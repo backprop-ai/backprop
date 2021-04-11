@@ -8,6 +8,13 @@ def load(path):
 
     Args:
         path: Name of the model or full path to model.
+
+    Example::
+
+        import backprop
+
+        backprop.save(model_object, "my_model")
+        model = backprop.load("my_model")
     """
     # Try to look in cache folder
     cache_path = os.path.expanduser(f"~/.cache/backprop/{path}")
