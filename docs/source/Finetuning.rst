@@ -60,8 +60,11 @@ In-depth Example
 
 See the in-depth `Getting Started with Finetuning <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb>`_ notebook with code.
 
-Supported tasks and models
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Supported tasks
+^^^^^^^^^^^^^^^
+To see all models that a task supports for finetuning, load that task and
+call ``.list_models()``
+
 
 Text Generation
 ---------------
@@ -71,11 +74,6 @@ References:
 * :ref:`text-generation task <text-generation>`
 * `text-generation finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_TextGeneration.ipynb>`_
 
-Supported models:
-
-* :ref:`T5 <t5>`
-* :ref:`T5QASummaryEmotion <t5baseqasummaryemotion>`
-  
 Image Classification
 --------------------
 
@@ -84,9 +82,6 @@ References:
 * :ref:`image-classification task <image-classification>`
 * `image-classification finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_ImageClassification.ipynb>`_
 
-Supported models:
-
-* :ref:`EfficientNet <efficientnet>`
 
 Text Classification
 -------------------
@@ -96,9 +91,6 @@ References:
 * :ref:`text-classification task <text-classification>`
 * `text-classification finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_TextClassification.ipynb>`_
 
-Supported models:
-
-* :ref:`XLNet <xlnet>`
 
 Text Vectorisation
 -------------------
@@ -108,9 +100,8 @@ References:
 * :ref:`text-vectorisation task <text-vectorisation>`
 * `text-vectorisation finetuning notebook <https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_TextVectorisation.ipynb>`_
 
-Supported models:
+Image-Text Vectorisation
 
-* :ref:`DistiluseBaseMultilingualCasedV2 <distiluse>`
-* :ref:`MSMARCODistilrobertaBaseV2 <distilroberta-msmarco>`
+References:
 
-
+* :ref:`image-text-vectorisation task <image-text-vectorisation>`

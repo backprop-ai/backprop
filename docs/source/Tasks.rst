@@ -13,6 +13,10 @@ Tasks can be imported directly from ``backprop``.
 
 See the full reference in :ref:`backprop-tasks`.
 
+To see which models are supported for each task, load that task
+and call ``.list_models()``.
+
+
 Q&A
 ^^^
 Q&A answers a question based on a paragraph of text. It also supports previous questions and answers for a conversational setting.
