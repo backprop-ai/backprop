@@ -57,7 +57,7 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
                                 pair = (pqa[0][x], pqa[1][x])
                                 qas.append(pair)
                             prev_qa.append(qas)
-
+            
             return self.qa(task_input["question"], task_input["context"], prev_qa=prev_qa)
         else:
             raise ValueError(f"Unsupported task: {task}")
@@ -84,7 +84,6 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
         input_text.append(f"q: {question}")
         input_text.append(f"c: {context}")
         input_text = " ".join(input_text)
-        
         return input_text
 
     def qa(self, question, context, prev_qa: List[Tuple[str, str]] = []):
@@ -100,6 +99,8 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
             input_text = [self.process_qa(q, c, p)
                           for q, c, p in zip(question, context, prev_qa)]
         else:
+            if len(prev_qa) != 0:
+                prev_qa = prev_qa[0]
             input_text = self.process_qa(question, context, prev_qa)
         return self.generate(input_text, do_sample=False, max_length=96)
     
