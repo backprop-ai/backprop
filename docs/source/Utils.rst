@@ -1,26 +1,14 @@
 Utils
 =====
 
-Functions from ``backprop.utils`` let you save, load and upload models.
+Functions from ``backprop.utils`` are used for model inference, finetuning, saving, loading and uploading.
 
-Before saving or uploading a model be sure to have added the model a name, description and list of tasks.
-
-The name must be between 3 and 100 lowercase a-z characters, with numbers, dashes (-) and underscores (\_) allowed. 
-
-The description can be any string.
-
-See the available task strings in :ref:`models`.
-
-.. code-block:: python
-
-    model.name = "some-string"
-    model.description = "Some description about what the model can do"
-    model.tasks = ["text-classification"]
-
-See the full reference in :ref:`backprop-utils`.
+This page covers saving, loading and uploading. See the full reference in :ref:`backprop-utils`.
 
 Save
 ----
+
+It is recommended to save a model via a task instead (i.e ``task.save()``)
 
 .. automodule:: backprop.utils.save
    :members:
@@ -28,13 +16,6 @@ Save
    :show-inheritance:
    :noindex:
 
-.. code-block:: python
-
-    import backprop
-
-    # Saves model instance to ~/.cache/backprop/model_name
-    # model_name is determined from model_instance.name
-    backprop.save(model_instance)
 
 Load
 ----
@@ -45,16 +26,11 @@ Load
    :show-inheritance:
    :noindex:
 
-.. code-block:: python
-
-    import backprop
-
-    # Loads model instance from ~/.cache/backprop/model_name
-    model = backprop.load("model_name")
-
 
 Upload
 ------
+
+It is recommended to upload a model via a task instead (i.e ``task.upload()``)
 
 For a successful upload, ensure that the model is valid by following the check list in :ref:`models`.
 
@@ -63,10 +39,3 @@ For a successful upload, ensure that the model is valid by following the check l
    :undoc-members:
    :show-inheritance:
    :noindex:
-
-.. code-block:: python
-
-    import backprop
-
-    # Uploads model to Backprop for production ready inference
-    backprop.upload(model, api_key="abc")
