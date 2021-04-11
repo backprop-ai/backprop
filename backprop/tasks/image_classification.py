@@ -90,6 +90,13 @@ class ImageClassification(Task):
             return res["probabilities"]
 
     def step_single_label(self, batch, batch_idx):
+        """
+        Performs a training step for single-label classification and returns loss.
+
+        Args:
+            batch: Batch output from the dataloader
+            batch_idx: Batch index.
+        """
         images, targets = batch
         outputs = self.model.training_step(images, task=TASK)
 
@@ -97,11 +104,24 @@ class ImageClassification(Task):
         return loss
 
     def step_multi_label(self, batch, batch_idx):
+        """
+        Performs a training step for multi-label classification and returns loss.
+
+        Args:
+            batch: Batch output from the dataloader
+            batch_idx: Batch index.
+        """
         images, targets = batch
         outputs = self.model.training_step(images, task=TASK)
 
         loss = self.criterion(outputs, targets)
         return loss
+    
+    def configure_optimizers(self):
+        """
+        Returns default optimizer for image classification (SGD, learning rate 1e-1, weight decay 1e-4)
+        """
+        return torch.optim.SGD(params=self.model.parameters(), lr=1e-1, weight_decay=1e-4)
     
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
                  variant: str = "single_label",
@@ -109,7 +129,20 @@ class ImageClassification(Task):
                  early_stopping_epochs: int=1, train_dataloader=None, val_dataloader=None, 
                  step=None, configure_optimizers=None):
         """
-        TODO
+        Finetunes a model for image classification.
+
+        Args:
+            params: Dictionary of model inputs. Contains 'images' and 'labels' keys, with values as lists of images/labels.
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation.
+            variant: Determines whether to do single or multi-label classification: "single_label" (default) or "multi_label"
+            epochs: Integer specifying how many training iterations to run.
+            batch_size: Batch size when training. Leave as None to automatically determine batch size.
+            optimal_batch_size: Optimal batch size for the model being trained -- defaults to model settings.
+            early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss.
+            train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
+            val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
+            step: Function determining how to call model for a training step. Defaults to step defined in this task class.
+            configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
         """
         optimal_batch_size = optimal_batch_size or getattr(self.model, "optimal_batch_size", 128)
 

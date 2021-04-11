@@ -93,9 +93,19 @@ class QA(Task):
             return res["answer"]
 
     def step(self, batch, batch_idx):
+        """
+        Performs a training step and returns loss.
+
+        Args:
+            batch: Batch output from the dataloader
+            batch_idx: Batch index.
+        """
         return self.model.training_step(batch)
         
     def configure_optimizers(self):
+        """
+        Returns default optimizer for Q&A (AdaFactor, learning rate 1e-3)
+        """
         return Adafactor(params=self.model.parameters(), lr=1e-3, scale_parameter=False, relative_step=False)
 
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
@@ -105,8 +115,7 @@ class QA(Task):
                   train_dataloader=None, val_dataloader=None, step=None,
                   configure_optimizers=None):
         """
-        Passes args and kwargs to the model's finetune method.
-        Input orderings must match.
+        Finetunes a model for Q&A tasks.
 
         Args:
             params: dictionary of lists: 'questions', 'answers', 'contexts'.

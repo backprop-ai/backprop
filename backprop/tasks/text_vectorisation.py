@@ -83,9 +83,19 @@ class TextVectorisation(Task):
         return vector
 
     def configure_optimizers(self):
+        """
+        Returns default optimizer for text vectorisation (AdamW, learning rate 1e-5)
+        """
         return torch.optim.AdamW(params=self.model.parameters(), lr=1e-5)
 
     def step_triplet(self, batch, batch_idx):
+        """
+        Performs a training step and calculates triplet loss.
+        
+        Args:
+            batch: Batch output from dataloader.
+            batch_idx: Batch index.
+        """
         text, group = batch
 
         text_vecs_norm = self.model.training_step({"text": text}, task=TASK)
@@ -95,6 +105,13 @@ class TextVectorisation(Task):
         return loss
 
     def step_cosine(self, batch, batch_idx):
+        """
+        Performs a training step and calculates cosine similarity loss.
+        
+        Args:
+            batch: Batch output from dataloader.
+            batch_idx: Batch index.
+        """
         texts1, texts2, similarity_scores = batch
 
         text_vecs1_norm = self.model.training_step({"text": texts1}, task=TASK)
@@ -106,12 +123,18 @@ class TextVectorisation(Task):
         return loss
 
     def train_dataloader_triplet(self):
+        """
+        Returns training dataloader with triplet loss sampling strategy.
+        """
         return DataLoader(self.dataset_train,
             batch_size=self.batch_size,
             num_workers=os.cpu_count() or 0,
             sampler=self.dl_sampler(self.dataset_train))
 
     def val_dataloader_triplet(self):
+        """
+        Returns validation dataloader with triplet loss sampling strategy.
+        """
         return DataLoader(self.dataset_valid,
             batch_size=self.batch_size,
             num_workers=os.cpu_count() or 0,
