@@ -154,7 +154,7 @@ class ImageClassification(Task):
             params = {"images": images, "labels": labels}
 
             # Finetune
-            ic.finetune(params)
+            ic.finetune(params, variant="single_label")
         """
         optimal_batch_size = optimal_batch_size or getattr(self.model, "optimal_batch_size", 128)
 
