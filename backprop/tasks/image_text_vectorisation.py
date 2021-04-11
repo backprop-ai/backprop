@@ -161,7 +161,9 @@ class ImageTextVectorisation(Task):
         Finetunes a model for combined image & text vectorisation. Includes different variants for calculating loss.
         
         Args:
-            dataset: Torch dataset on which training will occur.
+            params: Dictionary of model inputs.
+                If using triplet variant, contains keys "texts", "images", and "groups".
+                If using cosine_similarity variant, contains keys "texts1", "texts2", "imgs1", "imgs2", and "similarity_scores".
             validation_split: Float between 0 and 1 that determines percentage of data to use for validation.
             variant: How loss will be calculated: "triplet" (default) or "cosine_similarity".
             epochs: Integer specifying how many training iterations to run.
@@ -172,6 +174,30 @@ class ImageTextVectorisation(Task):
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
             step: Function determining how to call model for a training step. Defaults to step defined in this task class.
             configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        
+        Examples::
+
+            import backprop
+
+            itv = backprop.ImageTextVectorisation()
+
+            # Prep training data & finetune (triplet variant)
+            images = ["product_images/crowbars/photo.jpg", "product_images/crowbars/photo1.jpg", "product_images/mugs/photo.jpg"]
+            texts = ["Steel crowbar with angled beak, 300mm", "Crowbar tempered steel 300m angled", "Sturdy ceramic mug, microwave-safe"]
+            groups = [0, 0, 1]
+            params = {"images": images, "texts": texts, "groups": groups}
+
+            itv.finetune(params, variant="triplet")
+
+            # Prep training data & finetune (cosine_similarity variant)
+            imgs1 = ["product_images/crowbars/photo.jpg", "product_images/mugs/photo.jpg"]
+            texts1 = ["Steel crowbar with angled beak, 300mm", "Sturdy ceramic mug, microwave-safe"]
+            imgs2 = ["product_images/crowbars/photo1.jpg", "product_images/hats/photo.jpg]
+            texts2 = ["Crowbar tempered steel 300m angled", "Dad hat with funny ghost picture on the front"]
+            similarity_scores = [1.0, 0.0]
+            params = {"imgs1": imgs1, "imgs2": imgs2, "texts1": texts1, "texts2": texts2, "similarity_scores": similarity_scores}
+
+            itv.finetune(params, variant="cosine_similarity")
         """
 
         optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)

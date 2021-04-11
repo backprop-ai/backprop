@@ -114,6 +114,20 @@ class TextClassification(Task):
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
             step: Function determining how to call model for a training step. Defaults to step defined in this task class.
             configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        
+        Examples::
+            
+            import backprop
+
+            tc = backprop.TextCLassification()
+
+            # Set up input data. Labels will automatically be used to set up model with number of classes for classification.
+            inp = ["This is a political news article", "This is a computer science research paper", "This is a movie review"]
+            out = ["Politics", "Science", "Entertainment"]
+            params = {"texts": inp, "labels": out}
+
+            # Finetune
+            tc.finetune(params)
         """
         inputs = params["texts"]
         outputs = params["labels"]

@@ -140,6 +140,8 @@ class QA(Task):
             # Initialise task
             qa = backprop.QA()
 
+            # Set up training data for QA. Note that repeated contexts are needed, along with empty prev_qas to match.
+            # Input must be completely 1:1, each question has an associated answer, context, and prev_qa (if prev_qa is to be used).
             questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
             answers = ["A library that trains models", "Python", "1964"]
             contexts = ["Backprop is a Python library that makes training and using models easier.", 
