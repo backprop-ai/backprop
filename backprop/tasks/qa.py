@@ -91,57 +91,6 @@ class QA(Task):
                 raise Exception(f"Failed to make API request: {res['message']}")
 
             return res["answer"]
-    
-    # def finetune(self, params: Dict, *args, **kwargs):
-    #     """
-    #     Passes args and kwargs to the model's finetune method.
-    #     Input orderings must match.
-
-    #     Args:
-    #         params: dictionary of lists: 'questions', 'answers', 'contexts'.
-    #                 Optionally includes 'prev_qas': list of list of (q, a) tuples to prepend to context.
-        
-    #     Examples::
-
-    #         import backprop
-            
-    #         # Initialise task
-    #         qa = backprop.QA(backprop.models.T5)
-
-    #         questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
-    #         answers = ["A library that trains models", "Python", "1964"]
-    #         contexts = ["Backprop is a Python library that makes training and using models easier.", 
-    #                     "Backprop is a Python library that makes training and using models easier.",
-    #                     "Bob Moog was a physicist. He invented the Moog synthesizer in 1964."]
-            
-    #         prev_qas = [[], 
-    #                     [("What's Backprop?", "A library that trains models")],
-    #                     []]
-
-    #         params = {"questions": questions,
-    #                   "answers": answers,
-    #                   "contexts": contexts,
-    #                   "prev_qas": prev_qas}
-
-    #         # Finetune
-    #         qa.finetune(params=params)
-    #     """
-    #     # params = kwargs["params"]
-    #     print(params)
-    #     if not "questions" in params:
-    #         print("Params requires key: 'questions' (list of questions)")
-    #         return
-    #     if not "answers" in params:
-    #         print("Params requires key: 'answers' (list of answers)")
-    #         return
-    #     if not "contexts" in params:
-    #         print("Params requires key: 'contexts' (list of question contexts)")
-    #         return
-
-    #     try:
-    #         return self.model.finetune(params=params, task="qa", *args, **kwargs)
-    #     except NotImplementedError:
-    #         raise NotImplementedError(f"This model does not support finetuning, try: {', '.join(FINETUNABLE_MODELS)}")
 
     def step(self, batch, batch_idx):
         return self.model.training_step(batch)
@@ -155,7 +104,51 @@ class QA(Task):
                   optimal_batch_size: int=None, early_stopping_epochs: int=1,
                   train_dataloader=None, val_dataloader=None, step=None,
                   configure_optimizers=None):
+        """
+        Passes args and kwargs to the model's finetune method.
+        Input orderings must match.
+
+        Args:
+            params: dictionary of lists: 'questions', 'answers', 'contexts'.
+                    Optionally includes 'prev_qas': list of lists containing (q, a) tuples to prepend to context.
+            max_input_length: Maximum number of tokens (1 token ~ 1 word) in input. Anything higher will be truncated. Max 512.
+            max_output_length: Maximum number of tokens (1 token ~ 1 word) in output. Anything higher will be truncated. Max 512.
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation.
+            epochs: Integer specifying how many training iterations to run
+            batch_size: Batch size when training. Leave as None to automatically determine batch size.
+            optimal_batch_size: Optimal batch size for the model being trained -- defaults to model settings.
+            early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss.
+            train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
+            val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
+            step: Function determining how to call model for a training step. Defaults to step defined in this task class.
+            configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class. 
         
+
+        Examples::
+
+            import backprop
+            
+            # Initialise task
+            qa = backprop.QA()
+
+            questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
+            answers = ["A library that trains models", "Python", "1964"]
+            contexts = ["Backprop is a Python library that makes training and using models easier.", 
+                        "Backprop is a Python library that makes training and using models easier.",
+                        "Bob Moog was a physicist. He invented the Moog synthesizer in 1964."]
+            
+            prev_qas = [[], 
+                        [("What's Backprop?", "A library that trains models")],
+                        []]
+
+            params = {"questions": questions,
+                      "answers": answers,
+                      "contexts": contexts,
+                      "prev_qas": prev_qas}
+
+            # Finetune
+            qa.finetune(params=params)
+        """
         questions = params["questions"]
         contexts = params["contexts"]
         answers = params["answers"]

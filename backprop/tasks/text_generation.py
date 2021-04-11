@@ -111,23 +111,24 @@ class TextGeneration(Task):
             input_text and output_text in params must have matching ordering (item 1 of input must match item 1 of output)
 
         Args:
-            params: Dictionary of model inputs. Contains 'input_text' and 'output_text' for generation, summarisation, and emotion.
-                    QA requires specifically formatted input: see QA task's finetuning function for more details.
+            params: Dictionary of model inputs. Contains 'input_text' and 'output_text' keys, with values as lists of input/output data.
             max_input_length: Maximum number of tokens (1 token ~ 1 word) in input. Anything higher will be truncated. Max 512.
             max_output_length: Maximum number of tokens (1 token ~ 1 word) in output. Anything higher will be truncated. Max 512.
-            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation
-            epochs: Integer that specifies how many iterations of training to do
-            batch_size: Leave as None to determine the batch size automatically
-            early_stopping: Boolean that determines whether to automatically stop when validation loss stops improving
-            trainer: Your custom pytorch_lightning trainer
-            task: Task on which finetuning will occur. Must be in ["text-generation", "summarisation", "emotion", "qa"]
+            validation_split: Float between 0 and 1 that determines what percentage of the data to use for validation.
+            epochs: Integer specifying how many training iterations to run.
+            batch_size: Batch size when training. Leave as None to automatically determine batch size.
+            optimal_batch_size: Optimal batch size for the model being trained -- defaults to model settings.
+            early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss.
+            train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
+            val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
+            step: Function determining how to call model for a training step. Defaults to step defined in this task class.
+            configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
 
         Examples::
 
             import backprop
             
-            # Initialise model
-            model = backprop.models.T5()
+            tg = backprop.TextGeneration()
 
             # Any text works as training data
             inp = ["I really liked the service I received!", "Meh, it was not impressive."]
@@ -135,7 +136,7 @@ class TextGeneration(Task):
             params = {"input_text": inp, "output_text": out}
 
             # Finetune
-            model.finetune(params)
+            tg.finetune(params)
         """
         input_text = params["input_text"]
         output_text = params["output_text"]
