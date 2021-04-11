@@ -81,22 +81,21 @@ class ImageTextVectorisation(Task):
             vector = self.model(task_input, task=TASK,
                                 return_tensor=return_tensor)
         else:
-            raise NotImplementedError("This task is not yet implemented in the API")
+            image = img_to_base64(image)
 
-            # image = img_to_base64(image)
+            body = {
+                "image": image,
+                "text": text,
+                "model": self.model
+            }
 
-            # body = {
-            #     "image": image,
-            #     "model": self.model
-            # }
+            res = requests.post("https://api.backprop.co/image-text-vectorisation", json=body,
+                                headers={"x-api-key": self.api_key}).json()
 
-            # res = requests.post("https://api.backprop.co/image-vectorisation", json=body,
-            #                     headers={"x-api-key": self.api_key}).json()
+            if res.get("message"):
+                raise Exception(f"Failed to make API request: {res['message']}")
 
-            # if res.get("message"):
-            #     raise Exception(f"Failed to make API request: {res['message']}")
-
-            # vector = res["vector"]
+            vector = res["vector"]
 
         if return_tensor and not isinstance(vector, torch.Tensor):
             vector = torch.tensor(vector)
