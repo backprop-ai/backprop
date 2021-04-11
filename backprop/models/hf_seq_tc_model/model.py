@@ -8,13 +8,19 @@ from typing import List, Union, Dict
 
 class HFSeqTCModel(HFModel):
     """
-    CMU & Google Brain's XLNet model for text classification.
+    Class for Hugging Face sequence classification models
 
     Attributes:
-        args: args passed to :class:`backprop.models.generic_models.ClassificationModel`
-        model_path: path to an XLNet model on hugging face (xlnet-base-cased, xlnet-large-cased)
-        kwargs: kwargs passed to :class:`backprop.models.generic_models.ClassificationModel`
-
+        model_path: path to HF model
+        tokenizer_path: path to HF tokenizer
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
+        model_class: Class used to initialise model
+        tokenizer_class: Class used to initialise tokenizer
+        device: Device for model. Defaults to "cuda" if available.
     """
 
     def __init__(self, model_path=None, tokenizer_path=None, name: str = None,
@@ -89,42 +95,6 @@ class HFSeqTCModel(HFModel):
         probabilities = probabilities if is_list else probabilities[0]
 
         return probabilities
-
-    def calculate_probability(self, text, label, device):
-        hypothesis = f"This example is {label}."
-        features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
-                                    truncation=True).to(self._model_device)
-        logits = self.model(features)[0]
-        entail_contradiction_logits = logits[:, [0, 2]]
-        probs = entail_contradiction_logits.softmax(dim=1)
-        prob_label_is_true = probs[:, 1]
-        return prob_label_is_true.item()
-
-
-    def classify(self, text, labels):
-        """
-        Classifies text, given a set of labels.
-        """
-        if isinstance(text, list):
-            # Must have a consistent amount of examples
-            assert(len(text) == len(labels))
-            # TODO: implement proper batching
-            results_list = []
-            for text, labels in zip(text, labels):
-                results = {}
-                for label in labels:
-                    results[label] = self.calculate_probability(text, label, self._model_device)
-
-                results_list.append(results)
-
-            return results_list
-        else:
-            results = {}
-            for label in labels:
-                results[label] = self.calculate_probability(
-                    text, label, self._model_device)
-
-            return results
     
     def training_step(self, batch, task="text-classification"):
         return self.model(**batch)[0]

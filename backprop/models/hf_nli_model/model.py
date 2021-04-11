@@ -4,6 +4,21 @@ from backprop.models import HFModel
 import torch
 
 class HFNLIModel(HFModel):
+    """
+    Class for Hugging Face sequence classification models trained on a NLI dataset
+
+    Attributes:
+        model_path: path to HF model
+        tokenizer_path: path to HF tokenizer
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
+        model_class: Class used to initialise model
+        tokenizer_class: Class used to initialise tokenizer
+        device: Device for model. Defaults to "cuda" if available.
+    """
     def __init__(self, model_path=None, tokenizer_path=None, name: str = None,
                 description: str = None, tasks: List[str] = None, details: Dict = None,
                 model_class=AutoModelForSequenceClassification,
@@ -17,6 +32,14 @@ class HFNLIModel(HFModel):
 
     @torch.no_grad()
     def __call__(self, task_input, task="text-classification"):
+        """
+        Uses the model for the text-classification task
+
+        Args:
+            task_input: input dictionary according to the ``text-classification`` task specification.
+                Needs labels (for zero-shot).
+            task: text-classification
+        """
         if task == "text-classification":
             is_list = False
 

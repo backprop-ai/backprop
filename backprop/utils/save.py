@@ -15,6 +15,13 @@ def save(model, path=None):
 
     Args:
         path: Optional path to save model
+
+    Example::
+
+        import backprop
+
+        backprop.save(model_object, "my_model")
+        model = backprop.load("my_model")
     """
     name = model.name
     tasks = model.tasks

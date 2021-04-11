@@ -3,6 +3,10 @@ import urllib
 from tqdm import tqdm
 
 def download(url: str, folder: str, root: str = os.path.expanduser("~/.cache/backprop"), force: bool = False):
+    """
+    Downloads file from url to folder
+    """
+    
     path = os.path.join(root, folder)
     os.makedirs(path, exist_ok=True)
     filename = os.path.basename(url)

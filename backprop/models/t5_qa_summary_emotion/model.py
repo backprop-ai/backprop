@@ -8,9 +8,13 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
     Initialises a T5 model that has been finetuned on qa, summarisation and emotion detection.
 
     Attributes:
-        args: args passed to :class:`backprop.models.t5.model.T5`
         model_path: path to an appropriate T5 model on huggingface (kiri-ai/t5-base-qa-summary-emotion)
-        kwargs: kwrags passed to :class:`backprop.models.t5.model.T5`
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
+        device: Device for model. Defaults to "cuda" if available.
     """
     def __init__(self, model_path=None, name: str = None,
                 description: str = None, details: Dict = None, tasks: List[str] = None,
