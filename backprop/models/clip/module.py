@@ -56,6 +56,7 @@ class CLIP(BaseModel):
         if task == "image-classification":
             image = task_input.get("image")
             labels = task_input.get("labels")
+            top_k = task_input.get("top_k")
 
             image = base64_to_img(image)
 
@@ -70,7 +71,7 @@ class CLIP(BaseModel):
             image = [self.process_image(img).unsqueeze(0).to(self._model_device) for img in image]
             text = [self.tokenizer(l).to(self._model_device) for l in labels]
             
-            output = self.image_classification(image=image, text=text, labels=labels)
+            output = self.image_classification(image=image, text=text, labels=labels, top_k=top_k)
 
         elif task == "image-vectorisation":
             image = task_input.get("image")
@@ -154,12 +155,23 @@ class CLIP(BaseModel):
             text = params["text"]
             return self.tokenizer(text)
     
-    def image_classification(self, image: torch.TensorType, text: torch.TensorType, labels):
+    def image_classification(self, image: torch.TensorType, text: torch.TensorType, labels, top_k=10000):
         probabilities = []
         inputs = zip(image, text, labels)
+
+
         for image, text, labels in inputs:
+            # Don't exceed the number of labels
+            top_k = min(len(labels), top_k)
+            
             logits_per_image, logits_per_text = self.model(image, text)
-            probs = logits_per_image.softmax(dim=-1).cpu().numpy().tolist()[0]
+            
+            probs = logits_per_image.softmax(dim=-1)
+            idx = torch.topk(probs, k=top_k, sorted=True).indices.squeeze(0).tolist()
+            probs = probs.tolist()[0]
+
+            labels = [labels[i] for i in idx]
+            probs = [probs[i] for i in idx]
 
             label_probs = zip(labels, probs)
             probabilities.append({lp[0]: lp[1] for lp in label_probs})

@@ -18,13 +18,29 @@ class HFNLIModel(HFModel):
     @torch.no_grad()
     def __call__(self, task_input, task="text-classification"):
         if task == "text-classification":
+            is_list = False
+
             text = task_input.get("text")
             labels = task_input.get("labels")
 
             if labels == None:
                 raise ValueError("labels must be provided")
 
-            return self.classify(text, labels)
+            if isinstance(text, list):
+                is_list = True
+            else:
+                text = [text]
+                labels = [labels]
+
+            # Must have a consistent amount of examples
+            assert(len(text) == len(labels))
+
+            probs = self.classify(text, labels)
+
+            if not is_list:
+                probs = probs[0]
+
+            return probs
         else:
             raise ValueError(f"Unsupported task: {task}")
 
@@ -34,37 +50,31 @@ class HFNLIModel(HFModel):
 
         return models
 
-    def calculate_probability(self, text, label, device):
-        hypothesis = f"This example is {label}."
-        features = self.tokenizer.encode(text, hypothesis, return_tensors="pt",
-                                    truncation=True).to(self._model_device)
-        logits = self.model(features)[0]
+    def calculate_probability(self, text, labels):
+        batch_features = []
+        
+        hypothesis = [f"This example is {l}." for l in labels]
+        features = self.tokenizer([text]*len(hypothesis), hypothesis, return_tensors="pt",
+                                    truncation=True, padding=True).to(self._model_device)
+
+        logits = self.model(features["input_ids"], features["attention_mask"])[0]
         entail_contradiction_logits = logits[:, [0, 2]]
         probs = entail_contradiction_logits.softmax(dim=1)
         prob_label_is_true = probs[:, 1]
-        return prob_label_is_true.item()
+        return prob_label_is_true.tolist()
 
     def classify(self, text, labels):
         """
         Classifies text, given a set of labels.
         """
-        if isinstance(text, list):
-            # Must have a consistent amount of examples
-            assert(len(text) == len(labels))
-            # TODO: implement proper batching
-            results_list = []
-            for text, labels in zip(text, labels):
-                results = {}
-                for label in labels:
-                    results[label] = self.calculate_probability(text, label, self._model_device)
-
-                results_list.append(results)
-
-            return results_list
-        else:
+        results_list = []
+        for text, labels in zip(text, labels):
             results = {}
-            for label in labels:
-                results[label] = self.calculate_probability(
-                    text, label, self._model_device)
+            probs = self.calculate_probability(text, labels)
 
-            return results
+            for prob, label in zip(probs, labels):
+                results[label] = prob
+
+            results_list.append(results)
+
+        return results_list

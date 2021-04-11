@@ -50,14 +50,13 @@ class ImageClassification(Task):
 
     
     def __call__(self, image: Union[str, List[str]], labels: Union[List[str], List[List[str]]] = None,
-                top_k: int = 0, multi_label: bool = False):
+                top_k: int = 0):
         """Classify image according to given labels.
 
         Args:
             image: image or list of images to vectorise. Can be both PIL Image objects or paths to images.
             labels: list of strings or list of labels (for zero shot classification)
             top_k: return probabilities only for top_k predictions. Use 0 to get all.
-            multi_label: allow multiple true labels. Not all models support this.
 
         Returns:
             dict where each key is a label and value is probability between 0 and 1 or list of dicts
@@ -69,7 +68,6 @@ class ImageClassification(Task):
             "image": image,
             "labels": labels,
             "top_k": top_k,
-            "multi_label": multi_label
         }
 
         if top_k == 0:
