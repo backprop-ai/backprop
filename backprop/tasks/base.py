@@ -13,6 +13,18 @@ from pytorch_lightning.callbacks import EarlyStopping
 logger = logging.getLogger("info")
 
 class Task(pl.LightningModule):
+    """
+    Base Task superclass used to implement new tasks.
+
+    Attributes:
+        model: Model name string for the task in use.
+        local: Run locally. Defaults to False.
+        api_key: Backprop API key for non-local inference.
+        device: Device to run inference on. Defaults to "cuda" if available.
+        models: All supported models for a given task (pulls from config).
+        default_local_model: Which model the task will default to if initialized with none provided: Defined per-task.
+    """
+
     def __init__(self, model, local=False, api_key=None,
                 task: str = None,
                 device: str = None, models: Dict = None,
@@ -53,29 +65,59 @@ class Task(pl.LightningModule):
         raise Exception("The base Task is not callable!")
 
     def configure_optimizers(self):
+        """
+        Sets up optimizers for model. Must be defined in task: no base default.
+        """
         raise NotImplementedError("configure_optimizers is not implemented for this task")
 
     def training_step(self, batch, batch_idx):
+        """
+        Performs the step function with training data and gets training loss.
+
+        Args:
+            batch: Batch output from dataloader.
+            batch_idx: Batch index.
+        """
         loss = self.step(batch, batch_idx)
 
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
     
     def validation_step(self, batch, batch_idx):
+        """
+        Performs the step function with validation data and gets validation loss.
+
+        Args:
+            batch: Batch output from dataloader.
+            batch_idx: Batch index.
+        """
         loss = self.step(batch, batch_idx)
 
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, logger=True)
         return loss
 
     def step(self, batch, batch_idx):
+        """
+        Implemented per-task, passes batch into model and returns loss.
+        
+        Args:
+            batch: Batch output from dataloader.
+            batch_idx: Batch index.
+        """
         raise NotImplementedError("step is not implemented for this task")
 
     def train_dataloader(self):
+        """
+        Returns a default dataloader of training data.
+        """
         return DataLoader(self.dataset_train,
             batch_size=self.batch_size,
             num_workers=os.cpu_count() or 0)
 
     def val_dataloader(self):
+        """
+        Returns a default dataloader of validation data.
+        """
         return DataLoader(self.dataset_valid,
             batch_size=self.batch_size,
             num_workers=os.cpu_count() or 0)

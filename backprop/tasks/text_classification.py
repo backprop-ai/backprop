@@ -79,9 +79,19 @@ class TextClassification(Task):
     
 
     def step(self, batch, batch_idx):
+        """
+        Performs a training step and returns loss.
+
+        Args:
+            batch: Batch output from the dataloader
+            batch_idx: Batch index.
+        """
         return self.model.training_step(batch)
     
     def configure_optimizers(self):
+        """
+        Returns default optimizer for text classification (AdamW, learning rate 2e-5)
+        """
         return AdamW(params=self.model.parameters(), lr=2e-5)
 
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
