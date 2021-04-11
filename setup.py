@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="backprop",
-    version="0.0.9",
+    version="0.1.0.dev0",
     author="Backprop",
     author_email="hello@backprop.co",
     description="Backprop",
@@ -19,7 +19,7 @@ setuptools.setup(
         "Source Code": "https://github.com/backprop-ai/backprop",
     },
     install_requires=[
-        "transformers>=4.3.2,<4.4.0",
+        "transformers>=4.3.2,<5.0.0",
         "sentence_transformers>=0.4.1.2",
         "torch<1.8.0",
         "torchvision<0.9.0",
