@@ -148,7 +148,9 @@ class TextVectorisation(Task):
         Finetunes a model for text vectorisation. Includes different variants for calculating loss.
 
         Args:
-            dataset: Torch dataset on which training will occur.
+            params: Dictionary of model inputs.
+                    If using triplet variant, contains keys "texts" and "groups".
+                    If using cosine_similarity variant, contains keys "texts1", "texts2", and "similarity_scores".
             validation_split: Float between 0 and 1 that determines percentage of data to use for validation.
             max_length: Int determining the maximum token length of input strings.
             variant: How loss will be calculated: "cosine_similarity" (default) or "triplet".
@@ -160,6 +162,27 @@ class TextVectorisation(Task):
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
             step: Function determining how to call model for a training step. Defaults to step defined in this task class.
             configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        
+        Examples::
+
+            import backprop
+
+            tv = backprop.TextVectorisation()
+
+            # Set up training data & finetune (cosine_similarity variant)
+            texts1 = ["I went to the store and bought some bread", "I am getting a cat soon"]
+            texts2 = ["I bought bread from the store", "I took my dog for a walk"]
+            similarity_scores = [1.0, 0.0]
+            params = {"texts1": texts1, "texts2": texts2, "similarity_scores": similarity_scores}
+
+            tv.finetune(params, variant="cosine_similarity")
+
+            # Set up training data & finetune (triplet variant)
+            texts = ["I went to the store and bought some bread", "I bought bread from the store", "I'm going to go walk my dog"]
+            groups = [0, 0, 1]
+            params = {"texts": texts, "groups": groups}
+
+            tv.finetune(params, variant="triplet")
         """
 
         optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)

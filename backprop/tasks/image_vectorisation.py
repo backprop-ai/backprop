@@ -156,7 +156,9 @@ class ImageVectorisation(Task):
         Finetunes a model for image vectorisation. Includes different variants for calculating loss.
 
         Args:
-            dataset: Torch dataset on which training will occur.
+            params: Dictionary of model inputs.
+                If using triplet variant, contains keys "images" and "groups".
+                If using cosine_similarity variant, contains keys "imgs1", "imgs2", and "similarity_scores".
             validation_split: Float between 0 and 1 that determines percentage of data to use for validation.
             variant: How loss will be calculated: "triplet" (default) or "cosine_similarity".
             epochs: Integer specifying how many training iterations to run.
@@ -167,6 +169,28 @@ class ImageVectorisation(Task):
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
             step: Function determining how to call model for a training step. Defaults to step defined in this task class.
             configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        
+        Examples::
+
+            import backprop
+
+            iv = backprop.ImageVectorisation()
+
+            # Set up training data & finetune (triplet variant)
+            images = ["images/beagle/photo.jpg",  "images/shiba_inu/photo.jpg", "images/beagle/photo1.jpg", "images/malamute/photo.jpg"]
+            groups = [0, 1, 0, 2]
+            params = {"images": images, "groups": groups}
+
+            iv.finetune(params, variant="triplet")
+
+            # Set up training data & finetune (cosine_similarity variant)
+            imgs1 = ["images/beagle/photo.jpg", "images/shiba_inu/photo.jpg"]
+            imgs2 = ["images/beagle/photo1.jpg", "images/malamute/photo.jpg"]
+            similarity_scores = [1.0, 0.0]
+            params = {"imgs1": imgs1, "imgs2": imgs2, "similarity_scores": similarity_scores}
+
+            iv.finetune(params, variant="cosine_similarity")
+
         """
 
         optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)

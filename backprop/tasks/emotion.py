@@ -107,6 +107,20 @@ class Emotion(Task):
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
             step: Function determining how to call model for a training step. Defaults to step defined in this task class.
             configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        
+        Examples::
+
+            import backprop
+            
+            emote = backprop.Emotion()
+
+            # Provide sentiment data for training
+            inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+            out = ["positive", "negative"]
+            params = {"input_text": inp, "output_text": out}
+
+            # Finetune
+            emote.finetune(params)
         """
         inputs = params["input_text"]
         outputs = params["output_text"]

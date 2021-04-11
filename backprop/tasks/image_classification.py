@@ -141,6 +141,20 @@ class ImageClassification(Task):
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
             step: Function determining how to call model for a training step. Defaults to step defined in this task class.
             configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        
+        Examples::
+
+            import backprop
+
+            ic = backprop.ImageClassification()
+
+            # Prep training images/labels. Labels are automatically used to set up model with number of classes for classification.
+            images = ["images/beagle/photo.jpg", "images/dachsund/photo.jpg", "images/malamute/photo.jpg"]
+            labels = ["beagle", "dachsund", "malamute"]
+            params = {"images": images, "labels": labels}
+
+            # Finetune
+            ic.finetune(params)
         """
         optimal_batch_size = optimal_batch_size or getattr(self.model, "optimal_batch_size", 128)
 

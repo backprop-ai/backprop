@@ -105,6 +105,20 @@ class Summarisation(Task):
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
             step: Function determining how to call model for a training step. Defaults to step defined in this task class.
             configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        
+        Examples::
+            
+            import backprop
+
+            summary = backprop.Summarisation()
+
+            # Provide training data for task
+            inp = ["This is a long news article about recent political happenings.", "This is an article about some recent scientific research."]
+            out = ["Short political summary.", "Short scientific summary."]
+            params = {"input_text": inp, "output_text": out}
+
+            # Finetune
+            summary.finetune(params)
         """
         inputs = params["input_text"]
         outputs = params["output_text"]
