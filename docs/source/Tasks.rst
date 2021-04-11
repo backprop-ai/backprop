@@ -38,16 +38,25 @@ The ``prev_qa`` parameter is used to make a Q&A system conversational -- that is
 Finetuning Q&A also accepts keyword arguments ``max_input_length`` and ``max_output_length``, which specify the maximum token length for inputs and outputs.
 
 .. code-block:: python
+
     import backprop
                 
     # Initialise task
     qa = backprop.QA()
 
-    # Set up training data for QA. Note that repeated contexts are needed, along with empty prev_qas to match.
-    # Input must be completely 1:1, each question has an associated answer, context, and prev_qa (if prev_qa is to be used).
+    """
+    Set up training data for QA. Note that repeated contexts are needed, 
+    along with empty prev_qas to match.
+    Input must be completely 1:1 each question has an associated 
+    answer, context, and prev_qa (if prev_qa is to be used).
+    """
 
-    questions = ["What's Backprop?", "What language is it in?", "When was the Moog synthesizer invented?"]
+    questions = ["What's Backprop?", 
+                 "What language is it in?", 
+                 "When was the Moog synthesizer invented?"]
+    
     answers = ["A library that trains models", "Python", "1964"]
+    
     contexts = ["Backprop is a Python library that makes training and using models easier.", 
                 "Backprop is a Python library that makes training and using models easier.",
                 "Bob Moog was a physicist. He invented the Moog synthesizer in 1964."]
@@ -101,13 +110,22 @@ When you finetune, Backprop will automatically set up a model with the correct n
 Finetuning text classification also accepts the keyword argument ``max_length``, which specifoes the maximum token length for inputs.
 
 .. code-block:: python
+
     import backprop
 
     tc = backprop.TextCLassification()
 
-    # Set up input data. Labels will automatically be used to set up model with number of classes for classification.
-    inp = ["This is a political news article", "This is a computer science research paper", "This is a movie review"]
+    """
+    Set up input data. Labels will automatically be used to set up 
+    model with number of classes for classification.
+    """
+     
+    inp = ["This is a political news article", 
+           "This is a computer science research paper", 
+           "This is a movie review"]
+
     out = ["Politics", "Science", "Entertainment"]
+
     params = {"texts": inp, "labels": out}
 
     # Finetune
@@ -118,7 +136,7 @@ Check the example `Text Classification Notebook <https://github.com/backprop-ai/
 See the :ref:`Text Classification Task Reference <text-classification>`.
 
 Sentiment/Emotion Detection
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is exactly what it says on the tin: analyzes emotional sentiment of some provided text input. 
 
 Inference
@@ -145,13 +163,17 @@ The inputs are the strings to be analysed, and the outputs are the emotions corr
 Finetuning this task also accepts keyword arguments ``max_input_length`` and ``max_output_length``, which specify the maximum token length for inputs and outputs.
 
 .. code-block:: python
+
     import backprop
             
     emote = backprop.Emotion()
 
     # Provide sentiment data for training
-    inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+    inp = ["I really liked the service I received!", 
+           "Meh, it was not impressive."]
+
     out = ["positive", "negative"]
+
     params = {"input_text": inp, "output_text": out}
 
     # Finetune
@@ -191,8 +213,11 @@ Finetuning sumamrisation also accepts keyword arguments ``max_input_length`` and
     summary = backprop.Summarisation()
 
     # Provide training data for task
-    inp = ["This is a long news article about recent political happenings.", "This is an article about some recent scientific research."]
+    inp = ["This is a long news article about recent political happenings.", 
+           "This is an article about some recent scientific research."]
+
     out = ["Short political summary.", "Short scientific summary."]
+
     params = {"input_text": inp, "output_text": out}
 
     # Finetune
@@ -231,7 +256,11 @@ This task also includes variants for single-label and multi-label classification
 
     ic = backprop.ImageClassification()
 
-    # Prep training images/labels. Labels are automatically used to set up model with number of classes for classification.
+    """
+    Prep training images/labels. Labels are automatically used to set up 
+    model with number of classes for classification.
+    """
+
     images = ["images/beagle/photo.jpg", "images/dachsund/photo.jpg", "images/malamute/photo.jpg"]
     labels = ["beagle", "dachsund", "malamute"]
     params = {"images": images, "labels": labels}
@@ -281,16 +310,23 @@ vectorises ``imgs1[x]`` and ``imgs2[x]``, with the target cosine similarity bein
     iv = backprop.ImageVectorisation()
 
     # Set up training data & finetune (triplet variant)
-    images = ["images/beagle/photo.jpg",  "images/shiba_inu/photo.jpg", "images/beagle/photo1.jpg", "images/malamute/photo.jpg"]
+
+    images = ["images/beagle/photo.jpg",  "images/shiba_inu/photo.jpg", 
+              "images/beagle/photo1.jpg", "images/malamute/photo.jpg"]
+
     groups = [0, 1, 0, 2]
+    
     params = {"images": images, "groups": groups}
 
     iv.finetune(params, variant="triplet")
 
     # Set up training data & finetune (cosine_similarity variant)
+
     imgs1 = ["images/beagle/photo.jpg", "images/shiba_inu/photo.jpg"]
     imgs2 = ["images/beagle/photo1.jpg", "images/malamute/photo.jpg"]
+    
     similarity_scores = [1.0, 0.0]
+
     params = {"imgs1": imgs1, "imgs2": imgs2, "similarity_scores": similarity_scores}
 
     iv.finetune(params, variant="cosine_similarity")
@@ -334,8 +370,11 @@ Finetuning text generation also accepts keyword arguments ``max_input_length`` a
     tg = backprop.TextGeneration()
 
     # Any text works as training data
-    inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+    inp = ["I really liked the service I received!", 
+           "Meh, it was not impressive."]
+
     out = ["positive", "negative"]
+
     params = {"input_text": inp, "output_text": out}
 
     # Finetune
@@ -387,16 +426,25 @@ Finetuning text vectorisation also accepts the keyword argument ``max_length`` w
     tv = backprop.TextVectorisation()
 
     # Set up training data & finetune (cosine_similarity variant)
-    texts1 = ["I went to the store and bought some bread", "I am getting a cat soon"]
-    texts2 = ["I bought bread from the store", "I took my dog for a walk"]
+    texts1 = ["I went to the store and bought some bread", 
+              "I am getting a cat soon"]
+
+    texts2 = ["I bought bread from the store", 
+              "I took my dog for a walk"]
+
     similarity_scores = [1.0, 0.0]
+
     params = {"texts1": texts1, "texts2": texts2, "similarity_scores": similarity_scores}
 
     tv.finetune(params, variant="cosine_similarity")
 
     # Set up training data & finetune (triplet variant)
-    texts = ["I went to the store and bought some bread", "I bought bread from the store", "I'm going to go walk my dog"]
+    texts = ["I went to the store and bought some bread", 
+             "I bought bread from the store", 
+             "I'm going to go walk my dog"]
+    
     groups = [0, 0, 1]
+
     params = {"texts": texts, "groups": groups}
 
     tv.finetune(params, variant="triplet")
@@ -416,6 +464,7 @@ Inference
 *********
 
 .. code-block:: python
+
     import backprop
 
     itv = backprop.ImageTextVectorisation()
@@ -449,9 +498,16 @@ The target cosine similarity between both normalized vectors is the value at ``s
     itv = backprop.ImageTextVectorisation()
 
     # Prep training data & finetune (triplet variant)
-    images = ["product_images/crowbars/photo.jpg", "product_images/crowbars/photo1.jpg", "product_images/mugs/photo.jpg"]
-    texts = ["Steel crowbar with angled beak, 300mm", "Crowbar tempered steel 300m angled", "Sturdy ceramic mug, microwave-safe"]
+    images = ["product_images/crowbars/photo.jpg", 
+              "product_images/crowbars/photo1.jpg", 
+              "product_images/mugs/photo.jpg"]
+
+    texts = ["Steel crowbar with angled beak, 300mm", 
+             "Crowbar tempered steel 300m angled", 
+             "Sturdy ceramic mug, microwave-safe"]
+
     groups = [0, 0, 1]
+
     params = {"images": images, "texts": texts, "groups": groups}
 
     itv.finetune(params, variant="triplet")
@@ -459,9 +515,15 @@ The target cosine similarity between both normalized vectors is the value at ``s
     # Prep training data & finetune (cosine_similarity variant)
     imgs1 = ["product_images/crowbars/photo.jpg", "product_images/mugs/photo.jpg"]
     texts1 = ["Steel crowbar with angled beak, 300mm", "Sturdy ceramic mug, microwave-safe"]
+
     imgs2 = ["product_images/crowbars/photo1.jpg", "product_images/hats/photo.jpg]
     texts2 = ["Crowbar tempered steel 300m angled", "Dad hat with funny ghost picture on the front"]
+
     similarity_scores = [1.0, 0.0]
-    params = {"imgs1": imgs1, "imgs2": imgs2, "texts1": texts1, "texts2": texts2, "similarity_scores": similarity_scores}
+    params = {"imgs1": imgs1, 
+              "imgs2": imgs2, 
+              "texts1": texts1, 
+              "texts2": texts2, 
+              "similarity_scores": similarity_scores}
 
     itv.finetune(params, variant="cosine_similarity")

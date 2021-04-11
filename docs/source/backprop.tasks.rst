@@ -1,11 +1,11 @@
 .. _backprop-tasks:
 
 backprop.tasks
-==================
+======================
 
 
 backprop.tasks.base
-----------------------
+--------------------------
 
 .. automodule:: backprop.tasks.base
    :members:
@@ -13,7 +13,7 @@ backprop.tasks.base
    :show-inheritance:
 
 backprop.tasks.emotion
--------------------------
+-----------------------------
 
 .. _emotion:
 .. automodule:: backprop.tasks.emotion
@@ -23,7 +23,7 @@ backprop.tasks.emotion
    :show-inheritance:
 
 backprop.tasks.image\_classification
----------------------------------------
+-------------------------------------------
 
 .. _image-classification:
 .. automodule:: backprop.tasks.image_classification
@@ -32,8 +32,18 @@ backprop.tasks.image\_classification
    :special-members: __call__
    :show-inheritance:
 
+backprop.tasks.image\_text\_vectorisation
+------------------------------------------------
+
+.. _image-text-vectorisation:
+.. automodule:: backprop.tasks.image_text_vectorisation
+   :members:
+   :undoc-members:
+   :special-members: __call__
+   :show-inheritance:
+
 backprop.tasks.image\_vectorisation
----------------------------------------
+------------------------------------------
 
 .. _image-vectorisation:
 .. automodule:: backprop.tasks.image_vectorisation
@@ -43,7 +53,7 @@ backprop.tasks.image\_vectorisation
    :show-inheritance:
 
 backprop.tasks.qa
---------------------
+------------------------
 
 .. _qa:
 .. automodule:: backprop.tasks.qa
@@ -53,7 +63,7 @@ backprop.tasks.qa
    :show-inheritance:
 
 backprop.tasks.summarisation
--------------------------------
+-----------------------------------
 
 .. _summarisation:
 .. automodule:: backprop.tasks.summarisation
@@ -63,7 +73,7 @@ backprop.tasks.summarisation
    :show-inheritance:
 
 backprop.tasks.text\_classification
---------------------------------------
+------------------------------------------
 
 .. _text-classification:
 .. automodule:: backprop.tasks.text_classification
@@ -73,7 +83,7 @@ backprop.tasks.text\_classification
    :show-inheritance:
 
 backprop.tasks.text\_generation
-----------------------------------
+--------------------------------------
 
 .. _text-generation:
 .. automodule:: backprop.tasks.text_generation
@@ -83,7 +93,7 @@ backprop.tasks.text\_generation
    :show-inheritance:
 
 backprop.tasks.text\_vectorisation
--------------------------------------
+-----------------------------------------
 
 .. _text-vectorisation:
 .. automodule:: backprop.tasks.text_vectorisation
