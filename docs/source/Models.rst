@@ -3,7 +3,17 @@
 Models
 ======
 
-Models are classes that power tasks. You can import models from ``backprop.models``.
+Models are classes that power tasks. 99% of users should not have to use models directly.
+Instead, you should use the appropriate :ref:`tasks` where you specify the model.
+
+The only valid reason for using models directly is if you are implementing your own.
+
+You can import models from ``backprop.models``.
+
+See the full model reference in :ref:`backprop-models`.
+
+Model Requirements
+------------------
 
 A valid model must: 
 
@@ -18,16 +28,28 @@ If these criteria are fulfilled, then it is very easy to save, load and upload t
 
 A model can:
 
-* offer finetuning support via the ``finetune`` method
+* offer finetuning support by implementing the ``process_batch``, ``training_step`` and optionally ``pre_finetuning`` methods
 * support single and batched task requests
 
 Every model included in our library fulfils the necessary criteria.
 Our models also support both single and batched requests.
 For example, you can vectorise text with both ``"some text"`` and ``["first text", "second text"]`` as input. 
 
-We are still working on adding finetuning support to at least one model for each task.
+Auto Model
+----------
 
-See the full model reference in :ref:`backprop-models`.
+``AutoModel`` is a special class that can load any supported model by its string identifier.
+You can also use it to see what models are available.
+
+Example usage:
+
+.. code-block:: python
+
+    from backprop.models import AutoModel
+
+    AutoModel.list_models(display=True, limit=10)
+
+    model = AutoModel.from_pretrained("distilgpt2")
 
 Generic Models
 --------------
@@ -52,29 +74,11 @@ See an example how to implement a generic model for a task.
 
 See the generic models reference in :ref:`backprop-models`.
 
-Custom Models
--------------
 
-Custom models, or just models, are classes that have been adapted and optimised to solve tasks.
+Supporting Task inference with Models
+-------------------------------------
 
-Example usage:
-
-.. code-block:: python
-
-    from backprop.models import T5QASummaryEmotion
-
-    model = T5QASummaryEmotion()
-
-    # Use model
-    model({"text": "This is pretty cool!"}, task="emotion")
-    "admiration"
-
-This is an ever-growing list, so check out the full reference in :ref:`backprop-models`.
-
-Supporting Tasks with Models
-----------------------------
-
-In order for a model to support a task, it must follow the task's input schema.
+In order for a model to support inference for a task, it must follow the task's input schema.
 
 For each task, the input consists of an argument and a keyword argument.
 
@@ -128,13 +132,15 @@ Task string is ``"text-classification"``.
 
 Dictionary argument specification:
 
-+--------+--------------------------------------+-----------------------------------------------------+
-| key    | type                                 | description                                         |
-+========+======================================+=====================================================+
-| text   | ``str`` or ``List[str]``             | text or list of texts to classify                   |
-+--------+--------------------------------------+-----------------------------------------------------+
-| labels | ``List[str]`` or ``List[List[str]]`` | labels or list of labels to assign probabilities to |
-+--------+--------------------------------------+-----------------------------------------------------+
++--------+--------------------------------------+--------------------------------------------------------------------------+
+| key    | type                                 | description                                                              |
++========+======================================+==========================================================================+
+| text   | ``str`` or ``List[str]``             | text or list of texts to classify                                        |
++--------+--------------------------------------+--------------------------------------------------------------------------+
+| labels | ``List[str]`` or ``List[List[str]]`` | optional (zero-shot) labels or list of labels to assign probabilities to |
++--------+--------------------------------------+--------------------------------------------------------------------------+
+| top_k  | ``int``                              | optional number of highest probability labels to return                  |
++--------+--------------------------------------+--------------------------------------------------------------------------+
 
 Sentiment Detection (Emotion)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -163,24 +169,39 @@ Image Classification
 
 Task string is ``"image-classification"``.
 
-+--------+--------------------------------------+-------------------------------------------------------+
-| key    | type                                 | description                                           |
-+========+======================================+=======================================================+
-| image  | ``str`` or ``List[str]``             | base64 encoded image or list of base64 encoded images |
-+--------+--------------------------------------+-------------------------------------------------------+
-| labels | ``List[str]`` or ``List[List[str]]`` | labels or list of labels to assign probabilities to   |
-+--------+--------------------------------------+-------------------------------------------------------+
++--------+------------------------------------------------------------------+--------------------------------------------------------------------------+
+| key    | type                                                             | description                                                              |
++========+==================================================================+==========================================================================+
+| image  | ``str`` or ``List[str]`` or ``PIL.Image`` or ``List[PIL.Image]`` | PIL or base64 encoded image or list of them                              |
++--------+------------------------------------------------------------------+--------------------------------------------------------------------------+
+| labels | ``List[str]`` or ``List[List[str]]``                             | optional (zero-shot) labels or list of labels to assign probabilities to |
++--------+------------------------------------------------------------------+--------------------------------------------------------------------------+
+| top_k  | ``int``                                                          | optional number of highest probability labels to return                  |
++--------+------------------------------------------------------------------+--------------------------------------------------------------------------+
 
 Image Vectorisation
 ^^^^^^^^^^^^^^^^^^^
 
 Task string is ``"image-vectorisation"``.
 
-+--------+--------------------------------------+-------------------------------------------------------+
-| key    | type                                 | description                                           |
-+========+======================================+=======================================================+
-| image  | ``str`` or ``List[str]``             | base64 encoded image or list of base64 encoded images |
-+--------+--------------------------------------+-------------------------------------------------------+
++-------+------------------------------------------------------------------+---------------------------------------------+
+| key   | type                                                             | description                                 |
++=======+==================================================================+=============================================+
+| image | ``str`` or ``List[str]`` or ``PIL.Image`` or ``List[PIL.Image]`` | PIL or base64 encoded image or list of them |
++-------+------------------------------------------------------------------+---------------------------------------------+
+
+Image-Text Vectorisation
+^^^^^^^^^^^^^^^^^^^
+
+Task string is ``"image-text-vectorisation"``.
+
++-------+------------------------------------------------------------------+---------------------------------------------+
+| key   | type                                                             | description                                 |
++=======+==================================================================+=============================================+
+| image | ``str`` or ``List[str]`` or ``PIL.Image`` or ``List[PIL.Image]`` | PIL or base64 encoded image or list of them |
++-------+------------------------------------------------------------------+---------------------------------------------+
+| text  | ``str`` or ``List[str]``                                         | text or list of texts to vectorise          |
++-------+------------------------------------------------------------------+---------------------------------------------+
 
 Text Generation
 ^^^^^^^^^^^^^^^
@@ -223,3 +244,210 @@ Task string is ``"text-vectorisation"``.
 +======+==========================+====================================+
 | text | ``str`` or ``List[str]`` | text or list of texts to vectorise |
 +------+--------------------------+------------------------------------+
+
+Supporting Task finetuning with Models
+--------------------------------------
+
+In order for a model to support finetuning for a task, it must follow the task's finetuning schema.
+
+This involves implementing three methods:
+
+1. ``process_batch`` - receive task specific data and process it
+2. ``training_step`` - receive data processed by the ``process_batch`` method and produce output
+3. ``pre_finetuning`` - optionally receive task specific parameters and adjust the model before finetuning
+
+The inputs and outputs for each of these methods vary depending on the task.
+
+Q&A
+^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="qa"``.
+
+``params`` has the following keys and values:
+
++-------------------+---------------------------+----------------------------------------+
+| key               | type                      | description                            |
++===================+===========================+========================================+
+| question          | ``str``                   | Question                               |
++-------------------+---------------------------+----------------------------------------+
+| context           | ``str``                   | Context that contains answer           |
++-------------------+---------------------------+----------------------------------------+
+| prev_qa           | ``List[Tuple[str, str]]`` | List of previous question-answer pairs |
++-------------------+---------------------------+----------------------------------------+
+| output            | ``str``                   | Answer                                 |
++-------------------+---------------------------+----------------------------------------+
+| max_input_length  | ``int``                   | Max number of tokens in input          |
++-------------------+---------------------------+----------------------------------------+
+| max_output_length | ``int``                   | Max number of tokens in output         |
++-------------------+---------------------------+----------------------------------------+
+
+``training_step`` must return loss.
+
+``pre_finetuning`` is not used.
+
+Text Classification
+^^^^^^^^^^^^^^^^^^^
+
+Currently, only the single label variant is supported.
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="text-classification"``.
+
+``params`` has the following keys and values:
+
++--------------+---------+--------------------------------+
+| key          | type    | description                    |
++==============+=========+================================+
+| inputs       | ``str`` | Text                           |
++--------------+---------+--------------------------------+
+| class_to_idx | ``str`` | Maps labels to integers        |
++--------------+---------+--------------------------------+
+| labels       | ``str`` | Correct label                  |
++--------------+---------+--------------------------------+
+| max_length   | ``str`` | Max number of tokens in inputs |
++--------------+---------+--------------------------------+
+
+``training_step`` must return loss.
+
+``pre_finetuning`` takes labels argument which is a dictionary that maps integers (from 0 to n) to labels.
+
+Sentiment Detection (Emotion)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="emotion"``.
+
+``params`` has the following keys and values:
+
++-------------------+---------+--------------------------------+
+| key               | type    | description                    |
++===================+=========+================================+
+| input             | ``str`` | Text to detect emotion from    |
++-------------------+---------+--------------------------------+
+| output            | ``str`` | Emotion text                   |
++-------------------+---------+--------------------------------+
+| max_input_length  | ``int`` | Max number of tokens in input  |
++-------------------+---------+--------------------------------+
+| max_output_length | ``int`` | Max number of tokens in output |
++-------------------+---------+--------------------------------+
+
+``training_step`` must return loss.
+
+``pre_finetuning`` is not used.
+
+Text Summarisation
+^^^^^^^^^^^^^^^^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="summarisation"``.
+
+``params`` has the following keys and values:
+
++-------------------+---------+--------------------------------+
+| key               | type    | description                    |
++===================+=========+================================+
+| input             | ``str`` | Text to summarise              |
++-------------------+---------+--------------------------------+
+| output            | ``str`` | Summary                        |
++-------------------+---------+--------------------------------+
+| max_input_length  | ``int`` | Max number of tokens in input  |
++-------------------+---------+--------------------------------+
+| max_output_length | ``int`` | Max number of tokens in output |
++-------------------+---------+--------------------------------+
+
+``training_step`` must return loss.
+
+``pre_finetuning`` is not used.
+
+Image Classification
+^^^^^^^^^^^^^^^^^^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="image-classification"``.
+
+``params`` has the following keys and values:
+
++-------+---------+---------------+
+| key   | type    | description   |
++=======+=========+===============+
+| image | ``str`` | Path to image |
++-------+---------+---------------+
+
+``training_step`` must return logits for each class (label).
+
+``pre_finetuning`` takes:
+
+* ``labels`` keyword argument which is a dictionary that maps integers (from 0 to n) to labels.
+* ``num_classes`` keyword argument which is an integer for the number of unique labels.
+
+Image Vectorisation
+^^^^^^^^^^^^^^^^^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="image-vectorisation"``.
+
+``params`` has the following keys and values:
+
++-------+---------+---------------+
+| key   | type    | description   |
++=======+=========+===============+
+| image | ``str`` | Path to image |
++-------+---------+---------------+
+
+``training_step`` must return vector tensor.
+
+``pre_finetuning`` takes no arguments.
+
+Text Generation
+^^^^^^^^^^^^^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="text-generation"``.
+
+``params`` has the following keys and values:
+
++-------------------+---------+--------------------------------+
+| key               | type    | description                    |
++===================+=========+================================+
+| input             | ``str`` | Generation prompt              |
++-------------------+---------+--------------------------------+
+| output            | ``str`` | Generation outpu               |
++-------------------+---------+--------------------------------+
+| max_input_length  | ``int`` | Max number of tokens in input  |
++-------------------+---------+--------------------------------+
+| max_output_length | ``int`` | Max number of tokens in output |
++-------------------+---------+--------------------------------+
+
+``training_step`` must return loss.
+
+``pre_finetuning`` is not used.
+
+Text Vectorisation
+^^^^^^^^^^^^^^^^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="text-vectorisation"``.
+
+``params`` has the following keys and values:
+
++------+---------+-------------------+
+| key  | type    | description       |
++======+=========+===================+
+| text | ``str`` | Text to vectorise |
++------+---------+-------------------+
+
+``training_step`` must return vector tensor.
+
+``pre_finetuning`` takes no arguments.
+
+Image-Text Vectorisation
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+``process_batch`` takes dictionary argument ``params`` and keyword argument ``task="image-text-vectorisation"``.
+
+``params`` has the following keys and values:
+
++-------+---------+-------------------+
+| key   | type    | description       |
++=======+=========+===================+
+| image | ``str`` | Path to image     |
++-------+---------+-------------------+
+| text  | ``str`` | Text to vectorise |
++-------+---------+-------------------+
+
+``training_step`` must return vector tensor.
+
+``pre_finetuning`` takes no arguments.
