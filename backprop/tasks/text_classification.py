@@ -100,7 +100,7 @@ class TextClassification(Task):
             max_length: Int determining the maximum token length of input strings.
             epochs: Integer specifying how many training iterations to run.
             batch_size: Batch size when training. Leave as None to automatically determine batch size.
-            optimal_batch_size: 
+            optimal_batch_size: Optimal batch size for the model being trained -- defaults to model settings.
             early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss.
             train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
             val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
