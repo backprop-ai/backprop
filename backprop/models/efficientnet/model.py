@@ -116,19 +116,17 @@ class EfficientNet(PathModel):
 
             logits = self.model(image)
 
-            dist = torch.softmax(logits, dim=1)
-
-            preds = torch.topk(dist, k=top_k, sorted=True).indices.squeeze(0).tolist()
+            dist = torch.softmax(logits, dim=1).squeeze(0).tolist()
             
             probs = {}
-            for idx in preds:
+            for idx in dist:
                 label = self.labels[idx]
-                prob = dist[0, idx].item()
+                prob = dist[idx].item()
 
                 probs[label] = prob
 
             probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
-            probs = {k: v for k, v in list(probs.items())[:top_k]}
+            probs = {k: v for k, v in probs[:top_k]}
 
             probabilities.append(probs)                
 

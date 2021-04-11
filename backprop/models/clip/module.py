@@ -191,7 +191,7 @@ class CLIP(BaseModel):
             label_probs = zip(labels, probs)
             label_probs = {lp[0]: lp[1] for lp in label_probs}
             label_probs = sorted(label_probs.items(), key=lambda x: x[1], reverse=True)
-            label_probs = {k: v for k, v in list(label_probs.items())[:top_k]}
+            label_probs = {k: v for k, v in label_probs[:top_k]}
 
             probabilities.append(label_probs)
 

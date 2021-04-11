@@ -100,7 +100,7 @@ class HFNLIModel(HFModel):
                 probs[label] = prob
 
             probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
-            probs = {k: v for k, v in list(probs.items())[:top_k]}
+            probs = {k: v for k, v in probs[:top_k]}
 
             probabilities.append(probs)
 
