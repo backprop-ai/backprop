@@ -85,6 +85,23 @@ class Task(pl.LightningModule):
                 early_stopping_epochs: int = 1, train_dataloader = None, val_dataloader = None,
                 dataset_train: Dataset = None, dataset_valid: Dataset = None, step = None, configure_optimizers = None):
         self.batch_size = batch_size or 1
+        """
+        Core finetuning logic followed for all implemented tasks.
+
+        Args:
+            dataset: Torch dataset on which training will occur
+            validation_split: Float between 0 and 1 that determines percentage of data to use for validation
+            epochs: Integer specifying how many training iterations to run
+            batch_size: Batch size when training. Leave as None to automatically determine batch size.
+            optimal_batch_size: 
+            early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss
+            train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
+            val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
+            dataset_train: Torch dataset of training data (split before provided). Automatically made from dataset if None.
+            dataset_valid: Torch dataset of validation data (split before provided). Automatically made from dataset if None.
+            step: Function determining how to call model for a training step. Implemented per-task, can be overridden.
+            configure_optimizers: Function that sets up the optimizer for training. Implemented per-task, can be overridden.
+        """
 
         model_task_details = self.model.details.get(self.task)
 

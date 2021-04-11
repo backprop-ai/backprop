@@ -87,12 +87,25 @@ class TextClassification(Task):
         return AdamW(params=self.model.parameters(), lr=2e-5)
 
     def finetune(self, params, validation_split: Union[float, Tuple[List[int], List[int]]]=0.15,
-                 max_input_length: int=128,
+                 max_length: int=128,
                  epochs: int=20, batch_size: int=None, optimal_batch_size: int=None,
                  early_stopping_epochs: int=1, train_dataloader=None, val_dataloader=None, 
                  step=None, configure_optimizers=None):
         """
-        I'll do this later.
+        Finetunes a text classification model on provided data.
+
+        Args:
+            params: Dict containing keys "texts" and "labels", with values being input/output data lists.
+            validation_split: Float between 0 and 1 that determines percentage of data to use for validation.
+            max_length: Int determining the maximum token length of input strings.
+            epochs: Integer specifying how many training iterations to run.
+            batch_size: Batch size when training. Leave as None to automatically determine batch size.
+            optimal_batch_size: 
+            early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss.
+            train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
+            val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
+            step: Function determining how to call model for a training step. Defaults to step defined in this task class.
+            configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
         """
         inputs = params["texts"]
         outputs = params["labels"]
@@ -115,7 +128,7 @@ class TextClassification(Task):
             "inputs": inputs,
             "labels": outputs,
             "class_to_idx": class_to_idx,
-            "max_input_length": max_input_length
+            "max_length": max_length
         }
 
         dataset = SingleLabelTextClassificationDataset(dataset_params, process_batch=self.model.process_batch, length=len(inputs))

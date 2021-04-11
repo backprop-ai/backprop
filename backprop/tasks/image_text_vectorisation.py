@@ -134,6 +134,23 @@ class ImageTextVectorisation(Task):
                 variant: str = "triplet", epochs: int = 20, batch_size: int = None,
                 optimal_batch_size: int = None, early_stopping_epochs: int = 1,
                 train_dataloader = None, val_dataloader = None, step = None, configure_optimizers = None):
+        """
+        Finetunes a model for combined image & text vectorisation. Includes different variants for calculating loss.
+        
+        Args:
+            dataset: Torch dataset on which training will occur.
+            validation_split: Float between 0 and 1 that determines percentage of data to use for validation.
+            variant: How loss will be calculated: "triplet" (default) or "cosine_similarity".
+            epochs: Integer specifying how many training iterations to run.
+            batch_size: Batch size when training. Leave as None to automatically determine batch size.
+            optimal_batch_size: 
+            early_stopping_epochs: Integer determining how many epochs will run before stopping without an improvement in validation loss.
+            train_dataloader: Dataloader for providing training data when finetuning. Defaults to inbuilt dataloder.
+            val_dataloader: Dataloader for providing validation data when finetuning. Defaults to inbuilt dataloader.
+            step: Function determining how to call model for a training step. Defaults to step defined in this task class.
+            configure_optimizers: Function that sets up the optimizer for training. Defaults to optimizer defined in this task class.
+        """
+
         optimal_batch_size = getattr(self.model, "optimal_batch_size", 128)
 
         configure_optimizers = configure_optimizers or self.configure_optimizers

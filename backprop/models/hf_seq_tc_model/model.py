@@ -134,7 +134,7 @@ class HFSeqTCModel(HFModel):
         class_to_idx = params["class_to_idx"]
         target = class_to_idx[params["labels"]]
 
-        tokens = self.tokenizer(text, truncation=True, max_length=params["max_input_length"], padding="max_length", return_tensors="pt")
+        tokens = self.tokenizer(text, truncation=True, max_length=params["max_length"], padding="max_length", return_tensors="pt")
         return {
             "input_ids": tokens.input_ids[0],
             "attention_mask": tokens.attention_mask[0],
