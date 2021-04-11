@@ -14,6 +14,35 @@ def upload(model = None, path: str = None, api_key: str = None, save_path: str =
         path: Path to saved model
         api_key: Backprop API key
         save_path: Optional path to save model if providing a model object
+
+    Example::
+
+        import backprop
+
+        tg = backprop.TextGeneration("t5_small")
+
+        # Any text works as training data
+        inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+        out = ["positive", "negative"]
+
+        # Finetune with a single line of code
+        tg.finetune({"input_text": inp, "output_text": out})
+
+        # Use your trained model
+        prediction = tg("I enjoyed it!")
+
+        print(prediction)
+        # Prints
+        "positive"
+
+        # Upload to Backprop for production ready inference
+
+        model = tg.model
+        # Describe your model
+        model.name = "t5-sentiment"
+        model.description = "Predicts positive and negative sentiment"
+
+        backprop.upload(model, api_key="abc")
     """
     
     if api_key is None:

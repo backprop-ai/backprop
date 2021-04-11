@@ -8,13 +8,18 @@ from sentence_transformers import SentenceTransformer
 
 class STModel(PathModel):
     """
-    Class for models which are initialised from a local path or Sentence Transformers
+    Class for models which are initialised from Sentence Transformers
 
     Attributes:
-        model_path: Local, sentence transformers or huggingface.co path to the model
-        init_model: Callable to initialise model from path
-            Defaults to SentenceTransformer
-        device (optional): Device for inference. Defaults to "cuda" if available.
+        model_path: path to ST model
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        max_length: Max supported token length for vectorisation
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
+        init_model: Class used to initialise model
+        device: Device for model. Defaults to "cuda" if available.
     """
     def __init__(self, model_path, init_model=SentenceTransformer, name: str = None,
                 description: str = None, tasks: List[str] = None, details: Dict = None,
@@ -38,6 +43,13 @@ class STModel(PathModel):
 
     @torch.no_grad()
     def __call__(self, task_input, task="text-vectorisation", return_tensor=False):
+        """
+        Uses the model for the text-vectorisation task
+
+        Args:
+            task_input: input dictionary according to the ``text-vectorisation`` task specification
+            task: text-vectorisation
+        """
         is_list = False
         if task == "text-vectorisation":
             input_ids = None

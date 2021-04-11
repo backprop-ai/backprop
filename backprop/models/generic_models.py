@@ -19,6 +19,11 @@ class BaseModel(torch.nn.Module):
     Attributes:
         model: Your model that takes some args, kwargs and returns an output.
             Must be callable.
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
     """
     def __init__(self, model, name: str = None, description: str = None, tasks: List[str] = None,
                 details: Dict = None):
@@ -58,6 +63,11 @@ class PathModel(BaseModel):
 
     Attributes:
         model_path: Path to the model
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
         init_model: Callable to initialise model from path
         tokenizer_path (optional): Path to the tokenizer
         init_tokenizer (optional): Callable to initialise tokenizer from path
@@ -91,10 +101,15 @@ class PathModel(BaseModel):
 
 class HFModel(PathModel):
     """
-    Class for models which are initialised from a local path or huggingface
+    Class for huggingface models
 
     Attributes:
         model_path: Local or huggingface.co path to the model
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
         init_model: Callable to initialise model from path
             Defaults to AutoModelForPreTraining from huggingface
         tokenizer_path (optional): Path to the tokenizer
@@ -132,7 +147,7 @@ class HFModel(PathModel):
 
 class HFTextGenerationModel(HFModel):
     """
-    Class for models which are initialised from a local path or Huggingface
+    Class for huggingface models that implement the .generate method.
 
     Attributes:
         *args and **kwargs are passed to HFModel's __init__

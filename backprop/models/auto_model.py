@@ -7,6 +7,23 @@ import torch
 class AutoModel:
     @staticmethod
     def from_pretrained(model_name: str, aliases: Dict = None, device: str = None):
+        """
+        Loads a model by name
+
+        Args:
+            model_name: unique name of the model
+            aliases: dictionary that maps aliases to model_name
+            device: device to use model on. Defaults to "cuda" if available
+
+        Returns:
+            Initialised model object
+
+        Example::
+
+            import backprop
+
+            model = backprop.models.AutoModel.from_pretrained("t5_small")
+        """
         if device == None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -48,6 +65,26 @@ class AutoModel:
     @staticmethod
     def list_models(task=None, return_dict=False, display=False, limit=None,
                     aliases: Dict = None):
+        """
+        Lists available models
+
+        Args:
+            task: filter by task identifier
+            return_dict: whether to return dictionary instead of a list
+            display: print instead of returning
+            limit: maximum number of models to include
+            aliases: dict that maps aliases to model_name
+
+        Example::
+
+            import backprop
+            backprop.models.AutoModel.list_models(task="text-vectorisation", display=True)
+            
+            > Name         clip
+              Description  Model by OpenAI
+              ...
+        """
+
         models_classes = [HFNLIModel, STModel, HFSeq2SeqTGModel, T5QASummaryEmotion,
                           HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP]
 

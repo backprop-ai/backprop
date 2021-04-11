@@ -28,7 +28,12 @@ class EfficientNet(PathModel):
     Attributes:
         model_path: Any efficientnet model (smaller to bigger) from efficientnet-b0 to efficientnet-b7
         init_model: Callable that initialises the model from the model_path
-        kwargs: kwrags passed to :class:`backprop.models.generic_models.PathModel`
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
+        device: Device for model. Defaults to "cuda" if available.
     """
     def __init__(self, model_path: str = "efficientnet-b0", init_model = None, name: str = None,
                 description: str = None, tasks: List[str] = None, details: Dict = None,

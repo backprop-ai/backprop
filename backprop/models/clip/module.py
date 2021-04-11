@@ -19,6 +19,21 @@ from torch.utils.data.dataloader import DataLoader
 import os
 
 class CLIP(BaseModel):
+    """
+    CLIP is a recent model by OpenAI.
+
+    Attributes:
+        model_path: ViT-B/32, RN50, RN101, RN50x4
+        init_model: initialise model from model_path
+        init_tokenizer: initializes tokenizer
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Dictionary of additional details about the model
+        device: Device for model. Defaults to "cuda" if available.
+    """
+
     def __init__(self, model_path="ViT-B/32", init_model=clip.load,
                 init_tokenizer=simple_tokenizer.SimpleTokenizer, name: str = None,
                 description: str = None, tasks: List[str] = None, details: Dict = None,
@@ -50,6 +65,14 @@ class CLIP(BaseModel):
             
     @torch.no_grad()
     def __call__(self, task_input, task="image-classification", return_tensor=False):
+        """
+        Do inference with the model.
+
+        Args:
+            task_input: input dictionary according to task
+            task: one of supported tasks
+            return_tensor: return a tensor instead of list for vectorisation output
+        """
         output = None
         is_list = False
         
@@ -163,7 +186,7 @@ class CLIP(BaseModel):
         for image, text, labels in inputs:
             # Don't exceed the number of labels
             top_k = min(len(labels), top_k)
-            
+
             logits_per_image, logits_per_text = self.model(image, text)
             
             probs = logits_per_image.softmax(dim=-1)
