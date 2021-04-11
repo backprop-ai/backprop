@@ -1,19 +1,24 @@
+from typing import Dict, List
 from . import save
 from zipfile import ZipFile
 import os
 import dill
 import requests
 
-def upload(model = None, path: str = None, api_key: str = None, save_path: str = None):
+def upload(model, name: str = None, description: str = None, tasks: List[str] = None,
+            details: Dict = None, path=None, api_key: str = None):
     """
-    Deploys a model from object or path to Backprop. 
-    Either the model or path to saved model must be provided.
+    Saves and deploys a model to Backprop.
 
     Args:
         model: Model object
-        path: Path to saved model
         api_key: Backprop API key
-        save_path: Optional path to save model if providing a model object
+        name: string identifier for the model. Lowercase letters and numbers.
+            No spaces/special characters except dashes.
+        description: String description of the model.
+        tasks: List of supported task strings
+        details: Valid json dictionary of additional details about the model
+        path: Optional path to save model
 
     Example::
 
@@ -39,26 +44,19 @@ def upload(model = None, path: str = None, api_key: str = None, save_path: str =
 
         model = tg.model
         # Describe your model
-        model.name = "t5-sentiment"
-        model.description = "Predicts positive and negative sentiment"
+        name = "t5-sentiment"
+        description = "Predicts positive and negative sentiment"
 
-        backprop.upload(model, api_key="abc")
+        backprop.upload(model, name=name, description=description, api_key="abc")
     """
     
     if api_key is None:
         raise ValueError("Please provide your api_key")
 
-    if model is None and path is None:
-        raise ValueError("You must either specify the model or path to saved model")
-
-    if model is not None and path is not None:
-        raise ValueError("You may only specify either the model or the path to saved model")
-
-    if model:
-        print("Saving model...")
-        if hasattr(model, "to"):
-            model.to("cpu")
-        path = save(model, path=save_path)
+    print("Saving model...")
+    if hasattr(model, "to"):
+        model.to("cpu")
+    path = save(model, name=name, description=description, tasks=tasks, details=details, path=path)
 
     print("Testing that the model can be loaded...")
     # Loading model to get the model name
