@@ -55,6 +55,7 @@ class HFSeqTCModel(HFModel):
         """
         if task == "text-classification":
             text = task_input.pop("text")
+            top_k = task_input.get("top_k", 10000)
 
             is_list = type(text) == list
             
@@ -71,12 +72,12 @@ class HFSeqTCModel(HFModel):
             
             outputs = outputs if is_list else outputs[0]
             
-            return self.get_label_probabilities(outputs)
+            return self.get_label_probabilities(outputs, top_k)
         else:
             raise ValueError(f"Unsupported task: {task}")
 
 
-    def get_label_probabilities(self, outputs):
+    def get_label_probabilities(self, outputs, top_k):
         is_list = type(outputs) == list
 
         outputs = outputs if is_list else [outputs]
@@ -89,6 +90,9 @@ class HFSeqTCModel(HFModel):
             for idx, pred in enumerate(predictions):
                 label = self.labels[idx]
                 probs[label] = pred
+
+            probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
+            probs = {k: v for k, v in list(probs.items())[:top_k]}
 
             probabilities.append(probs)
         

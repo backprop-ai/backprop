@@ -45,6 +45,7 @@ class HFNLIModel(HFModel):
 
             text = task_input.get("text")
             labels = task_input.get("labels")
+            top_k = task_input.get("top_k", 10000)
 
             if labels == None:
                 raise ValueError("labels must be provided")
@@ -58,7 +59,7 @@ class HFNLIModel(HFModel):
             # Must have a consistent amount of examples
             assert(len(text) == len(labels))
 
-            probs = self.classify(text, labels)
+            probs = self.classify(text, labels, top_k)
 
             if not is_list:
                 probs = probs[0]
@@ -86,18 +87,21 @@ class HFNLIModel(HFModel):
         prob_label_is_true = probs[:, 1]
         return prob_label_is_true.tolist()
 
-    def classify(self, text, labels):
+    def classify(self, text, labels, top_k):
         """
         Classifies text, given a set of labels.
         """
-        results_list = []
+        probabilities = []
         for text, labels in zip(text, labels):
-            results = {}
-            probs = self.calculate_probability(text, labels)
+            probs = {}
+            probs_list = self.calculate_probability(text, labels)
 
-            for prob, label in zip(probs, labels):
-                results[label] = prob
+            for prob, label in zip(probs_list, labels):
+                probs[label] = prob
 
-            results_list.append(results)
+            probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
+            probs = {k: v for k, v in list(probs.items())[:top_k]}
 
-        return results_list
+            probabilities.append(probs)
+
+        return probabilities

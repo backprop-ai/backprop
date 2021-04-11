@@ -79,7 +79,7 @@ class CLIP(BaseModel):
         if task == "image-classification":
             image = task_input.get("image")
             labels = task_input.get("labels")
-            top_k = task_input.get("top_k")
+            top_k = task_input.get("top_k", 10000)
 
             image = base64_to_img(image)
 
@@ -182,22 +182,18 @@ class CLIP(BaseModel):
         probabilities = []
         inputs = zip(image, text, labels)
 
-
         for image, text, labels in inputs:
-            # Don't exceed the number of labels
-            top_k = min(len(labels), top_k)
-
             logits_per_image, logits_per_text = self.model(image, text)
             
             probs = logits_per_image.softmax(dim=-1)
-            idx = torch.topk(probs, k=top_k, sorted=True).indices.squeeze(0).tolist()
             probs = probs.tolist()[0]
 
-            labels = [labels[i] for i in idx]
-            probs = [probs[i] for i in idx]
-
             label_probs = zip(labels, probs)
-            probabilities.append({lp[0]: lp[1] for lp in label_probs})
+            label_probs = {lp[0]: lp[1] for lp in label_probs}
+            label_probs = sorted(label_probs.items(), key=lambda x: x[1], reverse=True)
+            label_probs = {k: v for k, v in list(label_probs.items())[:top_k]}
+
+            probabilities.append(label_probs)
 
         return probabilities
 

@@ -83,7 +83,7 @@ class EfficientNet(PathModel):
 
         if task == "image-classification":
             image = task_input.get("image")
-            top_k = task_input.get("top_k")
+            top_k = task_input.get("top_k", 10000)
 
             image = base64_to_img(image)
 
@@ -111,9 +111,6 @@ class EfficientNet(PathModel):
         
         probabilities = []
 
-        # Don't exceed the number of labels
-        top_k = min(len(self.labels), top_k)
-
         for image in image:
             image = self.tfms(image).unsqueeze(0).to(self._model_device)
 
@@ -129,6 +126,9 @@ class EfficientNet(PathModel):
                 prob = dist[0, idx].item()
 
                 probs[label] = prob
+
+            probs = sorted(probs.items(), key=lambda x: x[1], reverse=True)
+            probs = {k: v for k, v in list(probs.items())[:top_k]}
 
             probabilities.append(probs)                
 
