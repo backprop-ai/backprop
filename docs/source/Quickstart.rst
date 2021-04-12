@@ -50,33 +50,31 @@ Basic Finetuning and Uploading
 
 .. code-block:: python
 
-    from backprop.models import T5
-    from backprop import TextGeneration
+   from backprop.models import T5
+   from backprop import TextGeneration
 
-    tg = TextGeneration(T5, local=True)
+   tg = TextGeneration(T5, local=True)
 
-    # Any text works as training data
-    inp = ["I really liked the service I received!", "Meh, it was not impressive."]
-    out = ["positive", "negative"]
+   # Any text works as training data
+   inp = ["I really liked the service I received!", "Meh, it was not impressive."]
+   out = ["positive", "negative"]
 
-    # Finetune with a single line of code
-    tg.finetune({"input_text": inp, "output_text": out})
+   # Finetune with a single line of code
+   tg.finetune({"input_text": inp, "output_text": out})
 
-    # Use your trained model
-    prediction = tg("I enjoyed it!")
+   # Use your trained model
+   prediction = tg("I enjoyed it!")
 
-    print(prediction)
-    # Prints
-    "positive"
+   print(prediction)
+   # Prints
+   "positive"
 
-    # Upload to Backprop for production ready inference
+   # Upload to Backprop for production ready inference
+   # Describe your model
+   name = "t5-sentiment"
+   description = "Predicts positive and negative sentiment"
 
-    model = tg.model
-    # Describe your model
-    model.name = "t5-sentiment"
-    model.description = "Predicts positive and negative sentiment"
-
-    backprop.upload(model, api_key="abc")
+   tg.upload(name=name, description=description, api_key="abc")
 
 Learn more about finetuning in :ref:`ft`.
 

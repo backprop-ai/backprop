@@ -92,13 +92,11 @@ print(prediction)
 "positive"
 
 # Upload to Backprop for production ready inference
-
-model = tg.model
 # Describe your model
-model.name = "t5-sentiment"
-model.description = "Predicts positive and negative sentiment"
+name = "t5-sentiment"
+description = "Predicts positive and negative sentiment"
 
-backprop.upload(model, api_key="abc")
+tg.upload(name=name, description=description, api_key="abc")
 ```
 
 See [finetuning for other tasks](https://backprop.readthedocs.io/en/latest/Finetuning.html).
