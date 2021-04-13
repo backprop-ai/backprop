@@ -51,6 +51,6 @@ class HFCausalLMTGModel(HFTextGenerationModel):
             temperature = task_input.pop("temperature", 0.7)
 
             # TODO: Set pad token on a model basis
-            return self.generate(text, **task_input, pad_token_id=50256, temperature=temperature)
+            return self.generate(text, **task_input, pad_token_id=50256, temperature=temperature, variant="causal_lm")
         else:
             raise ValueError(f"Unsupported task: {task}")

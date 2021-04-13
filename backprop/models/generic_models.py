@@ -152,7 +152,7 @@ class HFTextGenerationModel(HFModel):
     Attributes:
         *args and **kwargs are passed to HFModel's __init__
     """
-    def generate(self, text, **kwargs):
+    def generate(self, text, variant="seq2seq", **kwargs):
         """
         Generate according to the model's generate method.
         """
@@ -180,6 +180,9 @@ class HFTextGenerationModel(HFModel):
                 
             del kwargs["num_generations"]
 
+        min_length = kwargs.pop("min_length", 10)
+        max_length = kwargs.pop("max_length", 20)
+
         is_list = False
         if isinstance(text, list):
             is_list = True
@@ -188,24 +191,31 @@ class HFTextGenerationModel(HFModel):
             text = [text]
 
         all_tokens = []
+        output = []
         for text in text:
             features = self.tokenizer(text, return_tensors="pt")
+
+            input_length = len(features["input_ids"][0])
 
             for k, v in features.items():
                 features[k] = v.to(self._model_device)
 
+            if variant == "causal_lm":
+                min_length += input_length
+                max_length += input_length
+
             with torch.no_grad():
                 tokens = self.model.generate(do_sample=do_sample,
+                                            min_length=min_length,
+                                            max_length=max_length,
                                             **features, **kwargs)
-
-            all_tokens.append(tokens)
             
-        value = []
-        for tokens in all_tokens:
-            value.append([self.tokenizer.decode(tokens, skip_special_tokens=True)
-                    for tokens in tokens])
-        
-        output = value
+            if variant == "causal_lm":
+                output.append([self.tokenizer.decode(tokens[input_length:], skip_special_tokens=True)
+                        for tokens in tokens])
+            else:
+                output.append([self.tokenizer.decode(tokens, skip_special_tokens=True)
+                        for tokens in tokens])
 
         # Unwrap generation list
         if kwargs.get("num_return_sequences", 1) == 1:

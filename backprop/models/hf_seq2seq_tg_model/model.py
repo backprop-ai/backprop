@@ -42,7 +42,7 @@ class HFSeq2SeqTGModel(HFTextGenerationModel):
         """
         if task == "text-generation":
             text = task_input.pop("text")
-            return self.generate(text, **task_input)
+            return self.generate(text, **task_input, variant="seq2seq")
         else:
             raise ValueError(f"Unsupported task: {task}")
 
