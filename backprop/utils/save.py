@@ -49,6 +49,7 @@ def save(model, name: str = None, description: str = None, tasks: List[str] = No
     name = model.name
     tasks = model.tasks
     description = model.description
+    details = model.details
 
     if hasattr(model.model, "eval"):
         model.model.eval()

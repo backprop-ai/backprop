@@ -1,6 +1,6 @@
 from typing import Dict
 from backprop.models import HFNLIModel, STModel, HFSeq2SeqTGModel, T5QASummaryEmotion, \
-    HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP
+    T5, HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP
 from backprop import load
 import torch
 
@@ -86,7 +86,7 @@ class AutoModel:
         """
 
         models_classes = [HFNLIModel, STModel, HFSeq2SeqTGModel, T5QASummaryEmotion,
-                          HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP]
+                          T5, HFCausalLMTGModel, HFSeqTCModel, EfficientNet, CLIP]
 
         if display:
             return_dict = False

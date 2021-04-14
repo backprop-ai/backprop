@@ -5,6 +5,7 @@ xlnet_base_cased = {
         "model_path": "xlnet-base-cased"
     },
     "details": {
+        "library_only": True,
         "num_parameters": 117310466,
         "text-classification": {
             "finetunable": True

@@ -76,13 +76,16 @@ class TextGeneration(Task):
 
             tg = backprop.TextGeneration()
             tg("Geralt knew the sings, the monster was a", min_length=20, max_length=50, temperature=0.7)
-            > "Geralt knew the sings, the monster was a real danger, and he was the only one in the village who knew how to defend himself."
+            > " real danger, and he was the only one in the village who knew how to defend himself."
         """
         params = [("text", text), ("min_length", min_length), ("max_length", max_length),
                 ("temperature", temperature), ("top_k", top_k), ("top_p", top_p),
                 ("repetition_penalty", repetition_penalty), ("length_penalty", length_penalty),
                 ("num_beams", num_beams), ("num_generations", num_generations),
                 ("do_sample", do_sample)]
+
+        if text == "":
+            raise ValueError("Some text must be provided")
         
         # Ignore None to let the model decide optimal values
         task_input = {k: v for k, v in params if v != None}

@@ -6,15 +6,28 @@ clip_vit_b32 = {
     },
     "details": {
         "num_parameters": 151277313,
+        "max_text_length": 77,
+        "image-classification": {
+            "zero_shot": True
+        },
         "image-vectorisation": {
-            "finetunable": True
+            "finetunable": True,
+            "vector_size": 512
         },
         "text-vectorisation": {
-            "finetunable": True
+            "finetunable": True,
+            "vector_size": 512,
         },
         "image-text-vectorisation": {
-            "finetunable": True
-        }
+            "finetunable": True,
+            "vector_size": 1024,
+        },
+        "credits": [
+            {
+                "name": "OpenAI",
+                "url": "https://openai.com/blog/clip/"
+            }
+        ]
     }
 }
 
