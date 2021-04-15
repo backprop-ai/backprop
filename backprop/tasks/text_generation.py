@@ -83,9 +83,6 @@ class TextGeneration(Task):
                 ("repetition_penalty", repetition_penalty), ("length_penalty", length_penalty),
                 ("num_beams", num_beams), ("num_generations", num_generations),
                 ("do_sample", do_sample)]
-
-        if text == "":
-            raise ValueError("Some text must be provided")
         
         # Ignore None to let the model decide optimal values
         task_input = {k: v for k, v in params if v != None}

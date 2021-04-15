@@ -35,7 +35,7 @@ gpt2_medium = {
         "max_text_length": 1024,
         "text-generation": {
             "languages": ["eng"],
-            "description": "As the model was trained on unfiltered content from the internet, be vary of biases and 'facts' that sound true."
+            "description": "As the model was trained on unfiltered content from the internet, be vary of biases and 'facts' that sound true. Default temperature as 0.7."
         },
         "credits": [
             {
@@ -51,7 +51,7 @@ gpt2_medium = {
 }
 
 distilgpt2 = {
-    "description": "Distilled version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
+    "description": "Distilled version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks. Default temperature as 0.7.",
     "tasks": ["text-generation"],
     "init_kwargs": {
         "model_path": "distilgpt2"
@@ -61,7 +61,7 @@ distilgpt2 = {
         "max_text_length": 1024,
         "text-generation": {
             "languages": ["eng"],
-            "description": "As the model was trained on unfiltered content from the internet, be vary of biases and 'facts' that sound true."
+            "description": "As the model was trained on unfiltered content from the internet, be vary of biases and 'facts' that sound true. Default temperature as 0.7."
         },
         "credits": [
             {

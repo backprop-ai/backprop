@@ -156,6 +156,9 @@ class HFTextGenerationModel(HFModel):
         """
         Generate according to the model's generate method.
         """
+        if text == "":
+            raise ValueError("Some text must be provided")
+
         # Get and remove do_sample or set to False
         do_sample = kwargs.pop("do_sample", None) or False
         params = ["temperature", "top_k", "top_p", "repetition_penalty",
