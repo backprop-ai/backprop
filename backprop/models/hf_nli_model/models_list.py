@@ -60,7 +60,7 @@ deberta_base_mnli = {
 }
 
 xlmr_large_xnli = {
-    "description": "XLM-RoBERTa is a multilingual variant of Facebook's RoBERTa model. It has been finetuned on the XNLI dataset for multilingual zero-shot text classification.",
+    "description": "Multilingual variant of Facebook's Large RoBERTa model. It has been finetuned on the XNLI dataset for multilingual zero-shot text classification.",
     "tasks": ["text-classification"],
     "init_kwargs": {
         "model_path": "joeddav/xlm-roberta-large-xnli"

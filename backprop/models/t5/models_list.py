@@ -1,5 +1,5 @@
 t5_small = {
-    "description": "A small version of the T5 model by Google. This is a text generation model that can be finetuned to solve virtually any text based task.",
+    "description": "Small version of the T5 model by Google. This is a text generation model that can be finetuned to solve virtually any text based task.",
     "tasks": ["text-generation", "summarisation"],
     "init_kwargs": {
         "model_path": "t5-small"
@@ -26,7 +26,7 @@ t5_small = {
 }
 
 t5_base = {
-    "description": "A base version of the T5 model by Google. This is a text generation model that can be finetuned to solve virtually any text based task.",
+    "description": "Base version of the T5 model by Google. This is a text generation model that can be finetuned to solve virtually any text based task.",
     "tasks": ["text-generation", "summarisation"],
     "init_kwargs": {
         "model_path": "t5-base"

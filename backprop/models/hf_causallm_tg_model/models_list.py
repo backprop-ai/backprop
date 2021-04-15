@@ -51,7 +51,7 @@ gpt2_medium = {
 }
 
 distilgpt2 = {
-    "description": "Distilled version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks. Default temperature as 0.7.",
+    "description": "Distilled version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
     "tasks": ["text-generation"],
     "init_kwargs": {
         "model_path": "distilgpt2"
