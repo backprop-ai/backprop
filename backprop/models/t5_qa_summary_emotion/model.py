@@ -120,7 +120,7 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
             if len(prev_qa) != 0:
                 prev_qa = prev_qa[0]
             input_text = self.process_qa(question, context, prev_qa)
-        return self.generate(input_text, do_sample=False, max_length=96)
+        return self.generate(input_text, do_sample=False, min_length=1, max_length=96)
     
     def process_batch(self, params, task):
         if task == "summarisation":
