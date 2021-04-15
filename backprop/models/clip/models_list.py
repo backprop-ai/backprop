@@ -1,5 +1,5 @@
 clip = {
-    "description": "ViT-B/32 version of OpenAI's CLIP model. Combines general knowledge of image and text for a variety of zero-shot applications.",
+    "description": "ViT-B/32 version of OpenAI's CLIP. Combines general knowledge of image and text for a variety of zero-shot applications.",
     "tasks": ["image-classification", "image-vectorisation", "text-vectorisation", "image-text-vectorisation"],
     "init_kwargs": {
         "model_path": "ViT-B/32"

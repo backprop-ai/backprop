@@ -9,11 +9,14 @@ import requests
 
 TASK = "text-classification"
 
-DEFAULT_LOCAL_MODEL = "bart-large-mnli"
+DEFAULT_LOCAL_MODEL = "english-base"
 
 LOCAL_ALIASES = {
-    "english": "bart-large-mnli",
-    "multilingual": "xlmr-large-xnli"
+    "english": "deberta-base-mnli",
+    "english-base": "deberta-base-mnli",
+    "english-large": "bart-large-mnli",
+    "multilingual": "xlmr-large-xnli",
+    "multilingual-large": "xlmr-large-xnli"
 }
 
 class TextClassification(Task):

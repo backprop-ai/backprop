@@ -8,10 +8,13 @@ from transformers.optimization import Adafactor
 
 TASK = "text-generation"
 
-DEFAULT_LOCAL_MODEL = "gpt2-medium"
+DEFAULT_LOCAL_MODEL = "english-base"
 
 LOCAL_ALIASES = {
     "english": "gpt2-medium",
+    "english-small": "distilgpt2",
+    "english-base": "gpt2-medium",
+    "english-large": "gpt2-large",
     "gpt2": "gpt2-medium"
 }
 

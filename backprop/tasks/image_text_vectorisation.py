@@ -22,7 +22,7 @@ TASK = "image-text-vectorisation"
 DEFAULT_LOCAL_MODEL = "clip"
 
 LOCAL_ALIASES = {
-    "clip": "clip-vit-b32"
+    "english-base": "clip"
 }
 
 class ImageTextVectorisation(Task):

@@ -18,7 +18,8 @@ TASK = "image-classification"
 DEFAULT_LOCAL_MODEL = "clip"
 
 LOCAL_ALIASES = {
-    "efficientnet": "efficientnet-b0"
+    "efficientnet": "efficientnet-b0",
+    "english-base": "clip"
 }
 
 class ImageClassification(Task):

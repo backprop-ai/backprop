@@ -11,7 +11,7 @@ TASK = "qa"
 DEFAULT_LOCAL_MODEL = "t5-base-qa-summary-emotion"
 
 LOCAL_ALIASES = {
-    "english": "t5-base-qa-summary-emotion"
+    "english-base": "t5-base-qa-summary-emotion"
 }
 
 

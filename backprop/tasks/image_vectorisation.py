@@ -21,7 +21,7 @@ TASK = "image-vectorisation"
 DEFAULT_LOCAL_MODEL = "clip"
 
 LOCAL_ALIASES = {
-    "clip": "clip-vit-b32"
+    "base": "clip"
 }
 
 class ImageVectorisation(Task):
