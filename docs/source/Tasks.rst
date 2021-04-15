@@ -117,7 +117,7 @@ Finetuning text classification also accepts the keyword argument ``max_length``,
 
     import backprop
 
-    tc = backprop.TextCLassification()
+    tc = backprop.TextClassification()
 
     """
     Set up input data. Labels will automatically be used to set up 
