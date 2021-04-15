@@ -1,5 +1,5 @@
 gpt2_large = {
-    "description": "A large version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
+    "description": "Large version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
     "tasks": ["text-generation"],
     "init_kwargs": {
         "model_path": "gpt2-large"
@@ -25,7 +25,7 @@ gpt2_large = {
 }
 
 gpt2_medium = {
-    "description": "A medium version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
+    "description": "Medium version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
     "tasks": ["text-generation"],
     "init_kwargs": {
         "model_path": "gpt2-medium"
@@ -51,7 +51,7 @@ gpt2_medium = {
 }
 
 distilgpt2 = {
-    "description": "A distilled version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
+    "description": "Distilled version of OpenAI's GPT-2 model. This is a general-use model, and has not been further finetuned on any specific languages or tasks.",
     "tasks": ["text-generation"],
     "init_kwargs": {
         "model_path": "distilgpt2"

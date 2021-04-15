@@ -18,7 +18,6 @@ TASK = "image-classification"
 DEFAULT_LOCAL_MODEL = "clip"
 
 LOCAL_ALIASES = {
-    "clip": "clip-vit-b32",
     "efficientnet": "efficientnet-b0"
 }
 

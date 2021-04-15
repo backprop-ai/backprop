@@ -39,8 +39,7 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
         elif task == "emotion":
             return self.emote_or_summary(task_input["text"], "emotion")
         elif task == "summarisation":
-            return self.emote_or_summary(task_input["text"], "summarise",
-                    no_repeat_ngram_size=3, num_beams=4, early_stopping=True)
+            return self.emote_or_summary(task_input["text"], "summarise")
         elif task == "qa":
             prev_q = task_input.get("prev_q", [])
             prev_a = task_input.get("prev_a", [])
@@ -78,8 +77,22 @@ class T5QASummaryEmotion(HFSeq2SeqTGModel):
             text = [f"{task_prefix}: {t}" for t in text]
         else:
             text = f"{task_prefix}: {text}"
+
+        gen_kwargs = {
+            "min_length": 1,
+            "max_length": 30
+        }
+        do_sample = False
         
-        return self.generate(text, do_sample=False, max_length=200, **gen_kwargs)
+        if task_prefix == "summarise":
+            gen_kwargs["no_repeat_ngram_size"] = 3
+            gen_kwargs["num_beams"] = 4
+            gen_kwargs["early_stopping"] = True
+            gen_kwargs["min_length"] = 30
+            gen_kwargs["max_length"] = 200
+            do_sample = True
+        
+        return self.generate(text, do_sample=do_sample, **gen_kwargs)
 
     def training_step(self, task_input):
         return self.model(**task_input).loss

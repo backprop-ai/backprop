@@ -38,7 +38,7 @@ class T5(HFSeq2SeqTGModel):
             return self.generate(text, **task_input)
         elif task == "summarisation":
             return self.summary(task_input["text"], "summarize",
-                    no_repeat_ngram_size=3, num_beams=4, early_stopping=True)
+                    no_repeat_ngram_size=3, num_beams=4, early_stopping=True, do_sample=True)
         else:
             raise ValueError(f"Unsupported task: {task}")
 
@@ -53,5 +53,8 @@ class T5(HFSeq2SeqTGModel):
             text = [f"{task_prefix}: {t}" for t in text]
         else:
             text = f"{task_prefix}: {text}"
+
+
         
-        return self.generate(text, do_sample=False, max_length=200, min_length=30, **gen_kwargs)
+        # TODO: Do sample beam
+        return self.generate(text, max_length=200, min_length=30, **gen_kwargs)
