@@ -6,7 +6,7 @@ Models
 Models are classes that power tasks. 99% of users should not have to use models directly.
 Instead, you should use the appropriate :ref:`tasks` where you specify the model.
 
-See the available models and tasks they support in the Backprop `Model Hub<https://backprop.co/hub>`_.
+See the available models and tasks they support in the Backprop `Model Hub <https://backprop.co/hub>`_.
 
 The only valid reason for using models directly is if you are implementing your own.
 
