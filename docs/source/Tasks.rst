@@ -13,9 +13,7 @@ Tasks can be imported directly from ``backprop``.
 
 See the full reference in :ref:`backprop-tasks`.
 
-To see which models are supported for each task, load that task
-and call ``.list_models()``.
-
+To see which models are supported for each task, check out the Backprop `Model Hub <https://backprop.co/hub>`_.
 
 Q&A
 ^^^
@@ -98,9 +96,9 @@ Inference
 
 .. code-block:: python
 
-    from backprop import TextClassification
+    import backprop
 
-    tc = TextClassification()
+    tc = backprop.TextClassification()
 
     tc("I am mad because my product broke.", ["product issue", "nature"])
     {"product issue": 0.98, "nature": 0.05}
@@ -150,9 +148,9 @@ Use is simple: just pass in a string of text, and get back an emotion or list of
 
 .. code-block:: python
 
-    from backprop import Emotion
+    import backprop
 
-    emotion = Emotion()
+    emotion = backprop.Emotion()
 
     emotion("I really like what you did there")
     "approval"
@@ -196,9 +194,9 @@ Inference
 
 .. code-block:: python
 
-    from backprop import Summarisation
+    import backprop
 
-    summarisation = Summarisation()
+    summarisation = backprop.Summarisation()
 
     summarisation("This is a long document that contains plenty of words")
     "short summary of document"
@@ -242,9 +240,9 @@ Inference
 
 .. code-block:: python
 
-    from backprop import ImageClassification
+    import backprop
 
-    ic = ImageClassification()
+    ic = backprop.ImageClassification()
 
     ic("/home/Documents/dog.png", ["cat", "dog"])
     {"cat": 0.01, "dog": 0.99}
@@ -288,9 +286,9 @@ Inference
 
 .. code-block:: python
 
-    from backprop import ImageVectorisation
+    import backprop
 
-    iv = ImageVectorisation()
+    iv = backprop.ImageVectorisation()
 
     iv("/home/Documents/dog.png")
     [0.92949192, 0.23123010, ...]
@@ -352,9 +350,9 @@ Inference
 
 .. code-block:: python
 
-    from backprop import TextGeneration
+    import backprop
 
-    tg = TextGeneration()
+    tg = backprop.TextGeneration()
 
     tg("I like to go to")
     " the beach because I love the sun."
@@ -401,9 +399,9 @@ Inference
 
 .. code-block:: python
 
-    from backprop import TextVectorisation
+    import backprop
 
-    tv = TextVectorisation()
+    tv = backprop.TextVectorisation()
 
     tv("iPhone 12 128GB")
     [0.92949192, 0.23123010, ...]
