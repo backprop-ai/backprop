@@ -31,14 +31,11 @@ Out of the box tasks you can solve with Backprop:
 
 For more specific use cases, you can adapt a task with little data and a single line of code via finetuning.
 
-You can run all tasks and models on your own machine, or in production with our inference [API](https://backprop.co).
-
-Your finetuned models can be deployed in one line of code.
-
-| ⚡ [Getting started](#getting-started)                | Installation, few minute introduction             |
-| :---------------------------------------------------- | :------------------------------------------------ |
-| 💡 [Examples](#examples)                              | Finetuning and usage examples                     |
-| 📙 [Docs](https://backprop.readthedocs.io/en/latest/) | In-depth documentation about our tasks and models |
+| ⚡ [Getting started](#getting-started)                | Installation, few minute introduction                      |
+| :---------------------------------------------------- | :-------------------------------------------------------- |
+| 💡 [Examples](#examples)                              | Finetuning and usage examples                              |
+| 📙 [Docs](https://backprop.readthedocs.io/en/latest/) | In-depth documentation about task inference and finetuning |
+| ⚙️ [Models](https://backprop.co/hub)                   | Overview of available models                              |
 
 ## Getting started
 
@@ -50,14 +47,16 @@ Install Backprop via PyPi:
 pip install backprop
 ```
 
-### Basic task solving
+### Basic task inference
+
+Tasks act as interfaces that let you easily use a variety of supported models.
 
 ```python
-from backprop import QA
+import backprop
 
 context = "Take a look at the examples folder to see use cases!"
 
-qa = QA()
+qa = backprop.QA()
 
 # Start building!
 answer = qa("Where can I see what to build?", context)
@@ -67,9 +66,15 @@ print(answer)
 "the examples folder"
 ```
 
-See [all available tasks](https://backprop.readthedocs.io/en/latest/Tasks.html).
+You can run all tasks and models on your own machine, or in production with our inference [API](https://backprop.co), simply by specifying your `api_key`.
+
+See how to use [all available tasks](https://backprop.readthedocs.io/en/latest/Tasks.html).
 
 ### Basic finetuning and uploading
+
+Each task implements finetuning that lets you adapt a model for your specific use case in a single line of code.
+
+A finetuned model is easy to upload to production, letting you focus on building great applications.
 
 ```python
 from backprop.models import T5
@@ -110,12 +115,12 @@ See [finetuning for other tasks](https://backprop.readthedocs.io/en/latest/Finet
 
 2. Data is a bottleneck
 
-   - Use AI without needing access to "big data"
+   - Solve real world tasks without any data
    - With transfer learning, even a small amount of data can adapt a task to your niche requirements
 
 3. There are an overwhelming amount of models
 
-   - We implement the best open-source and make them simple to use
+   - We offer a curated selection of the best open-source models and make them simple to use
    - A few general models can accomplish more with less optimisation
 
 4. Deploying models cost effectively is hard work
@@ -125,12 +130,18 @@ See [finetuning for other tasks](https://backprop.readthedocs.io/en/latest/Finet
 
 ## Examples
 
-- Getting started with Finetuning ([Github](https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb), [Colab](https://colab.research.google.com/github/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb))
-- [Finetuning and task examples](https://github.com/backprop-ai/backprop/tree/main/examples)
+- Solve any text based task with Finetuning ([Github](https://github.com/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb), [Colab](https://colab.research.google.com/github/backprop-ai/backprop/blob/main/examples/Finetuning_GettingStarted.ipynb))
+- Search for images using text ([Github](https://github.com/backprop-ai/backprop/blob/main/examples/ImageVectorisation.ipynb))
+- Finding answers from text ([Github](https://github.com/backprop-ai/backprop/blob/main/examples/Q%26A.ipynb))
+- [More finetuning and task examples](https://github.com/backprop-ai/backprop/tree/main/examples)
 
 ## Documentation
 
-Check out our [docs](https://backprop.readthedocs.io/en/latest/).
+Check out our [docs](https://backprop.readthedocs.io/en/latest/) for in-depth task inference and finetuning.
+
+## Model Hub
+
+Curated list of [state-of-the-art models](https://backprop.co/hub).
 
 ## Demos
 
