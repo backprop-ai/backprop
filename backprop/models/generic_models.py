@@ -156,6 +156,9 @@ class HFTextGenerationModel(HFModel):
         """
         Generate according to the model's generate method.
         """
+        DEFAULT_MIN_LENGTH = 10
+        DEFAULT_MAX_LENGTH = 20
+
         if text == "":
             raise ValueError("Some text must be provided")
 
@@ -183,8 +186,14 @@ class HFTextGenerationModel(HFModel):
                 
             del kwargs["num_generations"]
 
-        min_length = kwargs.pop("min_length", 10)
-        max_length = kwargs.pop("max_length", 20)
+        min_length = kwargs.pop("min_length", DEFAULT_MIN_LENGTH)
+        max_length = kwargs.pop("max_length", DEFAULT_MAX_LENGTH)
+
+        if min_length is None:
+            min_length = DEFAULT_MIN_LENGTH
+
+        if max_length is None:
+            max_length = DEFAULT_MAX_LENGTH
 
         is_list = False
         if isinstance(text, list):

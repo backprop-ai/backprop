@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="backprop",
-    version="0.1.1",
+    version="0.1.2",
     author="Backprop",
     author_email="hello@backprop.co",
     description="Backprop",
