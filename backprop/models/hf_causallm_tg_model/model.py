@@ -1,7 +1,7 @@
 import torch
 
 from typing import List, Dict
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import transformers
 from backprop.models import HFTextGenerationModel
 
 class HFCausalLMTGModel(HFTextGenerationModel):
@@ -22,8 +22,8 @@ class HFCausalLMTGModel(HFTextGenerationModel):
     """
     def __init__(self, model_path=None, tokenizer_path=None, name: str = None,
                 description: str = None, details: Dict = None, tasks: List[str] = None,
-                model_class=AutoModelForCausalLM,
-                tokenizer_class=AutoTokenizer, device=None):
+                model_class=transformers.AutoModelForCausalLM,
+                tokenizer_class=transformers.AutoTokenizer, device=None):
 
         tasks = tasks or ["text-generation"]
 

@@ -4,6 +4,8 @@ import pkg_resources
 import os
 import json
 
+dill.settings["recurse"] = True
+
 def save(model, name: str = None, description: str = None, tasks: List[str] = None, details: Dict = None, path=None):
     """
     Saves the provided model to the backprop cache folder using:
