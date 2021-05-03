@@ -54,8 +54,6 @@ def upload(model, name: str = None, description: str = None, tasks: List[str] = 
         raise ValueError("Please provide your api_key")
 
     print("Saving model...")
-    if hasattr(model, "to"):
-        model.to("cpu")
     path = save(model, name=name, description=description, tasks=tasks, details=details, path=path)
 
     print("Testing that the model can be loaded...")

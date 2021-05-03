@@ -4,8 +4,6 @@ import pkg_resources
 import os
 import json
 
-dill.settings["recurse"] = True
-
 def save(model, name: str = None, description: str = None, tasks: List[str] = None, details: Dict = None, path=None):
     """
     Saves the provided model to the backprop cache folder using:
@@ -55,6 +53,9 @@ def save(model, name: str = None, description: str = None, tasks: List[str] = No
 
     if hasattr(model.model, "eval"):
         model.model.eval()
+
+    if hasattr(model, "to"):
+        model.to("cpu")
 
     if path is None and name is None:
         raise ValueError("please provide a path or give the model a name")
