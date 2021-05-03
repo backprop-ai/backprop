@@ -77,10 +77,9 @@ Each task implements finetuning that lets you adapt a model for your specific us
 A finetuned model is easy to upload to production, letting you focus on building great applications.
 
 ```python
-from backprop.models import T5
 from backprop import TextGeneration
 
-tg = TextGeneration(T5)
+tg = TextGeneration("t5-small")
 
 # Any text works as training data
 inp = ["I really liked the service I received!", "Meh, it was not impressive."]
